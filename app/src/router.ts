@@ -14,7 +14,7 @@ const router = VueRouter.createRouter({
                 name: 'home-menu-query',
                 component: () => import('./components/CloudTAK/QueryView.vue'),
             },{
-                path: 'cot/:uid',
+                path: 'cot/:uid/:tab?',
                 name: 'home-menu-cot',
                 component: () => import('./components/CloudTAK/CoTView.vue'),
             },{
@@ -22,7 +22,7 @@ const router = VueRouter.createRouter({
                 name: 'home-menu-cot-appearance',
                 component: () => import('./components/CloudTAK/CoTAppearance.vue'),
             },{
-                path: 'event/:event',
+                path: 'event/:event/:tab?',
                 name: 'home-menu-core-entity',
                 component: () => import('./components/CloudTAK/CoreEntityView.vue'),
             },{
@@ -31,7 +31,7 @@ const router = VueRouter.createRouter({
                 component: () => import('./components/CloudTAK/CoreEntityAppearance.vue'),
                 props: { kind: 'event' },
             },{
-                path: 'device/:device',
+                path: 'device/:device/:tab?',
                 name: 'home-menu-core-device',
                 component: () => import('./components/CloudTAK/CoreDeviceView.vue'),
             },{

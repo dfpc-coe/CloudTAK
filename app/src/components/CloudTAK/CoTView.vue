@@ -317,7 +317,7 @@
                 class='overflow-auto overflow-x-hidden flex-grow-1'
                 style='min-height: 0;'
             >
-                <div v-if='mode === "default"'>
+                <div v-if='mode === "details"'>
                     <PropertyOrigin
                         v-if='subscription'
                         :key='cot.id'
@@ -652,6 +652,7 @@ import ProfileConfig from '../../base/profile.ts';
 import OverlayManager from '../../base/overlay.ts';
 import { entityLink, entityLabel, entityRoute, entityRouteName } from '../../utils/core-entity.ts';
 import type { CoreEntityRef } from '../../utils/core-entity.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
@@ -681,13 +682,17 @@ const units = ref({
 
 const username = ref<string | undefined>();
 const type = ref<DBTaxonomy | undefined>();
-const mode = ref('default');
-
 const modeOptions = computed<Array<PropertyTab>>(() => {
-    const opts: Array<PropertyTab> = [{ value: 'default', label: 'Details', icon: IconListDetails }];
+    const opts: Array<PropertyTab> = [{ value: 'details', label: 'Details', icon: IconListDetails }];
     if (cot.value?.is_skittle) opts.push({ value: 'channels', label: 'Channels', icon: IconAffiliate });
     opts.push({ value: 'debug', label: 'Debug', icon: IconBug });
     return opts;
+});
+
+const mode = useRouteTab({
+    base: () => `/cot/${String(route.params.uid)}`,
+    tabs: () => modeOptions.value.map((t) => t.value),
+    fallback: 'details',
 });
 const breadcrumbLive = ref(false);
 const bufferCotId = ref<string | null>(null);
@@ -737,8 +742,7 @@ watch(cot, async () => {
     }
 });
 
-watch(route, async () => {
-    mode.value = 'default'
+watch(() => route.params.uid, async () => {
     breadcrumbLive.value = false;
     offlineEntity.value = undefined;
     await load_cot();

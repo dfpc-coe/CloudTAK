@@ -317,6 +317,7 @@ import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useEntityAccess } from '../../utils/entity-access.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
 import { entityMarkerProperties, entityAppearance } from '../../utils/core-entity.ts';
 
 const route = useRoute();
@@ -334,12 +335,16 @@ const error = ref<Error | undefined>();
 // doesn't replace the Device with an error page
 const saveError = ref<Error | undefined>();
 
-const tab = ref('details');
-
 const tabs: Array<PropertyTab> = [
     { value: 'details', label: 'Details', icon: IconListDetails },
     { value: 'channels', label: 'Channels', icon: IconAffiliate },
 ];
+
+const tab = useRouteTab({
+    base: () => `/device/${deviceKey.value}`,
+    tabs: () => tabs.map((t) => t.value),
+    fallback: 'details',
+});
 
 // Hardware details come from the upstream source that reports the Device
 // and are shown read-only

@@ -369,6 +369,7 @@ import { db, liveQuery } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useEntityAccess } from '../../utils/entity-access.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
 import { entityMarkerProperties, entityAppearance } from '../../utils/core-entity.ts';
 
 // When an eventId prop is provided the view runs embedded (the Event Board
@@ -414,8 +415,6 @@ const formWizard = ref<{
 /** Bumped when the wizard submits Responses so the Forms section re-fetches */
 const formsRefresh = ref(0);
 
-const tab = ref('details');
-
 /** Newest Timeline entry & total - the Latest Activity row and the tab badge */
 const latest = ref<CoreEntityTimelineEntry | undefined>();
 const timelineTotal = ref(0);
@@ -427,6 +426,13 @@ const tabs = computed<Array<PropertyTab>>(() => [
     { value: 'assignments', label: 'Assignments', icon: IconUserCheck },
     { value: 'forms', label: 'Forms', icon: IconForms },
 ]);
+
+const tab = useRouteTab({
+    base: () => `/event/${eventKey.value}`,
+    tabs: () => tabs.value.map((t) => t.value),
+    fallback: 'details',
+    embedded: () => embedded.value,
+});
 
 const { is_creator, is_editable, load: loadAccess } = useEntityAccess(event);
 
@@ -454,9 +460,6 @@ async function fetchEvent(): Promise<void> {
     try {
         event.value = await loadEvent();
         await loadLatest();
-
-        // An Event with a narrative opens on it, a fresh one on its facts
-        tab.value = timelineTotal.value ? 'timeline' : 'details';
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
