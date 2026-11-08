@@ -1,11 +1,12 @@
 import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
-import { StandardResponse, CoreEntityTimelineResponse, CoreEntityTimelineInput, CoreEntityTimelinePatch } from '../../common/types.js';
-import { sql } from 'drizzle-orm';
+import { StandardResponse, CoreEntityTimelineResponse, CoreEntityTimelineCounts, CoreEntityTimelineInput, CoreEntityTimelinePatch } from '../../common/types.js';
+import { sql, inArray } from 'drizzle-orm';
+import type { InferSelectModel } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
-import { CoreEntityTimeline } from '../../common/schema.js';
+import { CoreEntityTimeline, Layer } from '../../common/schema.js';
 import { CoreEntityTimeline_Type, LayerMapping_Destination } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
 import EntityControl from '../lib/control/entity.js';
@@ -55,13 +56,53 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     }
 
-    /** Users are recorded by username, tokens only by the display name they supply */
+    /** Users are recorded by username, Layer tokens by their Layer, Connection tokens only by the display name they supply */
     function attribution(auth: AuthUser | AuthResource, author: string) {
         if (auth instanceof AuthUser) {
-            return { username: auth.email, author: author || auth.email };
+            return { username: auth.email, layer: null, author: author || auth.email };
         } else {
-            return { username: null, author };
+            const layer = auth.access === AuthResourceAccess.LAYER && typeof auth.id === 'number' ? auth.id : null;
+            return { username: null, layer, author };
         }
+    }
+
+    type Row = InferSelectModel<typeof CoreEntityTimeline>;
+    type Entry = Static<typeof CoreEntityTimelineResponse>;
+
+    /** Replace the layer id with the Layer's id & name */
+    async function hydrate(rows: Array<Row>): Promise<Array<Entry>> {
+        const ids = [...new Set(rows.map(r => r.layer).filter((id): id is number => id !== null))];
+
+        const names = new Map<number, string>();
+        if (ids.length) {
+            const layers = await config.pg.select({ id: Layer.id, name: Layer.name }).from(Layer).where(inArray(Layer.id, ids));
+            for (const l of layers) names.set(l.id, l.name);
+        }
+
+        return rows.map(row => ({
+            ...row,
+            layer: row.layer !== null && names.has(row.layer) ? { id: row.layer, name: names.get(row.layer)! } : null,
+        }));
+    }
+
+    async function hydrateOne(row: Row): Promise<Entry> {
+        return (await hydrate([row]))[0];
+    }
+
+    /** Entries of each type on the Entity matching the text filter */
+    async function counts(entity: string, filter: string): Promise<Static<typeof CoreEntityTimelineCounts>> {
+        const rows = await config.pg.select({
+            type: CoreEntityTimeline.type,
+            count: sql<number>`count(*)::int`,
+        })
+            .from(CoreEntityTimeline)
+            .where(sql`entity = ${entity} AND (body ~* ${filter} OR author ~* ${filter})`)
+            .groupBy(CoreEntityTimeline.type);
+
+        const result = Object.fromEntries(Object.values(CoreEntityTimeline_Type).map(type => [type, 0]));
+        for (const row of rows) result[row.type] = row.count;
+
+        return result;
     }
 
     await schema.get('/core/entity/:entity/timeline', {
@@ -85,6 +126,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         res: Type.Object({
             total: Type.Integer(),
+            counts: CoreEntityTimelineCounts,
             items: Type.Array(CoreEntityTimelineResponse),
         }),
     }, async (req, res) => {
@@ -112,7 +154,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 `,
             });
 
-            res.json(list);
+            res.json({
+                total: list.total,
+                counts: await counts(req.params.entity, req.query.filter),
+                items: await hydrate(list.items),
+            });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -136,7 +182,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
             await control.ensureAccess(auth, entity, connection);
 
-            res.json(await loadEntry(req.params.entity, req.params.entry));
+            res.json(await hydrateOne(await loadEntry(req.params.entity, req.params.entry)));
         } catch (err) {
             Err.respond(err, res);
         }
@@ -167,7 +213,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 entity: req.params.entity,
             }).catch(uniqueViolation('external_id is already used by another entry of this Entity'));
 
-            res.json(entry);
+            res.json(await hydrateOne(entry));
         } catch (err) {
             Err.respond(err, res);
         }
@@ -204,7 +250,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }));
 
             const items = await config.pg.transaction(async (tx) => {
-                const written: Array<Static<typeof CoreEntityTimelineResponse>> = [];
+                const written: Array<Row> = [];
 
                 const keyed = values.filter(v => v.external_id);
                 if (keyed.length) {
@@ -218,6 +264,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                                 occurred: sql`excluded.occurred`,
                                 type: sql`excluded.type`,
                                 username: sql`excluded.username`,
+                                layer: sql`excluded.layer`,
                                 author: sql`excluded.author`,
                                 body: sql`excluded.body`,
                                 metadata: sql`excluded.metadata`,
@@ -234,7 +281,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 return written;
             });
 
-            res.json({ total: items.length, items });
+            res.json({ total: items.length, items: await hydrate(items) });
         } catch (err) {
             Err.respond(err, res);
         }
@@ -266,7 +313,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 updated: sql`Now()`,
             }).catch(uniqueViolation('external_id is already used by another entry of this Entity'));
 
-            res.json(entry);
+            res.json(await hydrateOne(entry));
         } catch (err) {
             Err.respond(err, res);
         }

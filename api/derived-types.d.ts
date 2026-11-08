@@ -21755,7 +21755,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "occurred" | "entity" | "type" | "username" | "author" | "body" | "metadata" | "external_id" | "enableRLS";
+                    sort: "id" | "created" | "updated" | "occurred" | "entity" | "type" | "username" | "layer" | "author" | "body" | "metadata" | "external_id" | "enableRLS";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return entries of the given type */
@@ -21778,6 +21778,15 @@ export interface paths {
                     content: {
                         "application/json": {
                             total: number;
+                            /** @description Number of entries of each type matching the filter, regardless of the type query */
+                            counts: {
+                                comment: number;
+                                status: number;
+                                unit: number;
+                                location: number;
+                                attachment: number;
+                                external: number;
+                            };
                             items: {
                                 id: string;
                                 created: string;
@@ -21789,6 +21798,11 @@ export interface paths {
                                 type: "comment" | "status" | "unit" | "location" | "attachment" | "external";
                                 /** @description Username of the author if they have a Profile */
                                 username: null | string;
+                                /** @description Layer that wrote the entry if written by a Layer token */
+                                layer: null | {
+                                    id: number;
+                                    name: string;
+                                };
                                 /** @description Display name of the author - a dispatcher, a unit, an ETL */
                                 author: string;
                                 body: string;
@@ -21936,6 +21950,11 @@ export interface paths {
                                 type: "comment" | "status" | "unit" | "location" | "attachment" | "external";
                                 /** @description Username of the author if they have a Profile */
                                 username: null | string;
+                                /** @description Layer that wrote the entry if written by a Layer token */
+                                layer: null | {
+                                    id: number;
+                                    name: string;
+                                };
                                 /** @description Display name of the author - a dispatcher, a unit, an ETL */
                                 author: string;
                                 body: string;
@@ -22079,6 +22098,11 @@ export interface paths {
                             type: "comment" | "status" | "unit" | "location" | "attachment" | "external";
                             /** @description Username of the author if they have a Profile */
                             username: null | string;
+                            /** @description Layer that wrote the entry if written by a Layer token */
+                            layer: null | {
+                                id: number;
+                                name: string;
+                            };
                             /** @description Display name of the author - a dispatcher, a unit, an ETL */
                             author: string;
                             body: string;
@@ -22208,6 +22232,11 @@ export interface paths {
                             type: "comment" | "status" | "unit" | "location" | "attachment" | "external";
                             /** @description Username of the author if they have a Profile */
                             username: null | string;
+                            /** @description Layer that wrote the entry if written by a Layer token */
+                            layer: null | {
+                                id: number;
+                                name: string;
+                            };
                             /** @description Display name of the author - a dispatcher, a unit, an ETL */
                             author: string;
                             body: string;
@@ -22443,6 +22472,11 @@ export interface paths {
                             type: "comment" | "status" | "unit" | "location" | "attachment" | "external";
                             /** @description Username of the author if they have a Profile */
                             username: null | string;
+                            /** @description Layer that wrote the entry if written by a Layer token */
+                            layer: null | {
+                                id: number;
+                                name: string;
+                            };
                             /** @description Display name of the author - a dispatcher, a unit, an ETL */
                             author: string;
                             body: string;
@@ -39790,7 +39824,7 @@ export interface paths {
                                 };
                             }[];
                             passwordProtected: boolean;
-                            defaultRole?: {
+                            defaultRole: {
                                 permissions: string[];
                                 hibernateLazyInitializer?: unknown;
                                 type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
@@ -40102,7 +40136,7 @@ export interface paths {
                                 };
                             }[];
                             passwordProtected: boolean;
-                            defaultRole?: {
+                            defaultRole: {
                                 permissions: string[];
                                 hibernateLazyInitializer?: unknown;
                                 type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
@@ -42014,7 +42048,7 @@ export interface paths {
                                     };
                                 }[];
                                 passwordProtected: boolean;
-                                defaultRole?: {
+                                defaultRole: {
                                     permissions: string[];
                                     hibernateLazyInitializer?: unknown;
                                     type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
@@ -42243,7 +42277,7 @@ export interface paths {
                                 };
                             }[];
                             passwordProtected: boolean;
-                            defaultRole?: {
+                            defaultRole: {
                                 permissions: string[];
                                 hibernateLazyInitializer?: unknown;
                                 type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";

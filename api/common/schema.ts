@@ -176,6 +176,7 @@ export const CoreEntityTimeline = pgTable('core_entity_timeline', {
     entity: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
     type: text().$type<CoreEntityTimeline_Type>().notNull().default(CoreEntityTimeline_Type.COMMENT),
     username: text().references(() => Profile.username, { onDelete: 'set null' }), // Set when the author has a Profile
+    layer: integer().references(() => Layer.id, { onDelete: 'set null' }), // Set when written by a Layer token
     author: text().notNull().default(''), // Display name - a dispatcher, a unit, an ETL
     body: text().notNull().default(''),
     metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}), // Type specific payload - ie: unit & status

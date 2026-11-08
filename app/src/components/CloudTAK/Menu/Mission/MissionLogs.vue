@@ -128,57 +128,27 @@
 
                     <div class='d-flex justify-content-between align-items-center mb-2 pt-2'>
                         <label class='form-label mb-0'>Create Log</label>
-                        <div class='d-flex align-items-center gap-2'>
-                            <TablerSelect
-                                v-if='templateLogs.length'
-                                v-model='selectedLogType'
-                                :options='logTypeOptions'
-                            />
-                            <TablerDropdown>
-                                <template #default>
-                                    <TablerIconButton
-                                        title='Options'
-                                    >
-                                        <IconSettings
-                                            :size='24'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                </template>
-                                <template #dropdown>
-                                    <TablerToggle
-                                        v-model='submitOnEnter'
-                                        label='Submit on Enter'
-                                        @click.stop
-                                    />
-                                </template>
-                            </TablerDropdown>
-                        </div>
+                        <TablerSelect
+                            v-if='templateLogs.length'
+                            v-model='selectedLogType'
+                            :options='logTypeOptions'
+                        />
                     </div>
 
-                    <div v-if='!selectedTemplateLog'>
-                        <TablerInput
-                            v-model='createLog.content'
-                            :rows='4'
-                            @keyup.enter='submitOnEnter ? submitLog() : undefined'
-                        />
-
+                    <MessageComposer
+                        v-if='!selectedTemplateLog'
+                        ref='composer'
+                        class='pb-2'
+                        placeholder='Add a log entry…'
+                        submit-label='Save Log'
+                        :busy='loading.create'
+                        @send='submitLog'
+                    >
                         <Keywords
                             v-model:keywords='createLog.keywords'
                             :relevant='availableKeywords'
                         />
-
-                        <div class='d-flex my-2'>
-                            <div class='ms-auto'>
-                                <TablerButton
-                                    :loading='loading.create'
-                                    @click='submitLog'
-                                >
-                                    Save Log
-                                </TablerButton>
-                            </div>
-                        </div>
-                    </div>
+                    </MessageComposer>
                     <div v-else>
                         <TablerSchema
                             v-model='createLog.schema'
@@ -208,22 +178,19 @@ import { from } from 'rxjs';
 import type { Ref, ComputedRef } from 'vue';
 import Keywords from '../../util/Keywords.vue';
 import MissionLogItem from './MissionLog.vue';
+import MessageComposer from '../../util/MessageComposer.vue';
 import SearchSortFilter from '../../util/SearchSortFilter.vue';
 import MissionTemplateLogs from '../../../../base/mission-template-logs.ts';
 import type { DBMissionTemplateLog, DBSubscriptionLog } from '../../../../database.ts';
 import {
     TablerNone,
-    TablerInput,
-    TablerToggle,
     TablerLoading,
-    TablerDropdown,
     TablerIconButton,
     TablerSelect,
     TablerSchema,
     TablerButton
 } from '@tak-ps/vue-tabler';
 import {
-    IconSettings,
     IconDownload,
     IconLetterCase,
     IconClock,
@@ -247,7 +214,7 @@ const logs: Ref<Array<DBSubscriptionLog>> = useObservable(
     }))
 )
 
-const submitOnEnter = ref(true);
+const composer = ref<InstanceType<typeof MessageComposer>>();
 const paging = ref({ filter: '' });
 const sort = ref('');
 const sortOptions = ['Newest \u2192 Oldest', 'Oldest \u2192 Newest', 'A \u2192 Z', 'Z \u2192 A'];
@@ -255,11 +222,9 @@ const selectedKeywords = ref<string[]>([]);
 const sortTypeIcon = computed(() => (sort.value === 'A → Z' || sort.value === 'Z → A') ? IconLetterCase : IconClock);
 const sortDirectionIcon = computed(() => (sort.value === 'Oldest → Newest' || sort.value === 'A → Z') ? IconArrowUp : IconArrowDown);
 const createLog = ref<{
-    content: string;
     keywords: string[];
     schema: Record<string, unknown>;
 }>({
-    content: '',
     keywords: [],
     schema: {}
 });
@@ -361,9 +326,10 @@ async function exportLogs(format: string): Promise<void> {
     await props.subscription.log.download(format);
 }
 
-async function submitLog() {
+/** A default Log carries the composer text; a template Log is built from its schema form */
+async function submitLog(content?: string) {
     if (loading.value.create) return;
-    if (!selectedTemplateLog.value && !createLog.value.content.trim()) return;
+    if (!selectedTemplateLog.value && !(content || '').trim()) return;
 
     loading.value.logs = true;
     loading.value.create = true;
@@ -375,14 +341,15 @@ async function submitLog() {
                 keywords: [...createLog.value.keywords, `template:${selectedTemplateLog.value.id}`]
             });
         } else {
-            await props.subscription.log.create(
-                createLog.value
-            );
+            await props.subscription.log.create({
+                content: (content || '').trim(),
+                keywords: createLog.value.keywords,
+            });
         }
 
-        createLog.value.content = '';
         createLog.value.keywords = [];
         createLog.value.schema = {};
+        await composer.value?.reset();
     } finally {
         loading.value.create = false;
         loading.value.logs = false;

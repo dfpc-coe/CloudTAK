@@ -71,7 +71,7 @@ test('GET: api/core/entity/:entity/timeline - empty', async () => {
             auth: { bearer: flight.token.admin },
         }, true);
 
-        assert.deepEqual(res.body, { total: 0, items: [] });
+        assert.deepEqual(res.body, { total: 0, counts: { comment: 0, status: 0, unit: 0, location: 0, attachment: 0, external: 0 }, items: [] });
     } catch (err) {
         assert.ifError(err);
     }
@@ -535,6 +535,16 @@ test('POST: api/core/entity/:entity/timeline - layer token needs the timeline sc
         }, true);
 
         assert.equal(res.body.author, 'ETL');
+        assert.equal(res.body.username, null);
+        assert.deepEqual(res.body.layer, { id: 2, name: 'Scoped Layer' });
+
+        const list = await flight.fetch(`/api/core/entity/${machineEventId}/timeline`, {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.equal(list.body.items[0].layer, null);
+        assert.deepEqual(list.body.items[1].layer, { id: 2, name: 'Scoped Layer' });
     } catch (err) {
         assert.ifError(err);
     }

@@ -338,11 +338,20 @@ export const CoreEntityTimelineResponse = Type.Object({
     entity: Type.String({ description: 'Core Event or Device the entry belongs to' }),
     type: Type.Enum(CoreEntityTimeline_Type),
     username: Type.Union([Type.Null(), Type.String()], { description: 'Username of the author if they have a Profile' }),
+    layer: Type.Union([Type.Null(), Type.Object({
+        id: Type.Integer(),
+        name: Type.String(),
+    })], { description: 'Layer that wrote the entry if written by a Layer token' }),
     author: Type.String({ description: 'Display name of the author - a dispatcher, a unit, an ETL' }),
     body: Type.String(),
     metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'Type specific payload - ie: unit & status' }),
     external_id: Type.Union([Type.Null(), Type.String()], { description: 'ID of the entry in the source system' }),
 });
+
+export const CoreEntityTimelineCounts = Type.Object(
+    Object.fromEntries(Object.values(CoreEntityTimeline_Type).map(type => [type, Type.Integer()])),
+    { description: 'Number of entries of each type matching the filter, regardless of the type query' },
+);
 
 export const CoreEntityTimelineInput = Type.Object({
     type: Type.Enum(CoreEntityTimeline_Type, { default: CoreEntityTimeline_Type.COMMENT }),
