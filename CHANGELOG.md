@@ -27,6 +27,10 @@
 
 ### Pending Release
 
+### v13.122.3 - 2026-11-09
+
+- :bug: Ensure enter submits the password when joining a password protected Data Sync - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2026
+
 ### v13.122.2 - 2026-11-08
 
 - :bug: Ensure app can't be built with plugins
