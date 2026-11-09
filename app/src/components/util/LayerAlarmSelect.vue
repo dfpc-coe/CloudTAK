@@ -37,6 +37,13 @@
             />
 
             <template v-if='alarm.priority !== "off"'>
+                <TablerInlineAlert
+                    v-if='Number(alarm.alarm_points) > Number(alarm.alarm_evals)'
+                    severity='danger'
+                    title='Invalid Alarm Configuration'
+                    description='Data Points to Alarm must be less than or equal to Evaluation Periods'
+                    :dismissable='false'
+                />
                 <div class='col-md-4'>
                     <TablerInput
                         v-model='alarm.alarm_evals'

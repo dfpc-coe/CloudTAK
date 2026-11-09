@@ -234,9 +234,21 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 maximum: 900,
             }),
 
-            alarm_period: Type.Optional(Type.Integer()),
-            alarm_evals: Type.Optional(Type.Integer()),
-            alarm_points: Type.Optional(Type.Integer()),
+            alarm_period: Type.Integer({
+                default: 30,
+                description: 'CloudWatch alarm period in seconds',
+                minimum: 1,
+            }),
+            alarm_evals: Type.Integer({
+                default: 5,
+                description: 'Number of periods evaluated by the CloudWatch alarm',
+                minimum: 1,
+            }),
+            alarm_points: Type.Integer({
+                default: 4,
+                description: 'Breaching data points required to alarm - must not exceed alarm_evals',
+                minimum: 1,
+            }),
             protected: Type.Boolean({ default: false }),
             vpc: Type.Boolean({
                 default: false,
@@ -279,6 +291,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             CommonLayerControl.validatePermissions(req.body.permissions);
+            CommonLayerControl.validateAlarms(req.body);
 
             if (req.body.incoming && req.body.incoming.cron) {
                 Schedule.is_valid(req.body.incoming.cron);
@@ -811,9 +824,18 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             task: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
 
-            alarm_period: Type.Optional(Type.Integer()),
-            alarm_evals: Type.Optional(Type.Integer()),
-            alarm_points: Type.Optional(Type.Integer()),
+            alarm_period: Type.Optional(Type.Integer({
+                description: 'CloudWatch alarm period in seconds',
+                minimum: 1,
+            })),
+            alarm_evals: Type.Optional(Type.Integer({
+                description: 'Number of periods evaluated by the CloudWatch alarm',
+                minimum: 1,
+            })),
+            alarm_points: Type.Optional(Type.Integer({
+                description: 'Breaching data points required to alarm - must not exceed alarm_evals',
+                minimum: 1,
+            })),
 
             permissions: Type.Optional(Type.Array(Type.String(), {
                 description: 'Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:*',
@@ -851,6 +873,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     throw new Err(403, null, 'Only a System Admin can change VPC access');
                 }
             }
+
+            CommonLayerControl.validateAlarms({
+                alarm_evals: req.body.alarm_evals ?? layer.alarm_evals,
+                alarm_points: req.body.alarm_points ?? layer.alarm_points,
+            });
 
             const task = req.body.task || layer.task;
             const taskChanged = req.body.task !== undefined && req.body.task !== layer.task;

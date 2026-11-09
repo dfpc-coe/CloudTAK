@@ -3,7 +3,7 @@ import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Area, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
-import { VideoLease_SourceType, CoreEventBoardColumn_Type, CoreEventEffect_Status, LayerMapping_Destination } from './enums.js';
+import { VideoLease_SourceType, CoreEventBoardColumn_Type, CoreEventEffect_Status, CoreEntityTimeline_Type, LayerMapping_Destination } from './enums.js';
 import { Capabilities, InvocationType } from '@tak-ps/etl';
 import { CoreEventSchema, CoreDeviceSchema, CoreEntityLinkSchema, CoreEntityStyleSchema, withoutHints } from './core-schema.js';
 import { AugmentedData } from './models/Data.js';
@@ -122,6 +122,10 @@ export const TileJSON = Type.Object({
     type: Type.String(),
     format: Type.Optional(Type.String()),
     vector_layers: Type.Optional(Type.Array(TileJSON_VectorLayer)),
+    legend: Type.Optional(Type.Array(Type.Object({
+        label: Type.String(),
+        color: Type.String({ description: 'CSS color of the legend swatch' }),
+    }), { description: 'Raster legend entries - a CloudTAK extension to TileJSON' })),
 });
 
 export const LayerError = Type.Object({
@@ -311,6 +315,54 @@ export const CoreEventAssignmentResponse = Type.Object({
     name: Type.String({ description: 'Name of the assigned person' }),
     role: Type.String({ description: 'Capacity the person manages the Event in - ie: IC, JAG' }),
     remarks: Type.String(),
+});
+
+export const CoreEntityTimelineResponse = Type.Object({
+    id: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    occurred: Type.String({ description: 'When the entry happened at its source' }),
+    entity: Type.String({ description: 'Core Event or Device the entry belongs to' }),
+    type: Type.Enum(CoreEntityTimeline_Type),
+    username: Type.Union([Type.Null(), Type.String()], { description: 'Username of the author if they have a Profile' }),
+    layer: Type.Union([Type.Null(), Type.Object({
+        id: Type.Integer(),
+        name: Type.String(),
+    })], { description: 'Layer that wrote the entry if written by a Layer token' }),
+    author: Type.String({ description: 'Display name of the author - a dispatcher, a unit, an ETL' }),
+    body: Type.String(),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'Type specific payload - ie: unit & status' }),
+    external_id: Type.Union([Type.Null(), Type.String()], { description: 'ID of the entry in the source system' }),
+});
+
+export const CoreEntityTimelineCounts = Type.Object(
+    Object.fromEntries(Object.values(CoreEntityTimeline_Type).map(type => [type, Type.Integer()])),
+    { description: 'Number of entries of each type matching the filter, regardless of the type query' },
+);
+
+export const CoreEntityTimelineInput = Type.Object({
+    type: Type.Enum(CoreEntityTimeline_Type, { default: CoreEntityTimeline_Type.COMMENT }),
+    occurred: Type.Optional(Type.String({ format: 'date-time', description: 'When the entry happened at its source - defaults to now' })),
+    author: Type.String({ default: '', description: 'Display name of the author - defaults to the requesting user' }),
+    body: Type.String({ default: '' }),
+    metadata: Type.Record(Type.String(), Type.Unknown(), { default: {}, description: 'Type specific payload - ie: unit & status' }),
+    external_id: Type.Optional(Type.Unsafe<string | null>({
+        type: ['string', 'null'],
+        minLength: 1,
+        description: 'ID of the entry in the source system - unique per Entity',
+    })),
+});
+
+export const CoreEntityTimelinePatch = Type.Object({
+    type: Type.Optional(Type.Enum(CoreEntityTimeline_Type)),
+    occurred: Type.Optional(Type.String({ format: 'date-time' })),
+    author: Type.Optional(Type.String()),
+    body: Type.Optional(Type.String()),
+    metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
+    external_id: Type.Optional(Type.Unsafe<string | null>({
+        type: ['string', 'null'],
+        minLength: 1,
+    })),
 });
 
 export const CoreEventEffectResponse = Type.Object({
@@ -562,6 +614,13 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     source_type: Type.Enum(VideoLease_SourceType),
 });
 
+/** Query params appended to tile and TileJSON requests, e.g. slope classes as repeatable `layer` values */
+export const BasemapArgs = Type.Record(
+    Type.String({ minLength: 1 }),
+    Type.Union([Type.String(), Type.Array(Type.String())]),
+    { description: 'Query params the client appends to every tile request. A string is a single value, an array is a repeated param' },
+);
+
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),
@@ -570,6 +629,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     opacity: Type.Number(),
     visible: Type.Boolean(),
     styles: Type.Array(Type.Unknown()),
+    args: BasemapArgs,
 });
 
 export const ProfileInterestResponse = createSelectSchema(schemas.ProfileInterest, {
@@ -769,6 +829,7 @@ export const BasemapResponse = Type.Object({
     tilejson: Type.Optional(Type.Union([Type.Null(), Type.String()], {
         description: 'Upstream TileJSON URL used to resolve metadata for hosted basemaps',
     })),
+    args: BasemapArgs,
 
     // Terrain
     encoding: Type.Optional(Type.Enum(BasemapTerrain_Encoding)),

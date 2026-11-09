@@ -9,7 +9,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthUser } from '../../common/auth.js';
 import { BasemapTerrain_Encoding } from '../../common/enums.js';
 import { ProfileOverlay } from '../../common/schema.js';
-import { StandardResponse, ProfileOverlayResponse } from '../../common/types.js';
+import { StandardResponse, ProfileOverlayResponse, BasemapArgs } from '../../common/types.js';
 import ConnectionEvents, { ConnectionEventDataType, ConnectionEventAction } from '../lib/connection-events.js';
 import { sql } from 'drizzle-orm';
 import * as Default from '../lib/limits.js';
@@ -278,6 +278,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             url: Type.Optional(Type.String()),
             mode_id: Type.Optional(Type.String()),
             styles: Type.Optional(Type.Array(Type.Unknown())),
+            args: Type.Optional(BasemapArgs),
         }),
         res: AugmentedProfileOverlayResponse,
     }, async (req, res) => {
@@ -326,6 +327,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             mode: Type.String(),
             mode_id: Type.Optional(Type.String()),
             styles: Type.Optional(Type.Array(Type.Unknown())),
+            args: Type.Optional(BasemapArgs),
             token: Type.Optional(Type.String()),
             url: Type.String(),
         }),

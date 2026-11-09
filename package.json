@@ -1,13 +1,13 @@
 {
     "name": "@tak-ps/CloudTAK",
     "type": "module",
-    "version": "13.119.0",
+    "version": "13.122.2",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
         "dev": "node bin/develop.ts",
-        "app": "cd app && npm install && npm run build && cd .. && node bin/version.js && cd app && npx cap sync",
+        "app": "node bin/plugins.js && cd app && npm install && npm run build && cd .. && node bin/version.js && cd app && npx cap sync",
         "app:build": "npm run app && cd app && capgo build request",
         "test": "echo \"Error: no test specified\" && exit 1",
         "version": "node bin/version.js --stage",
@@ -31,7 +31,6 @@
         "@mapbox/tile-cover": "^3.0.2",
         "@mapbox/tilebelt": "^2.0.3",
         "@openaddresses/cloudfriend": "^7.0.0",
-        "@openaddresses/deploy": "^10.5.0",
         "@sinclair/typebox": "^0.34.52"
     },
     "devDependencies": {

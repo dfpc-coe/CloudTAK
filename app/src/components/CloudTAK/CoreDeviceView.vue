@@ -80,168 +80,168 @@
                 />
             </div>
 
+            <PropertyTabs
+                v-model='tab'
+                :tabs='tabs'
+                class='flex-shrink-0 pt-2'
+            />
+
             <div
                 class='overflow-auto overflow-x-hidden flex-grow-1'
                 style='min-height: 0;'
             >
-                <div class='pt-1'>
-                    <div class='px-2 pb-2'>
-                        <AppearanceRow
-                            :properties='entityAppearance(device)'
-                            :geometry='device.geometry'
-                            :edit='is_editable'
-                            @click='router.push(`/device/${device.id}/appearance`)'
-                        />
-                    </div>
+                <div v-show='tab === "details"'>
+                    <div class='pt-1'>
+                        <div class='px-2 pb-2'>
+                            <AppearanceRow
+                                :properties='entityAppearance(device)'
+                                :geometry='device.geometry'
+                                :edit='is_editable'
+                                @click='router.push(`/device/${device.id}/appearance`)'
+                            />
+                        </div>
 
-                    <PropertyFactRow
-                        label='Coords'
-                        class='py-1'
-                    >
-                        <Coordinate
-                            v-if='device.geometry'
-                            :key='deviceKey'
-                            :inline='true'
-                            :edit='is_editable'
-                            :hover='is_editable'
-                            :model-value='device.geometry.coordinates'
-                            @update:model-value='updateCoordinates($event as number[])'
-                        />
-                        <span
-                            v-else
-                            class='text-muted fst-italic'
-                        >No location reported</span>
-                    </PropertyFactRow>
+                        <PropertyFactRow
+                            label='Coords'
+                            class='py-1'
+                        >
+                            <Coordinate
+                                v-if='device.geometry'
+                                :key='deviceKey'
+                                :inline='true'
+                                :edit='is_editable'
+                                :hover='is_editable'
+                                :model-value='device.geometry.coordinates'
+                                @update:model-value='updateCoordinates($event as number[])'
+                            />
+                            <span
+                                v-else
+                                class='text-muted fst-italic'
+                            >No location reported</span>
+                        </PropertyFactRow>
 
-                    <!-- Status & Battery share one row when a battery level is reported -->
-                    <PropertyFactRow
-                        label='Status'
-                        class='py-1'
-                    >
-                        <div class='row g-2'>
-                            <div
-                                class='d-flex align-items-center gap-2'
-                                :class='device.battery !== null ? "col-6" : "col-12"'
-                            >
-                                <span
-                                    title='Status'
-                                    class='d-flex align-items-center gap-1 text-truncate'
+                        <!-- Status & Battery share one row when a battery level is reported -->
+                        <PropertyFactRow
+                            label='Status'
+                            class='py-1'
+                        >
+                            <div class='row g-2'>
+                                <div
+                                    class='d-flex align-items-center gap-2'
+                                    :class='device.battery !== null ? "col-6" : "col-12"'
                                 >
-                                    <IconHeartbeat
+                                    <span
+                                        title='Status'
+                                        class='d-flex align-items-center gap-1 text-truncate'
+                                    >
+                                        <IconHeartbeat
+                                            :size='18'
+                                            stroke='1'
+                                            class='flex-shrink-0'
+                                        />
+                                        <span
+                                            class='text-truncate'
+                                            v-text='device.status || "Unknown"'
+                                        />
+                                    </span>
+                                    <span
+                                        v-if='device.simulated'
+                                        title='Simulated data source'
+                                        class='badge bg-yellow text-yellow-fg text-uppercase flex-shrink-0'
+                                    >Sim</span>
+                                </div>
+                                <div
+                                    v-if='device.battery !== null'
+                                    title='Battery'
+                                    class='col-6 d-flex align-items-center gap-1'
+                                >
+                                    <PropertyBattery
+                                        :battery='device.battery'
+                                        :size='18'
+                                    />
+                                    <span v-text='`${device.battery}%`' />
+                                </div>
+                            </div>
+                        </PropertyFactRow>
+
+                        <PropertyFactRow
+                            v-if='hardwareName'
+                            label='Hardware'
+                            class='py-1'
+                        >
+                            <div class='d-flex align-items-center gap-1'>
+                                <IconBuildingFactory2
+                                    :size='18'
+                                    stroke='1'
+                                    class='flex-shrink-0'
+                                />
+                                <span
+                                    class='text-truncate user-select-all'
+                                    v-text='hardwareName'
+                                />
+                            </div>
+                        </PropertyFactRow>
+
+                        <!-- Serial & Firmware share one row when both are reported -->
+                        <PropertyFactRow
+                            v-if='device.serial || device.firmware'
+                            :label='device.serial ? "Serial" : "Firmware"'
+                            class='py-1'
+                        >
+                            <div class='row g-2'>
+                                <div
+                                    v-if='device.serial'
+                                    title='Serial'
+                                    class='d-flex align-items-center gap-1'
+                                    :class='device.firmware ? "col-6" : "col-12"'
+                                >
+                                    <IconBarcode
                                         :size='18'
                                         stroke='1'
                                         class='flex-shrink-0'
                                     />
                                     <span
-                                        class='text-truncate'
-                                        v-text='device.status || "Unknown"'
+                                        class='text-truncate user-select-all'
+                                        v-text='device.serial'
                                     />
-                                </span>
-                                <span
-                                    v-if='device.simulated'
-                                    title='Simulated data source'
-                                    class='badge bg-yellow text-yellow-fg text-uppercase flex-shrink-0'
-                                >Sim</span>
+                                </div>
+                                <div
+                                    v-if='device.firmware'
+                                    title='Firmware'
+                                    class='d-flex align-items-center gap-1'
+                                    :class='device.serial ? "col-6" : "col-12"'
+                                >
+                                    <IconVersions
+                                        :size='18'
+                                        stroke='1'
+                                        class='flex-shrink-0'
+                                    />
+                                    <span
+                                        class='text-truncate user-select-all'
+                                        v-text='device.firmware'
+                                    />
+                                </div>
                             </div>
-                            <div
-                                v-if='device.battery !== null'
-                                title='Battery'
-                                class='col-6 d-flex align-items-center gap-1'
-                            >
-                                <PropertyBattery
-                                    :battery='device.battery'
-                                    :size='18'
-                                />
-                                <span v-text='`${device.battery}%`' />
-                            </div>
-                        </div>
-                    </PropertyFactRow>
+                        </PropertyFactRow>
 
-                    <PropertyFactRow
-                        v-if='hardwareName'
-                        label='Hardware'
-                        class='py-1'
-                    >
-                        <div class='d-flex align-items-center gap-1'>
-                            <IconBuildingFactory2
-                                :size='18'
-                                stroke='1'
-                                class='flex-shrink-0'
+                        <PropertyFactRow
+                            v-if='device.username'
+                            label='Creator'
+                        >
+                            <a
+                                :href='`mailto:${device.username}`'
+                                class='text-reset d-block text-truncate'
+                                v-text='device.username'
                             />
-                            <span
-                                class='text-truncate user-select-all'
-                                v-text='hardwareName'
-                            />
-                        </div>
-                    </PropertyFactRow>
+                        </PropertyFactRow>
+                    </div>
 
-                    <!-- Serial & Firmware share one row when both are reported -->
-                    <PropertyFactRow
-                        v-if='device.serial || device.firmware'
-                        :label='device.serial ? "Serial" : "Firmware"'
-                        class='py-1'
-                    >
-                        <div class='row g-2'>
-                            <div
-                                v-if='device.serial'
-                                title='Serial'
-                                class='d-flex align-items-center gap-1'
-                                :class='device.firmware ? "col-6" : "col-12"'
-                            >
-                                <IconBarcode
-                                    :size='18'
-                                    stroke='1'
-                                    class='flex-shrink-0'
-                                />
-                                <span
-                                    class='text-truncate user-select-all'
-                                    v-text='device.serial'
-                                />
-                            </div>
-                            <div
-                                v-if='device.firmware'
-                                title='Firmware'
-                                class='d-flex align-items-center gap-1'
-                                :class='device.serial ? "col-6" : "col-12"'
-                            >
-                                <IconVersions
-                                    :size='18'
-                                    stroke='1'
-                                    class='flex-shrink-0'
-                                />
-                                <span
-                                    class='text-truncate user-select-all'
-                                    v-text='device.firmware'
-                                />
-                            </div>
-                        </div>
-                    </PropertyFactRow>
+                    <PropertyRemarks
+                        :model-value='device.remarks'
+                        :edit='is_editable'
+                        @submit='patch({ remarks: $event })'
+                    />
 
-                    <PropertyFactRow
-                        v-if='device.username'
-                        label='Creator'
-                    >
-                        <a
-                            :href='`mailto:${device.username}`'
-                            class='text-reset d-block text-truncate'
-                            v-text='device.username'
-                        />
-                    </PropertyFactRow>
-                </div>
-
-                <PropertyRemarks
-                    :model-value='device.remarks'
-                    :edit='is_editable'
-                    @submit='patch({ remarks: $event })'
-                />
-
-                <PropertyTabs
-                    v-model='tab'
-                    :tabs='tabs'
-                    class='mt-2'
-                />
-
-                <div v-show='tab === "details"'>
                     <PropertyCoreEntityLinks
                         :model-value='device.links'
                         :edit='is_editable'
@@ -295,6 +295,8 @@ import {
     IconBarcode,
     IconVersions,
     IconHeartbeat,
+    IconAffiliate,
+    IconListDetails,
     IconBuildingFactory2,
 } from '@tabler/icons-vue';
 import MenuTemplate from './util/MenuTemplate.vue';
@@ -315,6 +317,7 @@ import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useEntityAccess } from '../../utils/entity-access.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
 import { entityMarkerProperties, entityAppearance } from '../../utils/core-entity.ts';
 
 const route = useRoute();
@@ -332,12 +335,16 @@ const error = ref<Error | undefined>();
 // doesn't replace the Device with an error page
 const saveError = ref<Error | undefined>();
 
-const tab = ref('details');
-
 const tabs: Array<PropertyTab> = [
-    { value: 'details', label: 'Details' },
-    { value: 'channels', label: 'Channels' },
+    { value: 'details', label: 'Details', icon: IconListDetails },
+    { value: 'channels', label: 'Channels', icon: IconAffiliate },
 ];
+
+const tab = useRouteTab({
+    base: () => `/device/${deviceKey.value}`,
+    tabs: () => tabs.map((t) => t.value),
+    fallback: 'details',
+});
 
 // Hardware details come from the upstream source that reports the Device
 // and are shown read-only

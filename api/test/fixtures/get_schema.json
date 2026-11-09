@@ -484,6 +484,36 @@
         "query": false,
         "res": true
     },
+    "GET /core/entity/:entity/timeline": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /core/entity/:entity/timeline/:entry": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /core/entity/:entity/timeline": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /core/entity/:entity/timeline": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /core/entity/:entity/timeline/:entry": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /core/entity/:entity/timeline/:entry": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /core/event/:event/assignment": {
         "body": false,
         "query": true,

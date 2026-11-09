@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { authorizeTileJSON } from './tilejson.ts';
+import { applyTileArgs, authorizeTileJSON } from './tilejson.ts';
 
 const HOSTS = ['api.example.com', 'tiles.example.com'];
 
@@ -49,5 +49,21 @@ describe('authorizeTileJSON', () => {
 
         authorizeTileJSON(input, 'tok', HOSTS);
         expect(input.tiles[0]).not.toContain('token');
+    });
+});
+
+describe('applyTileArgs', () => {
+    it('appends args and replaces same-key params left by the basemap', () => {
+        const input = { tiles: ['https://tiles.example.com/tiles/slope/7/tiles/{z}/{x}/{y}?layer=27%3A30%3Affeb3b&token=abc'] };
+
+        const result = applyTileArgs(input, { layer: ['0:30:00ff00', '30:90:ff0000'] });
+
+        expect(result.tiles).toEqual(['https://tiles.example.com/tiles/slope/7/tiles/{z}/{x}/{y}?token=abc&layer=0%3A30%3A00ff00&layer=30%3A90%3Aff0000']);
+    });
+
+    it('is a no-op without args', () => {
+        const input = { tiles: ['https://tiles.example.com/{z}/{x}/{y}'] };
+        expect(applyTileArgs(input, {})).toBe(input);
+        expect(applyTileArgs(input, null)).toBe(input);
     });
 });

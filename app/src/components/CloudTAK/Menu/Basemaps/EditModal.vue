@@ -49,33 +49,28 @@
         <div class='modal-body basemap-modal-body'>
             <TablerLoading v-if='loading' />
             <BasemapTypeSelector
-                v-else-if='showTypeSelector'
+                v-else-if='!mode || !activeMode'
                 :is-system-admin='isSystemAdmin'
-                @select='setBasemapType'
+                @select='selectMode'
             />
             <component
-                :is='activeSelectorComponent'
-                v-else-if='activeSelectorComponent'
+                :is='activeMode.component'
+                v-else
                 v-model:editing='editing'
-                :basemap-id='props.basemap.id'
+                v-model:scope='scope'
+                v-model:warn-sharing='warnSharing'
+                :type='mode'
+                :basemap-id='basemap.id'
                 :vector-layers='vectorLayers'
                 :errors='errors'
-                :scope='scope'
-                :warn-sharing='warnSharing'
                 :is-system-admin='isSystemAdmin'
-                :url='tilejson.url'
-                :upload-url='uploadUrl'
-                @change-type='resetBasemapType'
-                @update:scope='scope = $event'
-                @update:warn-sharing='warnSharing = $event'
-                @update:url='tilejson.url = $event'
-                @fetch='fetchTileJSON'
-                @done='processUpload($event)'
+                @change-type='resetMode'
+                @imported='applyImport'
             />
         </div>
 
         <div
-            v-if='showFormFooter'
+            v-if='!loading && ready'
             class='modal-footer'
         >
             <div v-if='basemap.id'>
@@ -86,10 +81,12 @@
             </div>
 
             <div class='ms-auto'>
-                <a
-                    class='cursor-pointer btn btn-primary'
-                    @click='create'
-                >Save Basemap / Overlay</a>
+                <TablerButton
+                    class='btn-primary'
+                    @click='save'
+                >
+                    Save Basemap / Overlay
+                </TablerButton>
             </div>
         </div>
     </TablerModal>
@@ -98,27 +95,29 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
-import type { paths } from '@cloudtak/api-types';
 import { server, std, stdurl } from '../../../../std.ts';
 import { fetchBasemapTileJSON } from '../../../../utils/tilejson.ts';
 import type { TileJSON } from '../../../../types.ts';
 import ProfileConfig from '../../../../base/profile.ts';
 import BasemapTypeSelector from './TypeSelector.vue';
-import TypeSelectorFeatureServer from './TypeSelectorFeatureServer.vue';
-import TypeSelectorImageServer from './TypeSelectorImageServer.vue';
-import TypeSelectorMapServer from './TypeSelectorMapServer.vue';
-import TypeSelectorZxy_Tilejson from './TypeSelectorZxy_Tilejson.vue';
-import TypeSelectorZxy_Upload from './TypeSelectorZxy_Upload.vue';
-import TypeSelectorZxy from './TypeSelectorZxy.vue';
-import TypeSelectorHosted from './TypeSelectorHosted.vue';
-import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from './types.ts';
-import type { BasemapListItem, BasemapImport, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
+import {
+    BasemapModes,
+    beginMode,
+    blankEditing,
+    resolveMode,
+    toBasemapBody,
+    validateEditing,
+} from './modes.ts';
+import type { BasemapErrors, BasemapImported, BasemapScope } from './modes.ts';
+import { normalizeEditing } from './types.ts';
+import type { BasemapListItem, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from './types.ts';
 import {
     IconMap,
     IconDownload,
 } from '@tabler/icons-vue';
 import {
     TablerModal,
+    TablerButton,
     TablerDelete,
     TablerLoading,
     TablerIconButton,
@@ -132,99 +131,25 @@ const props = withDefaults(defineProps<{
     basemap: () => ({})
 });
 
-const warnSharing = ref(false);
 const loading = ref(false);
-
-const selectedBasemapType = ref<BasemapSourceType | null>(
-    props.basemap.url ? (inferBasemapType(props.basemap.url) ?? 'zxy') : null
-);
-
-const tilejson = ref({ url: '' });
-const vectorLayers = ref<VectorLayerDescriptor[]>([]);
-
-const errors = ref<Record<'name' | 'url', string>>({
-    name: '',
-    url: '',
-});
-
-const scope = ref<'user' | 'server'>(
-    props.basemap.id ? (props.basemap.username ? 'user' : 'server') : 'user'
-);
-
+const warnSharing = ref(false);
 const isSystemAdmin = ref(false);
+const scope = ref<BasemapScope>(props.basemap.id && !props.basemap.username ? 'server' : 'user');
+const errors = ref<BasemapErrors>({ name: '', url: '' });
 
-const editing = ref<EditingBasemap>({
-    name: '',
-    url: '',
-    type: 'raster',
-    minzoom: 0,
-    maxzoom: 16,
-    tilesize: 256,
-    attribution: '',
-    sharing_enabled: true,
-    format: 'png',
-    bounds: [-180, -90, 180, 90],
-    center: [0, 0],
-    collection: '',
-    title: 'callsign',
-    overlay: false,
-    hidden: false,
-    frequency: null,
-    snapping_enabled: false,
-    snapping_layer: '',
-    styles: [],
-    tilejson: '',
-    encoding: null,
-});
+const mode = ref<BasemapSourceType | null>(null);
+const vectorLayers = ref<VectorLayerDescriptor[]>([]);
+const editing = ref<EditingBasemap>(blankEditing());
 
-const showTypeSelector = computed(() => {
-    return !props.basemap.id && !selectedBasemapType.value;
-});
-
-const metadataImportTypes: BasemapSourceType[] = ['imageserver', 'mapserver', 'featureserver'];
-
-const showMetadataImportPrompt = computed(() => {
-    return !props.basemap.id
-        && !!selectedBasemapType.value
-        && metadataImportTypes.includes(selectedBasemapType.value)
-        && !editing.value.url;
-});
-
-const showFormFooter = computed(() => {
-    return !loading.value
-        && !showTypeSelector.value
-        && !showMetadataImportPrompt.value
-        && !!selectedBasemapType.value
-        && selectedBasemapType.value !== 'upload'
-        && selectedBasemapType.value !== 'tilejson'
-        && selectedBasemapType.value !== 'hosted';
-});
-
-const activeSelectorComponent = computed(() => {
-    switch (selectedBasemapType.value) {
-    case 'zxy': return TypeSelectorZxy;
-    case 'imageserver': return TypeSelectorImageServer;
-    case 'mapserver': return TypeSelectorMapServer;
-    case 'featureserver': return TypeSelectorFeatureServer;
-    case 'tilejson': return TypeSelectorZxy_Tilejson;
-    case 'upload': return TypeSelectorZxy_Upload;
-    case 'hosted': return TypeSelectorHosted;
-    default: return null;
-    }
-});
-
-const uploadUrl = computed(() => stdurl('/api/basemap'));
-
-type BasemapImportBody = paths['/api/basemap']['put']['requestBody']['content']['application/json'];
-type BasemapCreateBody = paths['/api/basemap']['post']['requestBody']['content']['application/json'];
-type BasemapUpdateBody = paths['/api/basemap/{:basemapid}']['patch']['requestBody']['content']['application/json'];
+const activeMode = computed(() => mode.value ? BasemapModes[mode.value] : null);
+const ready = computed(() => !!activeMode.value && activeMode.value.ready(editing.value, props.basemap.id));
 
 onMounted(async () => {
     const isSysAdmin = await ProfileConfig.get('system_admin');
     isSystemAdmin.value = isSysAdmin?.value ?? false;
 
     if (props.basemap.id) {
-        await fetchBasemap();
+        await fetchBasemap(props.basemap.id);
     }
 });
 
@@ -244,179 +169,75 @@ async function download(): Promise<void> {
     });
 }
 
-function setBasemapType(type: string): void {
-    selectedBasemapType.value = type as BasemapSourceType;
-    tilejson.value.url = '';
+function selectMode(type: BasemapSourceType): void {
+    mode.value = type;
     vectorLayers.value = [];
-
-    if (selectedBasemapType.value === 'tilejson' || selectedBasemapType.value === 'upload') {
-        return;
-    }
-
-    const inferred = inferBasemapType(editing.value.url);
-    if (props.basemap.id && inferred === selectedBasemapType.value) return;
-
-    Object.assign(editing.value, BasemapTypeConfig[selectedBasemapType.value].defaults);
-    editing.value.url = '';
+    editing.value = beginMode(type, editing.value);
 }
 
-function resetBasemapType(): void {
-    selectedBasemapType.value = null;
-    tilejson.value.url = '';
+function resetMode(): void {
+    mode.value = null;
     vectorLayers.value = [];
 }
 
-async function fetchTileJSON(): Promise<void> {
+function applyImport(imported: BasemapImported): void {
+    editing.value = imported.editing;
+    vectorLayers.value = imported.vectorLayers;
+    mode.value = imported.mode;
+}
+
+async function fetchBasemap(basemapId: number): Promise<void> {
     loading.value = true;
     try {
-        const importType = selectedBasemapType.value;
-        if (!importType) throw new Error('Basemap type not selected');
-
-        const isArcGISImport = importType === 'featureserver'
-            || importType === 'mapserver'
-            || importType === 'imageserver';
-
-        const res = await server.PUT('/api/basemap', isArcGISImport
-            ? {
-                headers: { 'Content-Type': 'application/json' },
-                body: {
-                    type: importType,
-                    url: tilejson.value.url,
-                } satisfies BasemapImportBody,
-            }
-            : {
-                headers: { 'Content-Type': 'text/plain' },
-                body: tilejson.value.url,
-            });
+        const res = await server.GET('/api/basemap/{:basemapid}', {
+            params: { path: { ':basemapid': basemapId } },
+        });
 
         if (res.error) throw new Error(res.error.message);
+        if (typeof res.data === 'string') throw new Error('Unexpected basemap download response');
 
-        const data = res.data as BasemapImport;
+        editing.value = normalizeEditing(res.data as BasemapListItem);
+        mode.value = resolveMode(editing.value.url, res.data.protocol);
 
-        editing.value = normalizeEditing(data);
-        vectorLayers.value = Array.isArray(data.vector_layers)
-            ? data.vector_layers as VectorLayerDescriptor[]
-            : [];
-        selectedBasemapType.value = inferBasemapType(editing.value.url) ?? 'zxy';
-        loading.value = false;
-    } catch (err) {
-        loading.value = false;
-        throw err;
-    }
-}
-
-function processUpload(body: unknown): void {
-    editing.value = normalizeEditing(body as BasemapImport);
-    vectorLayers.value = Array.isArray((body as BasemapImport).vector_layers)
-        ? (body as BasemapImport).vector_layers as VectorLayerDescriptor[]
-        : [];
-    selectedBasemapType.value = inferBasemapType(editing.value.url) ?? 'zxy';
-}
-
-async function fetchBasemap(): Promise<void> {
-    const basemapId = props.basemap.id;
-    if (basemapId === undefined) throw new Error('Missing basemap id');
-
-    loading.value = true;
-    const res = await server.GET('/api/basemap/{:basemapid}', {
-        params: {
-            path: {
-                ':basemapid': basemapId,
-            }
+        vectorLayers.value = [];
+        if (editing.value.type === 'vector') {
+            const tileData = await fetchBasemapTileJSON<TileJSON>(basemapId);
+            vectorLayers.value = Array.isArray(tileData.vector_layers)
+                ? tileData.vector_layers as VectorLayerDescriptor[]
+                : [];
         }
-    });
-
-    if (res.error) throw new Error(res.error.message);
-    if (typeof res.data === 'string') throw new Error('Unexpected basemap download response');
-
-    const data = res.data as BasemapListItem;
-
-    editing.value = normalizeEditing(data);
-    selectedBasemapType.value = inferBasemapType(editing.value.url) ?? 'zxy';
-
-    vectorLayers.value = [];
-    if (editing.value.type === 'vector') {
-        const tileData = await fetchBasemapTileJSON<TileJSON>(basemapId);
-        vectorLayers.value = Array.isArray(tileData.vector_layers)
-            ? tileData.vector_layers as VectorLayerDescriptor[]
-            : [];
+    } finally {
+        loading.value = false;
     }
-
-    loading.value = false;
 }
 
-async function create(): Promise<void> {
-    errors.value.name = editing.value.name ? '' : 'Cannot be empty';
-    errors.value.url = editing.value.url ? '' : 'Cannot be empty';
-
+async function save(): Promise<void> {
+    errors.value = validateEditing(editing.value);
     if (errors.value.name || errors.value.url) return;
+
+    const protocol = activeMode.value?.protocol;
+    if (!protocol) throw new Error('Select a basemap type before saving');
 
     loading.value = true;
     try {
-        const protocol = selectedBasemapType.value;
-        if (!protocol || protocol === 'tilejson' || protocol === 'upload') {
-            throw new Error('Unsupported basemap protocol');
-        }
-
-        const body: Omit<BasemapCreateBody, 'scope' | 'protocol'> = {
-            name: editing.value.name,
-            sharing_enabled: editing.value.sharing_enabled,
-            snapping_enabled: editing.value.snapping_enabled,
-            url: editing.value.url,
-            overlay: editing.value.overlay,
-            hidden: editing.value.hidden,
-            tilesize: editing.value.tilesize,
-            collection: editing.value.collection.trim().length ? editing.value.collection : null,
-            attribution: editing.value.attribution.trim().length ? editing.value.attribution : null,
-            frequency: editing.value.frequency,
-            minzoom: editing.value.minzoom,
-            maxzoom: editing.value.maxzoom,
-            format: editing.value.format,
-            type: editing.value.type,
-            styles: editing.value.styles,
-            ...(editing.value.snapping_layer.trim().length ? { snapping_layer: editing.value.snapping_layer } : {}),
-            ...(editing.value.encoding ? { encoding: editing.value.encoding } : {}),
-            ...(editing.value.bounds.length ? { bounds: editing.value.bounds } : {}),
-            ...(editing.value.center.length ? { center: editing.value.center } : {}),
-            ...(editing.value.type === 'vector' && editing.value.title.trim().length ? { title: editing.value.title } : {}),
-            ...(editing.value.tilejson.trim().length ? { tilejson: editing.value.tilejson } : {}),
-        };
+        const body = toBasemapBody(editing.value, protocol, scope.value);
 
         if (props.basemap.id) {
-            const basemapId = props.basemap.id;
-            if (basemapId === undefined) throw new Error('Missing basemap id');
-
             const res = await server.PATCH('/api/basemap/{:basemapid}', {
-                params: {
-                    path: {
-                        ':basemapid': basemapId,
-                    }
-                },
-                body: {
-                    scope: scope.value,
-                    protocol,
-                    ...body,
-                } satisfies BasemapUpdateBody,
+                params: { path: { ':basemapid': props.basemap.id } },
+                body,
             });
 
             if (res.error) throw new Error(res.error.message);
         } else {
-            const res = await server.POST('/api/basemap', {
-                body: {
-                    scope: scope.value,
-                    protocol,
-                    ...body,
-                } satisfies BasemapCreateBody,
-            });
+            const res = await server.POST('/api/basemap', { body });
 
             if (res.error) throw new Error(res.error.message);
         }
 
-        loading.value = false;
         emit('close');
-    } catch (err) {
+    } finally {
         loading.value = false;
-        throw err;
     }
 }
 
@@ -427,19 +248,14 @@ async function deleteBasemap(): Promise<void> {
     loading.value = true;
     try {
         const res = await server.DELETE('/api/basemap/{:basemapid}', {
-            params: {
-                path: {
-                    ':basemapid': basemapId,
-                }
-            }
+            params: { path: { ':basemapid': basemapId } },
         });
 
         if (res.error) throw new Error(res.error.message);
 
         emit('close');
-    } catch (err) {
+    } finally {
         loading.value = false;
-        throw err;
     }
 }
 </script>

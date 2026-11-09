@@ -15,6 +15,16 @@ export const PERMISSIONS: Record<string, Array<string>> = {
 
 export default class LayerControl {
     /**
+     * Ensure a Layer's CloudWatch alarm settings are accepted by CloudWatch,
+     * which rejects alarms whose DatapointsToAlarm exceeds EvaluationPeriods
+     */
+    static validateAlarms(alarm: { alarm_evals: number; alarm_points: number }): void {
+        if (alarm.alarm_points > alarm.alarm_evals) {
+            throw new Err(400, null, `Alarm Data Points (${alarm.alarm_points}) must be less than or equal to Evaluation Periods (${alarm.alarm_evals})`);
+        }
+    }
+
+    /**
      * Ensure every requested Layer permission is a known `<permission>:<level>`
      * pair from the PERMISSIONS object - `<permission>:*` is valid for every
      * permission

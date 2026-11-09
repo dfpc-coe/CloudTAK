@@ -27,8 +27,17 @@
                 </div>
 
                 <div>
-                    <div class='fw-semibold'>
+                    <div class='fw-semibold d-flex align-items-center gap-2'>
                         {{ option.label }}
+                        <TablerBadge
+                            v-if='option.beta'
+                            class='rounded-pill small'
+                            background-color='rgba(255, 171, 0, 0.15)'
+                            border-color='rgba(255, 171, 0, 0.35)'
+                            text-color='#c98500'
+                        >
+                            Beta
+                        </TablerBadge>
                     </div>
                     <div class='small text-white-50'>
                         {{ option.description }}
@@ -45,11 +54,12 @@ import StandardItem from '../../util/StandardItem.vue';
 import { BasemapTypeConfig } from './types.ts';
 import type { BasemapSourceType } from './types.ts';
 import {
-    TablerInput
+    TablerBadge,
+    TablerInput,
 } from '@tak-ps/vue-tabler';
 
 const props = withDefaults(defineProps<{
-    modelValue?: string | null;
+    modelValue?: BasemapSourceType | null;
     isSystemAdmin?: boolean;
 }>(), {
     modelValue: null,
@@ -57,8 +67,8 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-    'update:modelValue': [value: string];
-    select: [value: string];
+    'update:modelValue': [value: BasemapSourceType];
+    select: [value: BasemapSourceType];
 }>();
 
 const filter = ref('');
@@ -71,6 +81,7 @@ const options = computed(() => {
             label: BasemapTypeConfig[id].label,
             description: BasemapTypeConfig[id].description,
             icon: BasemapTypeConfig[id].icon,
+            beta: BasemapTypeConfig[id].beta ?? false,
         }));
 });
 
@@ -85,7 +96,7 @@ const filteredOptions = computed(() => {
     });
 });
 
-function select(value: string): void {
+function select(value: BasemapSourceType): void {
     emit('update:modelValue', value);
     emit('select', value);
 }

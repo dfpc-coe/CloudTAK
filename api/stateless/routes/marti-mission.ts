@@ -310,13 +310,21 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             groups: Type.Optional(Type.Array(Type.String(), {
                 description: 'Updated set of groups (channels) to assign to the Mission. Caller must be MISSION_OWNER or admin.',
             })),
+            defaultRole: Type.Optional(Type.Enum(MissionSubscriberRole, {
+                description: 'Role granted to new subscribers. Caller must have MISSION_SET_ROLE and every permission of the new role.',
+            })),
+            password: Type.Optional(Type.Unsafe<string | null>({
+                type: ['string', 'null'],
+                minLength: 1,
+                description: 'New password, or null to remove the password. Caller must have MISSION_SET_PASSWORD.',
+            })),
         }),
         res: Mission,
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.context(req, req.params.guid);
+            const { user, api, opts } = await missionControl.context(req, req.params.guid);
 
-            const { groups, ...rest } = req.body;
+            const { groups, password, ...rest } = req.body;
 
             const mission = await api.Mission.update(
                 req.params.guid,
@@ -326,6 +334,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 },
                 opts,
             );
+
+            if (password === null) {
+                await api.Mission.removePassword(req.params.guid, opts, profileUid(user.email));
+                mission.passwordProtected = false;
+            } else if (password !== undefined) {
+                await api.Mission.setPassword(req.params.guid, password, opts, profileUid(user.email));
+                mission.passwordProtected = true;
+            }
 
             res.json(mission);
         } catch (err) {
@@ -884,7 +900,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/marti/missions/:guid/user', {
         name: 'Delete Mission User',
         group: 'MartiMissions',
-        description: 'Remove one or more active subscribers from a mission by UID',
+        description: 'Remove one or more subscribers from a mission by UID - requires MISSION_SET_ROLE',
         params: Type.Object({
             guid: Type.String(),
         }),
@@ -899,7 +915,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const uids = Array.isArray(req.query.uid) ? req.query.uid : [req.query.uid];
 
             for (const uid of uids) {
-                await api.Mission.unsubscribe(req.params.guid, { uid }, opts);
+                await api.Mission.removeUser(req.params.guid, { clientUid: uid }, opts);
             }
 
             res.json({

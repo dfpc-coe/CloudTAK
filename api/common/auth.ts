@@ -159,28 +159,49 @@ export default class Auth {
                 throw new Err(403, null, 'Resource token cannot access this resource');
             }
 
-            const scopes = opts.scope === undefined ? [] : Array.isArray(opts.scope) ? opts.scope : [opts.scope];
-
-            if (scopes.length && auth_resource.access === AuthResourceAccess.LAYER) {
-                if (auth_resource.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
-
-                const layer = await config.models.Layer.from(auth_resource.id);
-
-                for (const scope of scopes) {
-                    if (!hasScope(layer.permissions, scope)) {
-                        throw new Err(403, null, `Layer token does not have the ${scope} permission`);
-                    }
-                }
-            } else if (scopes.length && auth_resource.access === AuthResourceAccess.CONNECTION && connectionToken) {
-                for (const scope of scopes) {
-                    if (!hasScope(connectionToken.permissions, scope)) {
-                        throw new Err(403, null, `Connection token does not have the ${scope} permission`);
-                    }
-                }
+            if (opts.scope !== undefined) {
+                await this.ensure_scope(config, auth_resource, opts.scope, connectionToken);
             }
         }
 
         return auth;
+    }
+
+    /**
+     * Ensure a Layer or Connection token holds every given `<permission>:<level>`
+     * scope - for checks that depend on state loaded after `is_auth`, such as
+     * the kind of the Entity a route resolves to. Users always pass
+     */
+    static async ensure_scope(
+        config: Config,
+        auth: AuthResource | AuthUser,
+        scope: string | Array<string>,
+        connectionToken?: InferSelectModel<typeof ConnectionToken>,
+    ): Promise<void> {
+        if (!(auth instanceof AuthResource)) return;
+
+        const scopes = Array.isArray(scope) ? scope : [scope];
+        if (!scopes.length) return;
+
+        if (auth.access === AuthResourceAccess.LAYER) {
+            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
+
+            const layer = await config.models.Layer.from(auth.id);
+
+            for (const s of scopes) {
+                if (!hasScope(layer.permissions, s)) {
+                    throw new Err(403, null, `Layer token does not have the ${s} permission`);
+                }
+            }
+        } else if (auth.access === AuthResourceAccess.CONNECTION && !auth.internal) {
+            const token = connectionToken ?? await config.models.ConnectionToken.from(auth.token);
+
+            for (const s of scopes) {
+                if (!hasScope(token.permissions, s)) {
+                    throw new Err(403, null, `Connection token does not have the ${s} permission`);
+                }
+            }
+        }
     }
 
     static async is_connection(config: Config, req: Request<any, any, any, any>, opts: {

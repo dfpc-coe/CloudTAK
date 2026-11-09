@@ -34,6 +34,7 @@ export default class Models {
     CoreEventBoardEvent: CoreEventBoardEvent;
     CoreEventAssignment: Modeler<typeof pgtypes.CoreEventAssignment>;
     CoreEventEffect: Modeler<typeof pgtypes.CoreEventEffect>;
+    CoreEntityTimeline: Modeler<typeof pgtypes.CoreEntityTimeline>;
     CoreForm: CoreForm;
     CoreFormChannel: Modeler<typeof pgtypes.CoreFormChannel>;
     CoreFormColumn: Modeler<typeof pgtypes.CoreFormColumn>;
@@ -87,6 +88,7 @@ export default class Models {
         this.CoreEventBoardEvent = new CoreEventBoardEvent(pg);
         this.CoreEventAssignment = new Modeler(pg, pgtypes.CoreEventAssignment);
         this.CoreEventEffect = new Modeler(pg, pgtypes.CoreEventEffect);
+        this.CoreEntityTimeline = new Modeler(pg, pgtypes.CoreEntityTimeline);
         this.CoreForm = new CoreForm(pg);
         this.CoreFormChannel = new Modeler(pg, pgtypes.CoreFormChannel);
         this.CoreFormColumn = new Modeler(pg, pgtypes.CoreFormColumn);

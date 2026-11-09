@@ -16,7 +16,7 @@ import Schema from '@openaddresses/batch-schema';
 import { validateTemplate, renderTemplate } from '../../common/style.js';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox';
-import { StandardResponse, BasemapResponse, TileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../../common/types.js';
+import { StandardResponse, BasemapResponse, BasemapArgs, TileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../../common/types.js';
 import { BasemapCollection } from '../../common/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../../common/schema.js';
@@ -566,6 +566,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             title: Type.Optional(Type.String()),
             iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             tilejson: Type.Optional(Type.String()),
+            args: Type.Optional(BasemapArgs),
         }),
         res: AugmentedBasemapResponse,
     }, async (req, res) => {
@@ -692,6 +693,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             title: Type.Optional(Type.String()),
             iconset: Type.Optional(Type.Union([Type.Null(), Type.String()])),
             tilejson: Type.Optional(Type.String()),
+            args: Type.Optional(BasemapArgs),
         }),
         res: AugmentedBasemapResponse,
     }, async (req, res) => {

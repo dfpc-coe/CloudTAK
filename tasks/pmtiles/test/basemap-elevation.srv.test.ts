@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import http from 'http';
 import type { AddressInfo } from 'net';
-import { PNG } from 'pngjs';
+import { demTile } from './lib/dem.js';
 
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
@@ -15,26 +15,9 @@ let upstream: http.Server;
 const requestedURLs = new Set<string>();
 const token = jwt.sign({ email: 'user@example.com', access: 'user' }, process.env.SigningSecret!);
 
-function createTile(elevation: number): Buffer {
-    const png = new PNG({ width: 4, height: 4 });
-    const value = Math.round((elevation + 10000) * 10);
-    const r = (value >> 16) & 0xff;
-    const g = (value >> 8) & 0xff;
-    const b = value & 0xff;
-
-    for (let index = 0; index < png.data.length; index += 4) {
-        png.data[index] = r;
-        png.data[index + 1] = g;
-        png.data[index + 2] = b;
-        png.data[index + 3] = 0xff;
-    }
-
-    return PNG.sync.write(png);
-}
-
 test('Setup', async () => {
-    const leftTile = createTile(100);
-    const rightTile = createTile(200);
+    const leftTile = await demTile(100);
+    const rightTile = await demTile(200);
 
     // Plays both the CloudTAK API (basemap config) and this tile server's own tile route
     upstream = http.createServer((req, res) => {

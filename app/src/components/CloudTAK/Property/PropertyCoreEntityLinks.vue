@@ -1,194 +1,129 @@
 <template>
-    <div class='col-12'>
-        <SlideDownHeader
-            v-model='expanded'
-            label='Links'
-        >
-            <template #icon>
-                <IconLink
-                    :size='18'
+    <PropertySection label='Links'>
+        <template #actions>
+            <TablerIconButton
+                v-if='props.edit'
+                title='Add Link'
+                @click.stop='addLink'
+            >
+                <IconPlus
+                    :size='20'
                     stroke='1'
-                    color='#6b7990'
-                    class='ms-2 me-1'
                 />
-            </template>
-            <template #right>
-                <TablerIconButton
-                    v-if='props.edit'
-                    title='Add Link'
-                    class='me-2'
-                    @click.stop='addLink'
+            </TablerIconButton>
+        </template>
+
+        <TablerNone
+            v-if='!props.modelValue.length && !creating'
+            label='No Links'
+            class='pb-2'
+            :compact='true'
+            :create='false'
+        />
+
+        <template
+            v-for='(link, index) of props.modelValue'
+            :key='index'
+        >
+            <div
+                v-if='editing === index'
+                class='rounded mb-2 px-2 py-2 cloudtak-accent'
+            >
+                <LinkFields
+                    v-model='draft'
+                    @save='saveLink(index)'
+                    @cancel='editing = null'
+                />
+            </div>
+
+            <div
+                v-else
+                class='link-row d-flex align-items-center gap-2 px-2 rounded'
+            >
+                <a
+                    v-if='link.url'
+                    :href='link.url'
+                    :target='link.url.startsWith("tel:") ? undefined : "_blank"'
+                    rel='noopener noreferrer'
+                    class='d-flex align-items-center gap-2 text-reset text-decoration-none flex-fill'
+                    style='min-width: 0; min-height: 36px;'
                 >
-                    <IconPlus
-                        :size='20'
+                    <IconPhone
+                        v-if='link.url.startsWith("tel:")'
+                        :size='18'
                         stroke='1'
+                        class='text-secondary flex-shrink-0'
                     />
-                </TablerIconButton>
-                <TablerBadge
-                    class='me-2'
-                    background-color='rgba(59, 130, 246, 0.15)'
-                    border-color='rgba(59, 130, 246, 0.4)'
-                    text-color='#3b82f6'
+                    <IconLink
+                        v-else
+                        :size='18'
+                        stroke='1'
+                        class='text-secondary flex-shrink-0'
+                    />
+                    <span
+                        class='text-truncate'
+                        :title='link.url'
+                        v-text='link.name || link.url'
+                    />
+                </a>
+                <div
+                    v-else
+                    class='d-flex align-items-center gap-2 text-secondary flex-fill'
+                    style='min-width: 0; min-height: 36px;'
                 >
-                    {{ props.modelValue.length }}
-                </TablerBadge>
-            </template>
-
-            <div class='overflow-hidden mb-2'>
-                <div class='rounded mx-2 mt-2 px-2 py-2'>
-                    <TablerNone
-                        v-if='!props.modelValue.length && !creating'
-                        label='No Links'
-                        :compact='true'
-                        :create='false'
+                    <IconLink
+                        :size='18'
+                        stroke='1'
+                        class='flex-shrink-0'
                     />
+                    <span
+                        class='text-truncate'
+                        v-text='link.name || "Untitled Link"'
+                    />
+                </div>
 
-                    <div
-                        v-for='(link, index) of props.modelValue'
-                        :key='index'
-                        class='rounded mb-2 px-2 py-2'
-                        :class='{ "cloudtak-hover-fill": editing !== index }'
+                <div
+                    v-if='props.edit'
+                    class='link-row-actions btn-list flex-nowrap flex-shrink-0'
+                >
+                    <TablerIconButton
+                        title='Edit Link'
+                        @click='startEditing(index)'
                     >
-                        <template v-if='editing === index'>
-                            <div class='d-flex align-items-center mb-2'>
-                                <div class='subheader user-select-none'>
-                                    Link
-                                </div>
-                                <div class='ms-auto d-flex align-items-center flex-nowrap'>
-                                    <TablerIconButton
-                                        title='Save Link'
-                                        @click='saveLink(index)'
-                                    >
-                                        <IconCheck
-                                            :size='18'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                    <TablerIconButton
-                                        title='Remove Link'
-                                        @click='removeLink(index)'
-                                    >
-                                        <IconTrash
-                                            :size='18'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
-                                </div>
-                            </div>
-
-                            <TablerInput
-                                v-model='draft.name'
-                                label='Name'
-                                placeholder='Incident Report'
-                                class='pb-2'
-                            />
-
-                            <TablerInput
-                                v-model='draft.url'
-                                label='URL'
-                                placeholder='https://example.com or tel:+18005550100'
-                            />
-                        </template>
-
-                        <div
-                            v-else
-                            class='d-flex align-items-center'
-                        >
-                            <a
-                                v-if='link.url'
-                                :href='link.url'
-                                :target='link.url.startsWith("tel:") ? undefined : "_blank"'
-                                rel='noopener noreferrer'
-                                class='d-flex align-items-center text-reset text-decoration-none flex-fill overflow-hidden'
-                            >
-                                <IconPhone
-                                    v-if='link.url.startsWith("tel:")'
-                                    :size='18'
-                                    stroke='1'
-                                    class='me-2 flex-shrink-0'
-                                />
-                                <IconExternalLink
-                                    v-else
-                                    :size='18'
-                                    stroke='1'
-                                    class='me-2 flex-shrink-0'
-                                />
-                                <span class='text-truncate'>{{ link.name || link.url }}</span>
-                            </a>
-                            <div
-                                v-else
-                                class='text-muted flex-fill'
-                            >
-                                {{ link.name || 'Untitled Link' }}
-                            </div>
-
-                            <TablerIconButton
-                                v-if='props.edit'
-                                title='Edit Link'
-                                @click='startEditing(index)'
-                            >
-                                <IconPencil
-                                    :size='18'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
-                        </div>
-                    </div>
-
-                    <div
-                        v-if='creating'
-                        class='rounded mb-2 px-2 py-2'
-                    >
-                        <div class='d-flex align-items-center mb-2'>
-                            <div class='subheader user-select-none'>
-                                Link
-                            </div>
-                            <div class='ms-auto d-flex align-items-center flex-nowrap'>
-                                <TablerIconButton
-                                    title='Save Link'
-                                    @click='saveNewLink'
-                                >
-                                    <IconCheck
-                                        :size='18'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                                <TablerIconButton
-                                    title='Discard Link'
-                                    @click='cancelNewLink'
-                                >
-                                    <IconTrash
-                                        :size='18'
-                                        stroke='1'
-                                    />
-                                </TablerIconButton>
-                            </div>
-                        </div>
-
-                        <TablerInput
-                            v-model='draft.name'
-                            label='Name'
-                            placeholder='Incident Report'
-                            class='pb-2'
+                        <IconPencil
+                            :size='18'
+                            stroke='1'
                         />
-
-                        <TablerInput
-                            v-model='draft.url'
-                            label='URL'
-                            placeholder='https://example.com or tel:+18005550100'
-                        />
-                    </div>
+                    </TablerIconButton>
+                    <TablerDelete
+                        displaytype='icon'
+                        :size='18'
+                        @delete='removeLink(index)'
+                    />
                 </div>
             </div>
-        </SlideDownHeader>
-    </div>
+        </template>
+
+        <div
+            v-if='creating'
+            class='rounded mb-2 px-2 py-2 cloudtak-accent'
+        >
+            <LinkFields
+                v-model='draft'
+                @save='saveNewLink'
+                @cancel='cancelNewLink'
+            />
+        </div>
+    </PropertySection>
 </template>
 
 <script setup lang='ts'>
+/** PropertyCoreEntityLinks - the named URLs of a Core Entity as a compact row list */
 import { ref } from 'vue';
-import SlideDownHeader from '../util/SlideDownHeader.vue';
-import { TablerBadge, TablerInput, TablerIconButton, TablerNone } from '@tak-ps/vue-tabler';
-import { IconLink, IconExternalLink, IconPhone, IconPlus, IconTrash, IconPencil, IconCheck } from '@tabler/icons-vue';
+import PropertySection from '../util/PropertySection.vue';
+import LinkFields from './PropertyCoreEntityLinkFields.vue';
+import { TablerIconButton, TablerDelete, TablerNone } from '@tak-ps/vue-tabler';
+import { IconLink, IconPhone, IconPlus, IconPencil } from '@tabler/icons-vue';
 import type { CoreEntityLink } from '../../../types.ts';
 
 const props = defineProps<{
@@ -201,7 +136,6 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: Array<CoreEntityLink>): void
 }>();
 
-const expanded = ref(true);
 const editing = ref<number | null>(null);
 const creating = ref(false);
 const draft = ref<CoreEntityLink>({ name: '', url: '' });
@@ -210,14 +144,12 @@ function addLink(): void {
     creating.value = true;
     editing.value = null;
     draft.value = { name: '', url: '' };
-    expanded.value = true;
 }
 
 function startEditing(index: number): void {
     creating.value = false;
     editing.value = index;
     draft.value = { ...props.modelValue[index] };
-    expanded.value = true;
 }
 
 function saveLink(index: number): void {
@@ -245,3 +177,18 @@ function cancelNewLink(): void {
     draft.value = { name: '', url: '' };
 }
 </script>
+
+<style scoped>
+.link-row:hover {
+    background: var(--cloudtak-hover-bg);
+}
+
+.link-row-actions {
+    visibility: hidden;
+}
+
+.link-row:hover .link-row-actions,
+.link-row:focus-within .link-row-actions {
+    visibility: visible;
+}
+</style>

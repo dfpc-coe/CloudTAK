@@ -196,7 +196,8 @@ async function createOverlay(overlay: Basemap) {
             mode_id: String(overlay.id),
             frequency: overlay.frequency,
             type: overlay.type,
-            styles: overlay.styles
+            styles: overlay.styles,
+            args: overlay.args
         });
 
         router.push('/menu/overlays');

@@ -39,55 +39,52 @@
                 </div>
 
                 <BasemapTypeSelector
-                    v-if='showTypeSelector'
+                    v-if='!mode || !activeMode'
                     :is-system-admin='true'
                     class='mt-3'
-                    @select='setBasemapType'
+                    @select='selectMode'
                 />
                 <component
-                    :is='activeSelectorComponent'
-                    v-else-if='activeSelectorComponent'
+                    :is='activeMode.component'
+                    v-else
                     v-model:editing='editing'
+                    v-model:scope='scope'
+                    v-model:warn-sharing='warnSharing'
+                    class='mt-3'
+                    :type='mode'
                     :basemap-id='basemapId'
                     :vector-layers='vectorLayers'
                     :errors='errors'
-                    :scope='scope'
-                    :warn-sharing='warnSharing'
                     :is-system-admin='true'
-                    :url='tilejsonUrl'
-                    :upload-url='uploadUrl'
-                    @change-type='resetBasemapType'
-                    @update:scope='scope = $event'
-                    @update:warn-sharing='warnSharing = $event'
-                    @update:url='tilejsonUrl = $event'
-                    @fetch='fetchTileJSON'
-                    @done='processImport($event)'
+                    @change-type='resetMode'
+                    @imported='applyImport'
                 />
 
-                <template v-if='showStylesAndFooter'>
-                    <div class='row g-2 mt-2'>
-                        <div class='col-12'>
-                            <StyleContainer
-                                v-model='editing.styles'
-                                :advanced='true'
-                            />
-                        </div>
-                        <div class='col-12 d-flex py-2'>
-                            <TablerDelete
-                                v-if='basemapId'
-                                @delete='deleteOverlay'
-                            />
-                            <div class='ms-auto'>
-                                <TablerButton
-                                    class='btn-primary'
-                                    @click='saveOverlay'
-                                >
-                                    Submit
-                                </TablerButton>
-                            </div>
+                <div
+                    v-if='ready'
+                    class='row g-2 mt-2'
+                >
+                    <div class='col-12'>
+                        <StyleContainer
+                            v-model='editing.styles'
+                            :advanced='true'
+                        />
+                    </div>
+                    <div class='col-12 d-flex py-2'>
+                        <TablerDelete
+                            v-if='basemapId'
+                            @delete='deleteOverlay'
+                        />
+                        <div class='ms-auto'>
+                            <TablerButton
+                                class='btn-primary'
+                                @click='saveOverlay'
+                            >
+                                Submit
+                            </TablerButton>
                         </div>
                     </div>
-                </template>
+                </div>
             </template>
         </div>
     </div>
@@ -96,21 +93,23 @@
 <script setup lang='ts'>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { server, stdurl } from '../../std.ts';
+import { server } from '../../std.ts';
 import { fetchBasemapTileJSON } from '../../utils/tilejson.ts';
 import type { TileJSON } from '../../types.ts';
 import StyleContainer from '../ETL/Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import BasemapTypeSelector from '../CloudTAK/Menu/Basemaps/TypeSelector.vue';
-import TypeSelectorFeatureServer from '../CloudTAK/Menu/Basemaps/TypeSelectorFeatureServer.vue';
-import TypeSelectorImageServer from '../CloudTAK/Menu/Basemaps/TypeSelectorImageServer.vue';
-import TypeSelectorMapServer from '../CloudTAK/Menu/Basemaps/TypeSelectorMapServer.vue';
-import TypeSelectorZxy_Tilejson from '../CloudTAK/Menu/Basemaps/TypeSelectorZxy_Tilejson.vue';
-import TypeSelectorZxy_Upload from '../CloudTAK/Menu/Basemaps/TypeSelectorZxy_Upload.vue';
-import TypeSelectorZxy from '../CloudTAK/Menu/Basemaps/TypeSelectorZxy.vue';
-import TypeSelectorHosted from '../CloudTAK/Menu/Basemaps/TypeSelectorHosted.vue';
-import { BasemapTypeConfig, inferBasemapType, normalizeEditing } from '../CloudTAK/Menu/Basemaps/types.ts';
-import type { BasemapImport, BasemapImportRequest, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from '../CloudTAK/Menu/Basemaps/types.ts';
+import {
+    BasemapModes,
+    beginMode,
+    blankEditing,
+    resolveMode,
+    toBasemapBody,
+    validateEditing,
+} from '../CloudTAK/Menu/Basemaps/modes.ts';
+import type { BasemapErrors, BasemapImported, BasemapScope } from '../CloudTAK/Menu/Basemaps/modes.ts';
+import { normalizeEditing } from '../CloudTAK/Menu/Basemaps/types.ts';
+import type { BasemapImport, BasemapSourceType, EditingBasemap, VectorLayerDescriptor } from '../CloudTAK/Menu/Basemaps/types.ts';
 import {
     IconCircleArrowLeft,
 } from '@tabler/icons-vue';
@@ -130,142 +129,39 @@ const basemapId = computed(() => isNew.value ? undefined : Number(route.params.o
 const loading = ref(true);
 const warnSharing = ref(false);
 const username = ref('');
-const tilejsonUrl = ref('');
+const scope = ref<BasemapScope>('server');
+const errors = ref<BasemapErrors>({ name: '', url: '' });
 
-const selectedBasemapType = ref<BasemapSourceType | null>(null);
+const mode = ref<BasemapSourceType | null>(null);
 const vectorLayers = ref<VectorLayerDescriptor[]>([]);
+const editing = ref<EditingBasemap>(blankEditing({ overlay: true }));
 
-const errors = ref<Record<'name' | 'url', string>>({
-    name: '',
-    url: '',
-});
-
-const scope = ref<'user' | 'server'>('server');
-
-const editing = ref<EditingBasemap>({
-    name: '',
-    url: '',
-    type: 'vector',
-    minzoom: 0,
-    maxzoom: 16,
-    tilesize: 256,
-    attribution: '',
-    sharing_enabled: true,
-    format: 'mvt',
-    bounds: [-180, -90, 180, 90],
-    center: [0, 0],
-    collection: '',
-    title: 'callsign',
-    overlay: true,
-    hidden: false,
-    frequency: null,
-    snapping_enabled: false,
-    snapping_layer: '',
-    styles: [],
-    tilejson: '',
-    encoding: null,
-});
-
-const showTypeSelector = computed(() => {
-    return isNew.value && !selectedBasemapType.value;
-});
-
-const showStylesAndFooter = computed(() => {
-    return !loading.value
-        && !showTypeSelector.value
-        && !!selectedBasemapType.value
-        && selectedBasemapType.value !== 'upload'
-        && selectedBasemapType.value !== 'tilejson'
-        && selectedBasemapType.value !== 'hosted'
-        && (basemapId.value || editing.value.url);
-});
-
-const activeSelectorComponent = computed(() => {
-    switch (selectedBasemapType.value) {
-    case 'zxy': return TypeSelectorZxy;
-    case 'imageserver': return TypeSelectorImageServer;
-    case 'mapserver': return TypeSelectorMapServer;
-    case 'featureserver': return TypeSelectorFeatureServer;
-    case 'tilejson': return TypeSelectorZxy_Tilejson;
-    case 'upload': return TypeSelectorZxy_Upload;
-    case 'hosted': return TypeSelectorHosted;
-    default: return null;
-    }
-});
-
-const uploadUrl = computed(() => stdurl('/api/basemap'));
+const activeMode = computed(() => mode.value ? BasemapModes[mode.value] : null);
+const ready = computed(() => !!activeMode.value && activeMode.value.ready(editing.value, basemapId.value));
 
 onMounted(async () => {
-    if (!isNew.value) {
-        await fetchOverlay();
-    } else {
-        loading.value = false;
+    if (basemapId.value) {
+        await fetchOverlay(basemapId.value);
     }
+
+    loading.value = false;
 });
 
-function setBasemapType(type: string): void {
-    selectedBasemapType.value = type as BasemapSourceType;
-    tilejsonUrl.value = '';
+function selectMode(type: BasemapSourceType): void {
+    mode.value = type;
     vectorLayers.value = [];
-
-    if (selectedBasemapType.value === 'tilejson' || selectedBasemapType.value === 'upload') {
-        return;
-    }
-
-    const inferred = inferBasemapType(editing.value.url);
-    if (basemapId.value && inferred === selectedBasemapType.value) return;
-
-    Object.assign(editing.value, BasemapTypeConfig[selectedBasemapType.value].defaults);
-    editing.value.url = '';
+    editing.value = beginMode(type, editing.value);
 }
 
-function resetBasemapType(): void {
-    selectedBasemapType.value = null;
-    tilejsonUrl.value = '';
+function resetMode(): void {
+    mode.value = null;
     vectorLayers.value = [];
 }
 
-async function fetchTileJSON(): Promise<void> {
-    loading.value = true;
-    try {
-        const importType = selectedBasemapType.value;
-        const isArcGISImport = importType === 'featureserver'
-            || importType === 'mapserver'
-            || importType === 'imageserver';
-
-        const putRes = await server.PUT('/api/basemap', isArcGISImport
-            ? {
-                headers: { 'Content-Type': 'application/json' },
-                body: {
-                    type: importType,
-                    url: tilejsonUrl.value,
-                } satisfies BasemapImportRequest,
-            }
-            : {
-                headers: { 'Content-Type': 'text/plain' },
-                body: tilejsonUrl.value,
-            });
-        if (putRes.error) throw new Error(putRes.error.message);
-        const data = putRes.data as BasemapImport;
-
-        editing.value = normalizeEditing(data);
-        vectorLayers.value = Array.isArray(data.vector_layers)
-            ? data.vector_layers as VectorLayerDescriptor[]
-            : [];
-        selectedBasemapType.value = inferBasemapType(editing.value.url) ?? 'zxy';
-        loading.value = false;
-    } catch (err) {
-        loading.value = false;
-        throw err;
-    }
-}
-
-function processImport(body: unknown): void {
-    editing.value = normalizeEditing(body as BasemapImport);
-    vectorLayers.value = Array.isArray((body as BasemapImport).vector_layers)
-        ? (body as BasemapImport).vector_layers as VectorLayerDescriptor[]
-        : [];
-    selectedBasemapType.value = inferBasemapType(editing.value.url) ?? 'zxy';
+function applyImport(imported: BasemapImported): void {
+    editing.value = imported.editing;
+    vectorLayers.value = imported.vectorLayers;
+    mode.value = imported.mode;
 }
 
 async function deleteOverlay(): Promise<void> {
@@ -283,85 +179,30 @@ async function deleteOverlay(): Promise<void> {
 }
 
 async function saveOverlay(): Promise<void> {
-    errors.value.name = editing.value.name ? '' : 'Cannot be empty';
-    errors.value.url = editing.value.url ? '' : 'Cannot be empty';
-
+    errors.value = validateEditing(editing.value);
     if (errors.value.name || errors.value.url) return;
+
+    const protocol = activeMode.value?.protocol;
+    if (!protocol) throw new Error('Select a basemap type before saving');
 
     loading.value = true;
     try {
-        const body: Omit<Partial<EditingBasemap>, 'tilesize' | 'collection' | 'attribution' | 'bounds' | 'center' | 'frequency' | 'snapping_layer'> & {
-            bounds?: number[];
-            center?: number[];
-            tilesize?: number | null;
-            collection?: string | null;
-            attribution?: string | null;
-            frequency?: number | null;
-            snapping_layer?: string | null;
-        } = {
-            ...editing.value,
-        };
-
-        if (!body.bounds?.length) delete body.bounds;
-        if (!body.center?.length) delete body.center;
-
-        if (!body.tilesize && body.tilesize !== 0) body.tilesize = null;
-        if (!body.collection || body.collection.trim().length === 0) body.collection = null;
-        if (!body.attribution || body.attribution.trim().length === 0) body.attribution = null;
-        if (body.encoding === null) delete body.encoding;
-
-        if (editing.value.type !== 'vector' || !editing.value.title || editing.value.title.trim().length === 0) {
-            delete body.title;
-        }
-
-        if (body.frequency) {
-            body.frequency = Number(body.frequency);
-        } else {
-            body.frequency = null;
-        }
-
-        if (!body.snapping_enabled) {
-            body.snapping_layer = null;
-        }
-
-        // Convert null to undefined for API compatibility
-        const apiBody = {
-            ...body,
-            tilesize: body.tilesize ?? undefined,
-            snapping_layer: body.snapping_layer ?? undefined,
-            encoding: body.encoding ?? undefined,
-        };
+        const body = toBasemapBody(editing.value, protocol, scope.value);
+        const query = username.value ? { impersonate: username.value } : undefined;
 
         if (basemapId.value) {
             const res = await server.PATCH('/api/basemap/{:basemapid}', {
                 params: {
                     path: { ':basemapid': basemapId.value },
-                    ...(username.value ? { query: { impersonate: username.value } } : {}),
+                    query,
                 },
-                body: {
-                    scope: scope.value,
-                    protocol: selectedBasemapType.value as 'zxy' | 'mapserver' | 'imageserver' | 'featureserver' | 'hosted',
-                    ...apiBody,
-                },
+                body,
             });
             if (res.error) throw new Error(res.error.message);
         } else {
             const res = await server.POST('/api/basemap', {
-                params: {
-                    ...(username.value ? { query: { impersonate: username.value } } : {}),
-                },
-                body: {
-                    scope: scope.value,
-                    protocol: selectedBasemapType.value as 'zxy' | 'mapserver' | 'imageserver' | 'featureserver' | 'hosted',
-                    ...apiBody,
-                    name: apiBody.name || '',
-                    url: apiBody.url || '',
-                    overlay: apiBody.overlay ?? false,
-                    hidden: apiBody.hidden ?? false,
-                    tilesize: apiBody.tilesize ?? 256,
-                    sharing_enabled: apiBody.sharing_enabled ?? true,
-                    snapping_enabled: apiBody.snapping_enabled ?? false,
-                },
+                params: { query },
+                body,
             });
             if (res.error) throw new Error(res.error.message);
 
@@ -375,32 +216,26 @@ async function saveOverlay(): Promise<void> {
     }
 }
 
-async function fetchOverlay(): Promise<void> {
-    loading.value = true;
-
+async function fetchOverlay(id: number): Promise<void> {
     const overlayRes = await server.GET('/api/basemap/{:basemapid}', {
-        params: { path: { ':basemapid': Number(route.params.overlay) } },
+        params: { path: { ':basemapid': id } },
     });
     if (overlayRes.error) throw new Error(overlayRes.error.message);
-    const overlayData = overlayRes.data;
-    if (typeof overlayData === 'string') throw new Error('Unexpected response');
+    const overlay = overlayRes.data;
+    if (typeof overlay === 'string') throw new Error('Unexpected response');
 
-    username.value = overlayData.username ?? '';
-    scope.value = overlayData.username ? 'user' : 'server';
+    username.value = overlay.username ?? '';
+    scope.value = overlay.username ? 'user' : 'server';
 
-    editing.value = normalizeEditing(overlayData as unknown as BasemapImport);
-    selectedBasemapType.value = inferBasemapType(editing.value.url)
-        ?? (overlayData.protocol as BasemapSourceType)
-        ?? 'zxy';
+    editing.value = normalizeEditing(overlay as unknown as BasemapImport);
+    mode.value = resolveMode(editing.value.url, overlay.protocol);
 
     vectorLayers.value = [];
     if (editing.value.type === 'vector') {
-        const tilesData = await fetchBasemapTileJSON<TileJSON>(Number(route.params.overlay));
+        const tilesData = await fetchBasemapTileJSON<TileJSON>(id);
         vectorLayers.value = Array.isArray(tilesData.vector_layers)
             ? tilesData.vector_layers as VectorLayerDescriptor[]
             : [];
     }
-
-    loading.value = false;
 }
 </script>

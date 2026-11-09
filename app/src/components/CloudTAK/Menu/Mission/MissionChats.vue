@@ -19,7 +19,7 @@
                 :my-u-i-d='myUID'
                 :loading='loading'
                 :error='error'
-                :can-send='true'
+                :can-send='canSend'
                 @send='onSend'
             />
         </template>
@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { from } from 'rxjs';
 import { liveQuery } from '../../../../database.ts';
 import type { Ref } from 'vue';
@@ -50,6 +50,11 @@ const loading = ref(false);
 const error = ref<Error | undefined>(undefined);
 const myUID = ref('');
 const callsign = ref('');
+
+// TAK Server drops mission chat from senders without MISSION_WRITE
+const canSend = computed(() => {
+    return props.subscription.subscribed && props.subscription.role.permissions.includes('MISSION_WRITE');
+});
 
 const chats: Ref<Array<DBSubscriptionChat> | undefined> = useObservable(
     from(liveQuery(async () => {

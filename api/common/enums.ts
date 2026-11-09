@@ -47,6 +47,15 @@ export enum CoreEventEffect_Status {
     CANCELLED = 'cancelled',
 }
 
+export enum CoreEntityTimeline_Type {
+    COMMENT = 'comment',
+    STATUS = 'status',
+    UNIT = 'unit',
+    LOCATION = 'location',
+    ATTACHMENT = 'attachment',
+    EXTERNAL = 'external',
+}
+
 export enum CoreEventBoardColumn_Type {
     NOMINATED = 'nominated',
     CUSTOM = 'custom',

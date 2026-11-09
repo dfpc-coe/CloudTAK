@@ -3,7 +3,7 @@ import type { Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import undici from 'undici';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
-import { tileToBBOX } from '../tilebelt.js';
+import { Tile } from '@tak-ps/node-tiles';
 import { TileJSON, TileJSONActions } from '../tilejson.js';
 import type { BasemapConfig } from '../basemap.js';
 
@@ -24,6 +24,17 @@ export interface TileJSONInterface {
 
 export interface TileOpts {
     headers?: Record<string, string | undefined>;
+    /** Caller token used to resolve dependent basemaps */
+    token?: string;
+}
+
+export type ResolvedTileOpts = TileOpts & {
+    headers: Record<string, string | undefined>;
+};
+
+export interface TileBuffer {
+    data: Buffer;
+    contentType?: string;
 }
 
 // Synchronous Lambda responses cap at 6 MiB after base64 encoding
@@ -86,8 +97,17 @@ export class BasemapProtocol {
         };
     }
 
+    /** The tile at these coordinates, or a 404 when they fall outside the grid */
+    static tileAt(z: number, x: number, y: number): Tile {
+        try {
+            return new Tile(z, x, y);
+        } catch (err) {
+            throw new Err(404, err instanceof Error ? err : new Error(String(err)), 'Tile Not Found');
+        }
+    }
+
     static extent(z: number, x: number, y: number): Array<number> {
-        return tileToBBOX([x, y, z]);
+        return BasemapProtocol.tileAt(z, x, y).bounds();
     }
 
     static quadkey(z: number, x: number, y: number): string {
@@ -111,6 +131,30 @@ export class BasemapProtocol {
         };
     }
 
+    static resolveOpts(opts?: TileOpts): ResolvedTileOpts {
+        const headers: Record<string, string | undefined> = { ...opts?.headers };
+        for (const key of Object.keys(headers)) {
+            if (!headers[key]) delete headers[key];
+        }
+
+        return { ...opts, headers };
+    }
+
+    /** True unless the basemap has a stored extent that excludes the tile */
+    inBounds(z: number, x: number, y: number): boolean {
+        const bounds = this.basemap.bounds;
+        if (!bounds || bounds.length !== 4) return true;
+
+        const [minLon, minLat, maxLon, maxLat] = bounds;
+        const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = BasemapProtocol.tileAt(z, x, y).bounds();
+
+        if (tileMaxLat < minLat || tileMinLat > maxLat) return false;
+
+        return minLon <= maxLon
+            ? tileMinLon <= maxLon && tileMaxLon >= minLon
+            : tileMinLon <= maxLon || tileMaxLon >= minLon;
+    }
+
     /**
      * Proxy a tile request to the upstream source after header normalisation
      * and a bounds short-circuit for basemaps with a stored extent.
@@ -120,39 +164,31 @@ export class BasemapProtocol {
         res: Response,
         opts?: TileOpts,
     ): Promise<void> {
-        const headers: Record<string, string | undefined> = { ...opts?.headers };
-        for (const key of Object.keys(headers)) {
-            if (!headers[key]) delete headers[key];
+        if (!this.inBounds(z, x, y)) {
+            res.status(404).send('Tile outside bounds');
+            return;
         }
 
-        const bounds = this.basemap.bounds;
-        if (bounds && bounds.length === 4) {
-            const tileBbox = tileToBBOX([x, y, z]);
-            const [minLon, minLat, maxLon, maxLat] = bounds;
-            const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = tileBbox;
+        return this._tile(z, x, y, res, BasemapProtocol.resolveOpts(opts));
+    }
 
-            if (tileMaxLat < minLat || tileMinLat > maxLat) {
-                res.status(404).send('Tile outside bounds');
-                return;
-            }
+    /**
+     * Fetch a tile into memory for further processing. Null means the source
+     * has no tile here (outside bounds, 204 or 404 upstream).
+     */
+    async buffer(
+        z: number, x: number, y: number,
+        opts?: TileOpts,
+    ): Promise<TileBuffer | null> {
+        if (!this.inBounds(z, x, y)) return null;
 
-            const lonInBox = minLon <= maxLon
-                ? tileMinLon <= maxLon && tileMaxLon >= minLon
-                : tileMinLon <= maxLon || tileMaxLon >= minLon;
-
-            if (!lonInBox) {
-                res.status(404).send('Tile outside bounds');
-                return;
-            }
-        }
-
-        return this._tile(z, x, y, res, { headers });
+        return this._buffer(z, x, y, BasemapProtocol.resolveOpts(opts));
     }
 
     protected async _tile(
         z: number, x: number, y: number,
         res: Response,
-        opts: Required<TileOpts>,
+        opts: ResolvedTileOpts,
     ): Promise<void> {
         void z;
         void x;
@@ -162,11 +198,84 @@ export class BasemapProtocol {
         throw new Err(501, null, 'Protocol does not implement tile()');
     }
 
+    protected async _buffer(
+        z: number, x: number, y: number,
+        opts: ResolvedTileOpts,
+    ): Promise<TileBuffer | null> {
+        void z;
+        void x;
+        void y;
+        void opts;
+        throw new Err(501, null, 'Protocol does not implement buffer()');
+    }
+
+    /**
+     * Fetch an upstream tile into a buffer with the same URL and size guards
+     * as pipe(). 204 and 404 resolve to null; other failures are 502s.
+     */
+    protected async fetchBuffer(url: URL, opts: ResolvedTileOpts): Promise<TileBuffer | null> {
+        try {
+            if (process.env.StackName !== 'test') {
+                const { safe, reason } = await isSafeUrl(url.href);
+                if (!safe) throw new Err(400, null, `Blocked tile URL: ${reason}`);
+            }
+
+            const upstream = await undici.request(url, {
+                method: 'GET',
+                headers: opts.headers as Record<string, string>,
+            });
+
+            if (upstream.statusCode === 204 || upstream.statusCode === 404) {
+                await upstream.body.dump();
+                return null;
+            }
+
+            if (upstream.statusCode !== 200) {
+                await upstream.body.dump();
+                throw new Err(502, null, `Upstream tile request failed with status ${upstream.statusCode}`);
+            }
+
+            const contentLength = Number(upstream.headers['content-length']);
+            if (!isNaN(contentLength)) {
+                try {
+                    assertTileSize(contentLength);
+                } catch (err) {
+                    upstream.body.destroy();
+                    throw err;
+                }
+            }
+
+            const chunks: Buffer[] = [];
+            let received = 0;
+
+            for await (const chunk of upstream.body) {
+                received += chunk.length;
+
+                if (received > MAX_TILE_BYTES) {
+                    upstream.body.destroy();
+                    throw new Err(413, null, `Tile exceeds the ${MAX_TILE_BYTES} byte response limit`);
+                }
+
+                chunks.push(chunk);
+            }
+
+            const contentType = upstream.headers['content-type'];
+
+            return {
+                data: Buffer.concat(chunks),
+                contentType: typeof contentType === 'string' ? contentType : undefined,
+            };
+        } catch (err) {
+            if (err instanceof Err) throw err;
+            throw new Err(502, err instanceof Error ? err : new Error(String(err)), 'Failed to fetch tile');
+        }
+    }
+
     /**
      * Stream an upstream tile response to the client, forwarding only the
      * headers the CloudTAK API tile proxy forwards.
      */
-    protected async pipe(url: URL, res: Response, opts: Required<TileOpts>): Promise<void> {
+    protected async pipe(url: URL, res: Response, opts: ResolvedTileOpts): Promise<void> {
         try {
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(url.href);
