@@ -27,6 +27,10 @@
 
 ### Pending Release
 
+### v13.122.2 - 2026-11-08
+
+- :bug: Ensure app can't be built with plugins
+
 ### v13.122.1 - 2026-11-08
 
 - :arrow_up: Update etl-base & node-cot to latest versions
