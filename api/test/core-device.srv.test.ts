@@ -84,7 +84,6 @@ test('POST: api/core/device', async () => {
             status: 'Full',
             battery: 87.5,
             simulated: false,
-            external_id: '',
             external_ids: {},
             remarks: 'Assigned to Engine 4',
             metadata: {

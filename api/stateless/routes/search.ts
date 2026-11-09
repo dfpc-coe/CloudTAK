@@ -3,7 +3,7 @@ import { sunTimesAt, timezoneAt } from '../lib/sun.js';
 import geomagnetism from 'geomagnetism';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUser } from '../../common/auth.js';
+import Auth from '../../common/auth.js';
 import { FetchHourly } from '../lib/interface-weather.js';
 import { SearchManager } from '../lib/interface-search.js';
 import { RouteManager } from '../lib/interface-route.js';
@@ -41,17 +41,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     });
 
-    const ReverseResponse = Type.Object({
-        sun: SunResponse,
-        magnetic: Type.Object({
-            declination: Type.Number(),
-            inclination: Type.Number(),
-        }),
-        weather: Type.Union([Type.Null(), FetchHourly]),
-        reverse: Type.Union([Type.Null(), FetchReverse]),
-        elevation: Type.Union([Type.Null(), Type.String()]),
-    });
-
     const SuggestResponse = Type.Object({
         items: Type.Array(FetchSuggest),
     });
@@ -77,106 +66,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 ...(await searchManager.config()),
                 route: await routeManager.config(),
             });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/search/reverse/:longitude/:latitude', {
-        name: 'Reverse Geocode',
-        group: 'Search',
-        security: Auth.security('search:read'),
-        description: 'Get information about a given point',
-        params: Type.Object({
-            latitude: Type.Number(),
-            longitude: Type.Number(),
-        }),
-        query: Type.Object({
-            provider: Type.Optional(Type.String()),
-            altitude: Type.Number({
-                default: 0,
-            }),
-            elevation: Type.Optional(Type.Number()),
-        }),
-        res: ReverseResponse,
-    }, async (req, res) => {
-        try {
-            const auth = await Auth.as_user_or_scope(config, req, 'search:read');
-            const elevationUnit = auth instanceof AuthUser
-                ? await config.models.ProfileConfig.from(auth.email).then(p => p['display::elevation'] as string).catch(() => 'feet')
-                : 'feet';
-
-            const timezone = timezoneAt(req.params.latitude, req.params.longitude);
-            const sun = sunTimesAt(req.params.latitude, req.params.longitude, req.query.altitude, timezone);
-            const magnetic = geomagnetism.model().point([req.params.latitude, req.params.longitude]);
-
-            const response: Static<typeof ReverseResponse> = {
-                sun: {
-                    sunrise: optionalISOString(sun.sunrise),
-                    sunriseEnd: optionalISOString(sun.sunriseEnd),
-                    goldenHourEnd: optionalISOString(sun.goldenHourEnd),
-                    solarNoon: optionalISOString(sun.solarNoon),
-                    goldenHour: optionalISOString(sun.goldenHour),
-                    sunsetStart: optionalISOString(sun.sunsetStart),
-                    sunset: optionalISOString(sun.sunset),
-                    dusk: optionalISOString(sun.dusk),
-                    nauticalDusk: optionalISOString(sun.nauticalDusk),
-                    night: optionalISOString(sun.night),
-                    nadir: optionalISOString(sun.nadir),
-                    nightEnd: optionalISOString(sun.nightEnd),
-                    nauticalDawn: optionalISOString(sun.nauticalDawn),
-                    dawn: optionalISOString(sun.dawn),
-                    timezone,
-                },
-                magnetic: {
-                    declination: magnetic.decl,
-                    inclination: magnetic.incl,
-                },
-                weather: null,
-                reverse: null,
-                elevation: null,
-            };
-
-            await searchManager.refresh();
-
-            await Promise.all([
-                (async () => {
-                    try {
-                        response.weather = await config.weather.get(req.params.longitude, req.params.latitude);
-                    } catch (err) {
-                        console.error('Weather Fetch Error', err);
-                    }
-                })(),
-                (async () => {
-                    if (searchManager.defaultProvider) {
-                        try {
-                            response.reverse = await searchManager.reverse(
-                                req.query.provider || searchManager.defaultProvider,
-                                req.params.longitude,
-                                req.params.latitude,
-                            );
-                        } catch (err) {
-                            console.error('ESRI Fetch Error', err);
-                        }
-                    }
-                })(),
-
-            ]);
-
-            // Handle elevation from query parameter (from MapLibre terrain)
-            const finalResponse = {
-                sun: response.sun,
-                magnetic: response.magnetic,
-                weather: response.weather,
-                reverse: response.reverse,
-                elevation: req.query.elevation !== undefined
-                    ? (elevationUnit === 'feet' || elevationUnit === 'FEET'
-                            ? ((req.query.elevation / 1.5) * 3.28084).toFixed(2) + ' ft'
-                            : (req.query.elevation / 1.5).toFixed(2) + ' m')
-                    : null,
-            };
-
-            res.json(finalResponse);
         } catch (err) {
             Err.respond(err, res);
         }

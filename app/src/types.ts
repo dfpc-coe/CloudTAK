@@ -65,7 +65,7 @@ export type CoreDeviceList = paths["/api/core/device"]["get"]["responses"]["200"
 export type CoreEntity = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityLink = CoreEntity["links"][0];
-export type CoreEntityExternalId = Exclude<NonNullable<paths["/api/core/event/{:event}"]["patch"]["requestBody"]["content"]["application/json"]["external_id"]>, string>;
+export type CoreEntityExternalId = NonNullable<paths["/api/core/event/{:event}"]["patch"]["requestBody"]["content"]["application/json"]["external_id"]>;
 export type CoreEntityStyle = CoreEntity["style"];
 export type CoreEntityMission = CoreEntity["missions"][0];
 export type CoreEntityBoardSummary = CoreEntity["boards"][0];
@@ -146,7 +146,7 @@ export type IconList = paths["/api/icon"]["get"]["responses"]["200"]["content"][
 export type AttachmentList = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Attachment = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
 
-export type TileJSON = paths["/api/basemap/{:basemapid}/tiles"]["get"]["responses"]["200"]["content"]["application/json"]
+export type TileJSON = OverlayTileJSON
 
 export type Basemap = paths["/api/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/api/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
@@ -252,7 +252,6 @@ export type ProfilePagingList = paths["/api/profile/paging"]["get"]["responses"]
 export type ProfilePaging = ProfilePagingList["items"][0]
 export type ProfilePaging_Create = paths["/api/profile/paging"]["post"]["requestBody"]["content"]["application/json"]
 
-export type SearchReverse = paths["/api/search/reverse/{:longitude}/{:latitude}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseSun = paths["/api/search/reverse/{:longitude}/{:latitude}/sun"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseMagnetic = paths["/api/search/reverse/{:longitude}/{:latitude}/magnetic"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseWeather = paths["/api/search/reverse/{:longitude}/{:latitude}/weather"]["get"]["responses"]["200"]["content"]["application/json"]

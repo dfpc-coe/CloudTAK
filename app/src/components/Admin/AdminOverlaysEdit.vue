@@ -94,6 +94,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { server } from '../../std.ts';
+import { fetchBasemapTileJSON } from '../../utils/tilejson.ts';
+import type { TileJSON } from '../../types.ts';
 import StyleContainer from '../ETL/Styling/Style.vue';
 import UserSelect from '../util/UserSelect.vue';
 import BasemapTypeSelector from '../CloudTAK/Menu/Basemaps/TypeSelector.vue';
@@ -230,12 +232,9 @@ async function fetchOverlay(id: number): Promise<void> {
 
     vectorLayers.value = [];
     if (editing.value.type === 'vector') {
-        const tilesRes = await server.GET('/api/basemap/{:basemapid}/tiles', {
-            params: { path: { ':basemapid': id } },
-        });
-        if (tilesRes.error) throw new Error(tilesRes.error.message);
-        vectorLayers.value = Array.isArray(tilesRes.data.vector_layers)
-            ? tilesRes.data.vector_layers as VectorLayerDescriptor[]
+        const tilesData = await fetchBasemapTileJSON<TileJSON>(id);
+        vectorLayers.value = Array.isArray(tilesData.vector_layers)
+            ? tilesData.vector_layers as VectorLayerDescriptor[]
             : [];
     }
 }

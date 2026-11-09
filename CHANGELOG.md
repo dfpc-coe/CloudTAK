@@ -12,20 +12,20 @@
 
 ### Deprecation Notices
 
-- `GET /api/search/reverse/:long/:lat` endpoint is deprecated and will be removed in v14, use `GET /api/search/reverse/:long/:lat/<type>` instead
 - `Layer.template` is deprecated and will be removed
-- The `external_id` string on CoreEvent & CoreDevice requests & responses is deprecated and will be removed in v14, use `external_id: { system, value }` on requests and `external_ids` on responses
-- ETLs in v14 will be required to declare Named Schemas, single schema support will be removed
-- The Minio Legacy Store will be removed in V14 - Ensure you have migrated to Garage before updating to v14.
-- CoreEntity single external ID support will be removed in v14 - ensure you have migrated to multi-system external IDs before updating to v14.
-- The `GET /api/fonts/:fontstack/:start-:end.pbf` glyph endpoint is deprecated and will be removed in v14 - the web app now draws labels from bundled font files via the style `font-faces` property
-- The `GET /api/basemap/:basemapid/tiles` and `GET /api/basemap/:basemapid/tiles/:z/:x/:y` proxy routes are deprecated and will be removed in v14 - basemap TileJSON and tiles are served by the PMTiles tile server at `/tiles/basemap/:basemapid/tiles[/:z/:x/:y]`
 
 ### Beta Notice
 
 - CoreEvents & CoreDevices are in beta and functionality may change in minor releases. Use with caution in production environments.
 
 ### Pending Release
+
+- :rocket: **Breaking** Remove the `GET /api/search/reverse/:long/:lat` endpoint - use the per-type `GET /api/search/reverse/:long/:lat/<sun|magnetic|weather|reverse|elevation>` endpoints
+- :rocket: **Breaking** Remove the `GET /api/fonts/:fontstack/:start-:end.pbf` glyph endpoint and the bundled API glyph files - the web app draws labels from bundled font files via the style `font-faces` property and no longer caches glyphs in the service worker
+- :rocket: **Breaking** Remove the `GET /api/basemap/:basemapid/tiles` and `GET /api/basemap/:basemapid/tiles/:z/:x/:y` proxy routes along with the API side tile proxying code - basemap TileJSON and tiles are served by the PMTiles tile server at `/tiles/basemap/:basemapid/tiles[/:z/:x/:y]`, the web app resolves `/api/basemap/:id/tiles` overlay URLs against the tile server
+- :rocket: **Breaking** Remove the deprecated `external_id` string from CoreEvent & CoreDevice requests & responses - send `external_id: { system, value }` and read `external_ids`; Layer Maps saved with the pre-system bare string `external_id` form are no longer accepted
+- :rocket: **Breaking** Task Capabilities must declare Named Output schemas - a Task returning a single unnamed Output schema is rejected with a 400
+- :rocket: **Breaking** Remove the legacy MinIO store - the `minio-legacy` & `migrate` Docker Compose services and `./cloudtak.sh migrate-store` are gone, `start` & `update` refuse to run while `.docker-store` exists until it is migrated with a v13 checkout
 
 ### v13.122.2 - 2026-11-08
 

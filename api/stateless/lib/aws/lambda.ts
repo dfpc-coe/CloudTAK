@@ -9,7 +9,6 @@ import process from 'node:process';
 import { Static } from '@sinclair/typebox';
 import { StackFrame } from './cloudformation.js';
 import { Capabilities } from '@tak-ps/etl';
-import { DEFAULT_SCHEMA_ID } from '../../../common/types.js';
 import type { NamedSchema, TaskCapabilitiesResponse } from '../../../common/types.js';
 import ECR from './ecr.js';
 
@@ -52,8 +51,8 @@ export default class Lambda {
     }
 
     /**
-     * Tasks return either a single Output schema or an array of named schemas -
-     * a single schema is mapped to the `default` name so consumers only handle named schemas
+     * Tasks declare their Output schemas as an array of named schemas - a
+     * single unnamed schema is rejected
      */
     static normalizeCapabilities(capabilities: Static<typeof Capabilities>): Static<typeof TaskCapabilitiesResponse> {
         const normalized = structuredClone(capabilities) as Static<typeof TaskCapabilitiesResponse>;
@@ -81,7 +80,7 @@ export default class Lambda {
 
         if (typeof output !== 'object') return [];
 
-        return [{ id: DEFAULT_SCHEMA_ID, schema: output as Record<string, unknown> }];
+        throw new Err(400, null, 'Task declares a single Output schema - Named Output schemas are required');
     }
 
     static async invoke(config: Config, layerid: number, type?: string): Promise<Buffer | undefined> {

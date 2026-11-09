@@ -19,16 +19,13 @@ const incoming = (schema: { input: unknown; output: unknown }) => ({
     schema,
 });
 
-test('Lambda.normalizeCapabilities: single output schema is mapped to default', () => {
+test('Lambda.normalizeCapabilities: single output schema is rejected', () => {
     const output = { type: 'object', properties: { name: { type: 'string' } } };
 
-    const res = normalize({
+    assert.throws(() => normalize({
         ...base,
         incoming: incoming({ input: { type: 'object' }, output }),
-    });
-
-    assert.deepEqual(res.incoming?.schema.input, { type: 'object' });
-    assert.deepEqual(res.incoming?.schema.output, [{ id: 'default', schema: output }]);
+    }), { status: 400, message: 'Task declares a single Output schema - Named Output schemas are required' });
 });
 
 test('Lambda.normalizeCapabilities: named output schemas pass through', () => {

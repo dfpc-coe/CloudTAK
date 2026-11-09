@@ -1,21 +1,14 @@
 import { bbox } from '@turf/bbox';
 import jwt from 'jsonwebtoken';
-import { Static, Type } from '@sinclair/typebox';
+import { Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { isSafeUrl, fetch as safeFetch } from '@tak-ps/node-safeurl';
 import type ConfigStateless from '../config.js';
 import { TileJSON } from '../../common/types.js';
-import { BasemapProtocol, TileJSONActions } from './interface-basemap.js';
+import { BasemapProtocol } from './interface-basemap.js';
 import { EsriBase, EsriProxyLayer } from './esri.js';
 import BasemapControl from '../../common/control/basemap.js';
 import type { TileArgs } from '../../common/control/basemap.js';
-
-export const AugmentedTileJSON = Type.Composite([
-    TileJSON,
-    Type.Object({
-        actions: TileJSONActions,
-    }),
-]);
 
 export function isEsriLayerURL(url: string): boolean {
     return !!(

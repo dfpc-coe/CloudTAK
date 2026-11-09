@@ -62,16 +62,6 @@ export const DEFAULT_EXTERNAL_SYSTEM = 'default';
 
 export type ExternalId = { system: string; value: string };
 
-/** A request external ID - the deprecated bare string form is the value under the default system */
-export function toExternalId(input: ExternalId | string): ExternalId {
-    return typeof input === 'string' ? { system: DEFAULT_EXTERNAL_SYSTEM, value: input } : input;
-}
-
-/** The deprecated external_id response field - the value under the default system */
-export function legacyExternalId(ids: Record<string, string>): string {
-    return ids[DEFAULT_EXTERNAL_SYSTEM] ?? '';
-}
-
 /** External IDs of every Entity as a JSON object keyed by system - correlated against core_entity.id */
 export const EXTERNAL_IDS = sql`COALESCE((
     SELECT JSON_OBJECT_AGG(core_entity_external.system, core_entity_external.value ORDER BY core_entity_external.system)
@@ -276,7 +266,6 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         return {
             ...pgres[0].event,
             active: pgres[0].active,
-            external_id: legacyExternalId(pgres[0].external_ids as Record<string, string>),
             external_ids: pgres[0].external_ids as Record<string, string>,
             geometry: pgres[0].event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
             channels: pgres[0].channels as number[],
@@ -343,7 +332,6 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
                     return {
                         ...t.event,
                         active: t.active,
-                        external_id: legacyExternalId(t.external_ids as Record<string, string>),
                         external_ids: t.external_ids as Record<string, string>,
                         geometry: t.event.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
                         channels: t.channels as number[],
