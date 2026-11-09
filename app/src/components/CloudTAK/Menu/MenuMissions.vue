@@ -531,7 +531,9 @@ async function openMission(mission: Mission, usePassword: boolean) {
                 : err instanceof Error ? err.message : String(err);
         }
     } else if (mission.passwordProtected) {
-        missionPasswords.value[mission.guid] = '';
+        if (typeof missionPasswords.value[mission.guid] !== 'string') {
+            missionPasswords.value[mission.guid] = '';
+        }
     } else {
         router.push(`/menu/missions/${mission.guid}`);
     }
