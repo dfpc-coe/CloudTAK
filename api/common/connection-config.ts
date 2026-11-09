@@ -308,6 +308,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
 
                 const links: Array<Record<string, string>> = [];
                 const remarks: string[] = [];
+                let address: { text: string } | undefined;
                 let start: string;
                 let stale: number;
 
@@ -334,6 +335,9 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
                     });
 
                     remarks.push(`Location:\n${entity.location}`, `Priority:\n${entity.priority}`);
+
+                    const location = entity.location.trim();
+                    if (location) address = { text: location };
 
                     start = entity.started;
                     stale = eventStale(entity.ended);
@@ -368,6 +372,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
                             how: 'm-g',
                             callsign: entity.name,
                             remarks: remarks.join('\n\n'),
+                            address,
                             start,
                             stale,
                             dest,

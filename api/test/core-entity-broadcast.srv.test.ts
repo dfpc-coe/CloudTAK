@@ -74,6 +74,7 @@ test('Broadcast: active Events & located Devices on a resolvable Channel are wri
     assert.equal(event.properties.callsign, 'Active Event');
     assert.equal(event.properties.how, 'm-g');
     assert.equal(event.properties.remarks, 'Location:\nDenver\n\nPriority:\nnone\n\nEvent remarks');
+    assert.deepEqual(event.properties.address, { text: 'Denver' });
     assert.deepEqual([event.properties.dest].flat(), [{ group: 'Shared Group' }]);
     assert.deepEqual(event.properties.links, [{
         relation: 'p',
@@ -96,6 +97,7 @@ test('Broadcast: active Events & located Devices on a resolvable Channel are wri
     assert.equal(device.properties.callsign, 'Located Device');
     assert.equal(device.properties.how, 'm-g');
     assert.equal(device.properties.remarks, 'Device remarks');
+    assert.equal(device.properties.address, undefined);
     assert.deepEqual([device.properties.dest].flat(), [{ group: 'Shared Group' }]);
     assert.deepEqual(device.properties.links, [{
         relation: 'p',
