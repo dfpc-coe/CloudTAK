@@ -12,9 +12,10 @@ import { EsriBase, EsriProxyLayer, isEsriLayerURL } from './esri.js';
 import { BasemapProtocol, TileOpts } from './basemap/protocol.js';
 import { fromProtocol } from './basemap/factory.js';
 import TileCache from './cache.js';
-import { Slope, Terrain } from '@tak-ps/node-tiles';
-import type { SlopeClass, TerrainSource } from '@tak-ps/node-tiles';
-import { encodePNG, imageTerrainSource } from '@tak-ps/node-tiles/node';
+import { Hillshade, Slope, Terrain } from '@tak-ps/node-tiles';
+import type { HillshadeInput, HillshadeOptions, SlopeClass } from '@tak-ps/node-tiles';
+import DemSource from './dem.js';
+import { encodePNG } from '@tak-ps/node-tiles/node';
 
 type ApiBasemapConfig = Exclude<paths['/api/basemap/{:basemapid}']['get']['responses'][200]['content']['application/json'], string>;
 type ApiBasemapChildConfig = ApiBasemapConfig['children'][number];
@@ -264,11 +265,12 @@ export default class Basemap {
 
     /**
      * The DEM behind a raster-dem basemap, read in process through the
-     * protocol's buffered tile fetch. Throws for any other basemap type.
+     * protocol's buffered tile fetch and cached raw on EFS and decoded in
+     * memory. Throws for any other basemap type.
      */
-    demSource(opts?: TileOpts): TerrainSource {
+    demSource(kind: 'Slope' | 'Hillshade', opts?: TileOpts): DemSource {
         if (this.config.type !== 'raster-dem') {
-            throw new Err(400, null, 'Slope shading requires a raster-dem basemap');
+            throw new Err(400, null, `${kind} shading requires a raster-dem basemap`);
         }
 
         const encoding = this.config.encoding;
@@ -277,8 +279,10 @@ export default class Basemap {
         }
 
         const protocol = this.protocol();
+        const identity = JSON.stringify([this.id, this.config.url, this.config.updated, encoding]);
 
-        return imageTerrainSource({
+        return new DemSource({
+            prefix: Basemap.digest(identity),
             encoding,
             minzoom: this.config.minzoom ?? 0,
             maxzoom: this.config.maxzoom ?? 16,
@@ -296,23 +300,13 @@ export default class Basemap {
         upstreamToken: string;
         classes?: SlopeClass[];
     }): Promise<Static<typeof TileJSON>> {
-        this.demSource();
+        this.demSource('Slope');
 
-        const tilejson = await this.tilejson(opts);
         const classes = opts.classes ?? Slope.DEFAULT_CLASSES;
-
         const params = opts.classes ? Slope.serialize(opts.classes).map(layer => `layer=${layer}`) : [];
-        if (opts.token) params.push(`token=${opts.token}`);
-
-        const url = `${Basemap.pmtilesUrl()}/tiles/slope/${this.id}/tiles/{z}/{x}/{y}`;
 
         return {
-            ...tilejson,
-            type: 'raster',
-            format: 'png',
-            encoding: undefined,
-            tiles: [params.length ? `${url}?${params.join('&')}` : url],
-            maxzoom: tilejson.maxzoom + Terrain.MAX_OVERZOOM,
+            ...await this.shadingTileJSON('slope', params, opts),
             legend: Slope.legend(classes),
         };
     }
@@ -322,16 +316,98 @@ export default class Basemap {
         res: Response,
         opts?: TileOpts & { classes?: SlopeClass[] },
     ): Promise<void> {
-        const source = this.demSource(opts);
+        const source = this.demSource('Slope', opts);
         const classes = opts?.classes ?? Slope.DEFAULT_CLASSES;
+
+        await this.shadedTile(z, x, y, res, {
+            source,
+            key: `slope/${Basemap.digest(JSON.stringify([this.id, this.config.url, this.config.updated, source.encoding, Slope.serialize(classes)]))}`,
+            render: terrain => encodePNG(Slope.render(terrain, classes), { palette: true }),
+        });
+    }
+
+    /**
+     * TileJSON for hillshade relief rendered from this raster-dem basemap.
+     * Lighting options the caller supplied are normalised onto the tile URL
+     * template; omitted ones fall back to the defaults at render time.
+     */
+    async hillshadeTileJSON(opts: {
+        token?: string;
+        upstreamToken: string;
+        input?: HillshadeInput;
+    }): Promise<Static<typeof TileJSON>> {
+        this.demSource('Hillshade');
+
+        const input = opts.input ?? {};
+        const normalised = Hillshade.serialize(Hillshade.parse(input));
+        const params = (Object.keys(normalised) as (keyof HillshadeOptions)[])
+            .filter(key => input[key] !== undefined)
+            .map(key => `${key}=${normalised[key]}`);
+
+        return await this.shadingTileJSON('hillshade', params, opts);
+    }
+
+    async hillshadeTile(
+        z: number, x: number, y: number,
+        res: Response,
+        opts?: TileOpts & { hillshade?: HillshadeOptions },
+    ): Promise<void> {
+        const source = this.demSource('Hillshade', opts);
+        const hillshade = opts?.hillshade ?? Hillshade.DEFAULTS;
+
+        await this.shadedTile(z, x, y, res, {
+            source,
+            key: `hillshade/${Basemap.digest(JSON.stringify([this.id, this.config.url, this.config.updated, source.encoding, Hillshade.serialize(hillshade)]))}`,
+            render: terrain => encodePNG(Hillshade.render(terrain, hillshade)),
+        });
+    }
+
+    private static digest(identity: string): string {
+        return createHash('sha256').update(identity).digest('hex').slice(0, 32);
+    }
+
+    private async shadingTileJSON(
+        route: 'slope' | 'hillshade',
+        params: string[],
+        opts: { token?: string; upstreamToken: string },
+    ): Promise<Static<typeof TileJSON>> {
+        const tilejson = await this.tilejson(opts);
+
+        if (opts.token) params.push(`token=${opts.token}`);
+
+        const url = `${Basemap.pmtilesUrl()}/tiles/${route}/${this.id}/tiles/{z}/{x}/{y}`;
+
+        return {
+            ...tilejson,
+            type: 'raster',
+            format: 'png',
+            encoding: undefined,
+            tiles: [params.length ? `${url}?${params.join('&')}` : url],
+            maxzoom: tilejson.maxzoom + Terrain.MAX_OVERZOOM,
+        };
+    }
+
+    /**
+     * Render a shaded tile from padded terrain so kernels see real neighbours
+     * at the tile edge, serving repeats from the EFS tile cache
+     */
+    private async shadedTile(
+        z: number, x: number, y: number,
+        res: Response,
+        opts: {
+            source: DemSource;
+            key: string;
+            render: (terrain: Terrain) => Promise<Buffer>;
+        },
+    ): Promise<void> {
+        const { source } = opts;
 
         if (z < source.minzoom || z > source.maxzoom + Terrain.MAX_OVERZOOM) {
             throw new Err(404, null, 'Tile Not Found');
         }
 
         const tile = BasemapProtocol.tileAt(z, x, y);
-        const identity = JSON.stringify([this.id, this.config.url, this.config.updated, source.encoding, Slope.serialize(classes)]);
-        const key = `slope/${createHash('sha256').update(identity).digest('hex').slice(0, 32)}/${z}/${x}/${y}.png`;
+        const key = `${opts.key}/${z}/${x}/${y}.png`;
         const cache = TileCache.shared();
 
         let png = await cache.get(key);
@@ -340,7 +416,7 @@ export default class Basemap {
             let terrain: Terrain | null;
 
             try {
-                terrain = await Terrain.fetch(tile, source);
+                terrain = await Terrain.fetch(tile, source, { pad: 1 });
             } catch (err) {
                 if (err instanceof Err) throw err;
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'DEM tile is not a supported raster image');
@@ -351,7 +427,7 @@ export default class Basemap {
                 return;
             }
 
-            png = await encodePNG(Slope.render(terrain, classes), { palette: true });
+            png = await opts.render(terrain);
             await cache.set(key, png);
         }
 

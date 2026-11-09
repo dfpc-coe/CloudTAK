@@ -29,7 +29,7 @@
         "@sinclair/typebox": "^0.34.11",
         "@supercharge/promise-pool": "^3.2.0",
         "@tak-ps/node-safeurl": "^1.4.0",
-        "@tak-ps/node-tiles": "^1.0.0",
+        "@tak-ps/node-tiles": "^1.2.1",
         "@tak-ps/serverless-http": "^3.4.0",
         "@turf/along": "^7.3.5",
         "@turf/distance": "^7.3.5",
