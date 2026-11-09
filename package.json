@@ -7,7 +7,7 @@
         "lint": "eslint bin/ cloudformation/",
         "build": "node bin/build.js",
         "dev": "node bin/develop.ts",
-        "app": "cd app && npm install && npm run build && cd .. && node bin/version.js && cd app && npx cap sync",
+        "app": "node bin/plugins.js && cd app && npm install && npm run build && cd .. && node bin/version.js && cd app && npx cap sync",
         "app:build": "npm run app && cd app && capgo build request",
         "test": "echo \"Error: no test specified\" && exit 1",
         "version": "node bin/version.js --stage",
