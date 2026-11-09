@@ -31,6 +31,8 @@ import type {
 import * as Comlink from 'comlink';
 import AtlasBreadcrumb from './atlas-breadcrumb.ts';
 
+const STALE_OPACITY = 0.5;
+
 type NestedArray = {
     path: string;
     count: number;
@@ -269,7 +271,7 @@ export default class AtlasDatabase {
 
                     if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
-                    const fresh = cot.as_rendered();
+                    const fresh = this.rendered(cot, now);
                     diff.update.push({
                         id: Number(fresh.id),
                         addOrUpdateProperties: Object.keys(fresh.properties).map((key) => {
@@ -278,13 +280,13 @@ export default class AtlasDatabase {
                         newGeometry: fresh.geometry
                     })
                     this.renderDerived(cot, diff);
-                } else if (now > stale && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 0.5)) {
-                    cot.properties['icon-opacity'] = 0.5;
-                    cot.properties['marker-opacity'] = 0.5;
+                } else if (now > stale && (cot.properties['icon-opacity'] !== STALE_OPACITY || cot.properties['marker-opacity'] !== STALE_OPACITY)) {
+                    cot.properties['icon-opacity'] = STALE_OPACITY;
+                    cot.properties['marker-opacity'] = STALE_OPACITY;
 
                     if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
-                    const dimmed = cot.as_rendered();
+                    const dimmed = this.rendered(cot, now);
                     diff.update.push({
                         id: Number(dimmed.id),
                         addOrUpdateProperties: Object.keys(dimmed.properties).map((key) => {
@@ -301,7 +303,7 @@ export default class AtlasDatabase {
             const cot = this.cots.get(id);
             if (!cot || cot.is_self) continue;
 
-            const render = cot.as_rendered();
+            const render = this.rendered(cot, now);
             diff.add.push(render);
             this.renderDerived(cot, diff);
         }
@@ -310,7 +312,7 @@ export default class AtlasDatabase {
 
         for (const cot of this.pendingCreate.values()) {
             if (cot.is_self || staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
-            const render = cot.as_rendered();
+            const render = this.rendered(cot, now);
             diff.add.push(render);
             this.renderDerived(cot, diff);
         }
@@ -320,7 +322,7 @@ export default class AtlasDatabase {
         for (const cot of this.pendingUpdate.values()) {
             if (cot.is_self || staleDelete.has(cot.id) || this.pendingDelete.has(cot.id)) continue;
 
-            const render = cot.as_rendered();
+            const render = this.rendered(cot, now);
 
             diff.update.push({
                 id: Number(render.id),
@@ -385,6 +387,26 @@ export default class AtlasDatabase {
         });
     }
 
+    /**
+     * Shapes have no marker to fade, so a stale one is dimmed through its own opacities
+     */
+    private rendered(cot: COT, now: number): ReturnType<COT['as_rendered']> {
+        const feat = cot.as_rendered();
+
+        if (
+            cot.properties.archived
+            || !['Polygon', 'LineString'].includes(cot.geometry.type)
+            || now <= new Date(cot.properties.stale).getTime()
+        ) return feat;
+
+        for (const key of ['fill-opacity', 'stroke-opacity']) {
+            const opacity = feat.properties[key];
+            feat.properties[key] = (typeof opacity === 'number' ? opacity : 1) * STALE_OPACITY;
+        }
+
+        return feat;
+    }
+
     /** Current display_stale setting from the in-memory profile cache */
     displayStale(): string {
         return String(this.atlas.profile.display_stale?.value || 'Immediate');
@@ -442,12 +464,12 @@ export default class AtlasDatabase {
                     continue;
                 }
 
-                const opacity = now < stale ? 1 : 0.5;
+                const opacity = now < stale ? 1 : STALE_OPACITY;
                 cot.properties['icon-opacity'] = opacity;
                 cot.properties['marker-opacity'] = opacity;
             }
 
-            features.push(cot.as_rendered());
+            features.push(this.rendered(cot, now));
 
             const derived = cot.as_derived();
             if (derived.length) {
