@@ -49,6 +49,12 @@ test('GET: api/profile', async () => {
             display_text: 'Medium',
             display_radiation_dose: 'sieverts',
             display_wakelock: 'Charging',
+            notification_contact: true,
+            notification_import: true,
+            notification_alert: true,
+            notification_medical: true,
+            notification_mission: true,
+            notification_chat: true,
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',
@@ -105,6 +111,12 @@ test('PATCH: api/profile', async () => {
             display_icon_rotation: true,
             display_radiation_dose: 'sieverts',
             display_wakelock: 'Charging',
+            notification_contact: true,
+            notification_import: true,
+            notification_alert: true,
+            notification_medical: true,
+            notification_mission: true,
+            notification_chat: true,
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',
@@ -131,6 +143,37 @@ test('PATCH: api/profile - Phone', async () => {
 
         assert.equal(res.body.tak_phone, '5551234567');
         assert.equal(res.body.tak_callsign, 'Test Callsign');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/profile - Notification Types', async () => {
+    try {
+        const res = await flight.fetch('/api/profile', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                notification_contact: false,
+            },
+        }, true);
+
+        assert.equal(res.body.notification_contact, false);
+        assert.equal(res.body.notification_chat, true);
+
+        const reset = await flight.fetch('/api/profile', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                notification_contact: true,
+            },
+        }, true);
+
+        assert.equal(reset.body.notification_contact, true);
     } catch (err) {
         assert.ifError(err);
     }
@@ -208,6 +251,12 @@ test('GET: api/profile - New User / New Defaults', async () => {
             display_icon_rotation: false,
             display_radiation_dose: 'rems',
             display_wakelock: 'Charging',
+            notification_contact: true,
+            notification_import: true,
+            notification_alert: true,
+            notification_medical: true,
+            notification_mission: true,
+            notification_chat: true,
             geometry_point_type: 'u-d-p',
             geometry_point_color: '#ff0000',
             geometry_point_icon: '',

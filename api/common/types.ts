@@ -585,6 +585,13 @@ export const Profile = Type.Object({
     display_radiation_dose: Type.Enum(Profile_Radiation_Dose),
     display_wakelock: Type.Enum(Profile_Wake_Lock),
 
+    notification_contact: Type.Boolean(),
+    notification_import: Type.Boolean(),
+    notification_alert: Type.Boolean(),
+    notification_medical: Type.Boolean(),
+    notification_mission: Type.Boolean(),
+    notification_chat: Type.Boolean(),
+
     geometry_point_type: Type.Optional(Type.String()),
     geometry_point_color: Type.Optional(Type.String()),
     geometry_point_icon: Type.Optional(Type.String()),

@@ -63,6 +63,10 @@ const router = VueRouter.createRouter({
                     name: 'home-menu-settings-sessions',
                     component: () => import('./components/CloudTAK/Menu/MenuSettingsSessions.vue')
                 },{
+                    path: 'settings/notifications',
+                    name: 'home-menu-settings-notifications',
+                    component: () => import('./components/CloudTAK/Menu/MenuSettingsNotifications.vue')
+                },{
                     path: 'settings/paging',
                     name: 'home-menu-settings-paging',
                     component: () => import('./components/CloudTAK/Menu/MenuSettingsPaging.vue')

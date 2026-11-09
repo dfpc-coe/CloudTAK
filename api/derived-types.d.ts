@@ -5521,7 +5521,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -5542,6 +5542,14 @@ export interface paths {
                                     precisionlocation?: {
                                         geopointsrc?: string;
                                         altsrc?: string;
+                                    };
+                                    address?: {
+                                        /** @description Geocoded street address shown in the ATAK point details panel */
+                                        text: string;
+                                        /** @description Name of the geocoder that produced the address */
+                                        geocoder?: string;
+                                        /** @description Lookup time of the address */
+                                        time?: string;
                                     };
                                     flow?: {
                                         [key: string]: string;
@@ -6149,7 +6157,7 @@ export interface paths {
                                 after?: string;
                                 path?: string;
                             }[];
-                            /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                            /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                             marti_archive?: boolean;
                             icon?: string;
                             droid?: string;
@@ -6170,6 +6178,14 @@ export interface paths {
                             precisionlocation?: {
                                 geopointsrc?: string;
                                 altsrc?: string;
+                            };
+                            address?: {
+                                /** @description Geocoded street address shown in the ATAK point details panel */
+                                text: string;
+                                /** @description Name of the geocoder that produced the address */
+                                geocoder?: string;
+                                /** @description Lookup time of the address */
+                                time?: string;
                             };
                             flow?: {
                                 [key: string]: string;
@@ -6698,7 +6714,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -6719,6 +6735,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -7448,7 +7472,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -7469,6 +7493,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -8201,7 +8233,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -8222,6 +8254,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -8756,7 +8796,7 @@ export interface paths {
                                             after?: string;
                                             path?: string;
                                         }[];
-                                        /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                        /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                         marti_archive?: boolean;
                                         icon?: string;
                                         droid?: string;
@@ -8777,6 +8817,14 @@ export interface paths {
                                         precisionlocation?: {
                                             geopointsrc?: string;
                                             altsrc?: string;
+                                        };
+                                        address?: {
+                                            /** @description Geocoded street address shown in the ATAK point details panel */
+                                            text: string;
+                                            /** @description Name of the geocoder that produced the address */
+                                            geocoder?: string;
+                                            /** @description Lookup time of the address */
+                                            time?: string;
                                         };
                                         flow?: {
                                             [key: string]: string;
@@ -9408,7 +9456,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -9429,6 +9477,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -10069,7 +10125,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -10090,6 +10146,14 @@ export interface paths {
                                     precisionlocation?: {
                                         geopointsrc?: string;
                                         altsrc?: string;
+                                    };
+                                    address?: {
+                                        /** @description Geocoded street address shown in the ATAK point details panel */
+                                        text: string;
+                                        /** @description Name of the geocoder that produced the address */
+                                        geocoder?: string;
+                                        /** @description Lookup time of the address */
+                                        time?: string;
                                     };
                                     flow?: {
                                         [key: string]: string;
@@ -16411,7 +16475,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -16432,6 +16496,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -16973,7 +17045,7 @@ export interface paths {
                                             after?: string;
                                             path?: string;
                                         }[];
-                                        /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                        /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                         marti_archive?: boolean;
                                         icon?: string;
                                         droid?: string;
@@ -16994,6 +17066,14 @@ export interface paths {
                                         precisionlocation?: {
                                             geopointsrc?: string;
                                             altsrc?: string;
+                                        };
+                                        address?: {
+                                            /** @description Geocoded street address shown in the ATAK point details panel */
+                                            text: string;
+                                            /** @description Name of the geocoder that produced the address */
+                                            geocoder?: string;
+                                            /** @description Lookup time of the address */
+                                            time?: string;
                                         };
                                         flow?: {
                                             [key: string]: string;
@@ -17517,7 +17597,7 @@ export interface paths {
                                             after?: string;
                                             path?: string;
                                         }[];
-                                        /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                        /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                         marti_archive?: boolean;
                                         icon?: string;
                                         droid?: string;
@@ -17538,6 +17618,14 @@ export interface paths {
                                         precisionlocation?: {
                                             geopointsrc?: string;
                                             altsrc?: string;
+                                        };
+                                        address?: {
+                                            /** @description Geocoded street address shown in the ATAK point details panel */
+                                            text: string;
+                                            /** @description Name of the geocoder that produced the address */
+                                            geocoder?: string;
+                                            /** @description Lookup time of the address */
+                                            time?: string;
                                         };
                                         flow?: {
                                             [key: string]: string;
@@ -21744,7 +21832,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the Timeline entries of a Core Entity */
+        /** List the Timeline entries of a Core Entity - tokens also need read access to the Entity kind (event:read or device:read) */
         get: {
             parameters: {
                 query: {
@@ -21888,7 +21976,7 @@ export interface paths {
                 };
             };
         };
-        /** Add many Timeline entries to a Core Entity in one call - entries with an external_id already present on the Entity are updated in place */
+        /** Add many Timeline entries to a Core Entity in one call - entries with an external_id already present on the Entity are updated in place. Tokens also need read access to the Entity kind (event:read or device:read) */
         put: {
             parameters: {
                 query?: never;
@@ -22040,7 +22128,7 @@ export interface paths {
                 };
             };
         };
-        /** Add a Timeline entry to a Core Entity */
+        /** Add a Timeline entry to a Core Entity - tokens also need read access to the Entity kind (event:read or device:read) */
         post: {
             parameters: {
                 query?: never;
@@ -22200,7 +22288,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a Timeline entry of a Core Entity */
+        /** Get a Timeline entry of a Core Entity - tokens also need read access to the Entity kind (event:read or device:read) */
         get: {
             parameters: {
                 query?: never;
@@ -22323,7 +22411,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** Remove a Timeline entry from a Core Entity */
+        /** Remove a Timeline entry from a Core Entity - tokens also need read access to the Entity kind (event:read or device:read) */
         delete: {
             parameters: {
                 query?: never;
@@ -22426,7 +22514,7 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        /** Update a Timeline entry of a Core Entity */
+        /** Update a Timeline entry of a Core Entity - tokens also need read access to the Entity kind (event:read or device:read) */
         patch: {
             parameters: {
                 query?: never;
@@ -35906,7 +35994,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -35927,6 +36015,14 @@ export interface paths {
                                     precisionlocation?: {
                                         geopointsrc?: string;
                                         altsrc?: string;
+                                    };
+                                    address?: {
+                                        /** @description Geocoded street address shown in the ATAK point details panel */
+                                        text: string;
+                                        /** @description Name of the geocoder that produced the address */
+                                        geocoder?: string;
+                                        /** @description Lookup time of the address */
+                                        time?: string;
                                     };
                                     flow?: {
                                         [key: string]: string;
@@ -36555,7 +36651,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -36576,6 +36672,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -37214,7 +37318,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -37235,6 +37339,14 @@ export interface paths {
                                     precisionlocation?: {
                                         geopointsrc?: string;
                                         altsrc?: string;
+                                    };
+                                    address?: {
+                                        /** @description Geocoded street address shown in the ATAK point details panel */
+                                        text: string;
+                                        /** @description Name of the geocoder that produced the address */
+                                        geocoder?: string;
+                                        /** @description Lookup time of the address */
+                                        time?: string;
                                     };
                                     flow?: {
                                         [key: string]: string;
@@ -40521,7 +40633,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -40542,6 +40654,14 @@ export interface paths {
                                     precisionlocation?: {
                                         geopointsrc?: string;
                                         altsrc?: string;
+                                    };
+                                    address?: {
+                                        /** @description Geocoded street address shown in the ATAK point details panel */
+                                        text: string;
+                                        /** @description Name of the geocoder that produced the address */
+                                        geocoder?: string;
+                                        /** @description Lookup time of the address */
+                                        time?: string;
                                     };
                                     flow?: {
                                         [key: string]: string;
@@ -41160,7 +41280,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -41181,6 +41301,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -49567,7 +49695,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -49588,6 +49716,14 @@ export interface paths {
                                     precisionlocation?: {
                                         geopointsrc?: string;
                                         altsrc?: string;
+                                    };
+                                    address?: {
+                                        /** @description Geocoded street address shown in the ATAK point details panel */
+                                        text: string;
+                                        /** @description Name of the geocoder that produced the address */
+                                        geocoder?: string;
+                                        /** @description Lookup time of the address */
+                                        time?: string;
                                     };
                                     flow?: {
                                         [key: string]: string;
@@ -50205,7 +50341,7 @@ export interface paths {
                                 after?: string;
                                 path?: string;
                             }[];
-                            /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                            /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                             marti_archive?: boolean;
                             icon?: string;
                             droid?: string;
@@ -50226,6 +50362,14 @@ export interface paths {
                             precisionlocation?: {
                                 geopointsrc?: string;
                                 altsrc?: string;
+                            };
+                            address?: {
+                                /** @description Geocoded street address shown in the ATAK point details panel */
+                                text: string;
+                                /** @description Name of the geocoder that produced the address */
+                                geocoder?: string;
+                                /** @description Lookup time of the address */
+                                time?: string;
                             };
                             flow?: {
                                 [key: string]: string;
@@ -50754,7 +50898,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -50775,6 +50919,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -51501,7 +51653,7 @@ export interface paths {
                                     after?: string;
                                     path?: string;
                                 }[];
-                                /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                 marti_archive?: boolean;
                                 icon?: string;
                                 droid?: string;
@@ -51522,6 +51674,14 @@ export interface paths {
                                 precisionlocation?: {
                                     geopointsrc?: string;
                                     altsrc?: string;
+                                };
+                                address?: {
+                                    /** @description Geocoded street address shown in the ATAK point details panel */
+                                    text: string;
+                                    /** @description Name of the geocoder that produced the address */
+                                    geocoder?: string;
+                                    /** @description Lookup time of the address */
+                                    time?: string;
                                 };
                                 flow?: {
                                     [key: string]: string;
@@ -55623,6 +55783,12 @@ export interface paths {
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
+                            notification_contact: boolean;
+                            notification_import: boolean;
+                            notification_alert: boolean;
+                            notification_medical: boolean;
+                            notification_mission: boolean;
+                            notification_chat: boolean;
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
@@ -55751,6 +55917,12 @@ export interface paths {
                         display_speed?: "m/s" | "km/h" | "mi/h";
                         display_radiation_dose?: "sieverts" | "rems";
                         display_wakelock?: "Default" | "Charging" | "Always On";
+                        notification_contact?: boolean;
+                        notification_import?: boolean;
+                        notification_alert?: boolean;
+                        notification_medical?: boolean;
+                        notification_mission?: boolean;
+                        notification_chat?: boolean;
                         geometry_point_type?: string;
                         geometry_point_color?: string;
                         geometry_point_icon?: string;
@@ -55810,6 +55982,12 @@ export interface paths {
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
+                            notification_contact: boolean;
+                            notification_import: boolean;
+                            notification_alert: boolean;
+                            notification_medical: boolean;
+                            notification_mission: boolean;
+                            notification_chat: boolean;
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
@@ -59544,6 +59722,12 @@ export interface paths {
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
+                            notification_contact: boolean;
+                            notification_import: boolean;
+                            notification_alert: boolean;
+                            notification_medical: boolean;
+                            notification_mission: boolean;
+                            notification_chat: boolean;
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
@@ -59826,6 +60010,12 @@ export interface paths {
                             display_speed: "m/s" | "km/h" | "mi/h";
                             display_radiation_dose: "sieverts" | "rems";
                             display_wakelock: "Default" | "Charging" | "Always On";
+                            notification_contact: boolean;
+                            notification_import: boolean;
+                            notification_alert: boolean;
+                            notification_medical: boolean;
+                            notification_mission: boolean;
+                            notification_chat: boolean;
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
@@ -63659,7 +63849,7 @@ export interface paths {
                                         after?: string;
                                         path?: string;
                                     }[];
-                                    /** @description Presence of marti._attributes.archive - instructs the TAK Server to archive this message */
+                                    /** @description Value of marti._attributes.archive - true instructs the TAK Server to archive this message, false instructs it not to regardless of the input default */
                                     marti_archive?: boolean;
                                     icon?: string;
                                     droid?: string;
@@ -63680,6 +63870,14 @@ export interface paths {
                                     precisionlocation?: {
                                         geopointsrc?: string;
                                         altsrc?: string;
+                                    };
+                                    address?: {
+                                        /** @description Geocoded street address shown in the ATAK point details panel */
+                                        text: string;
+                                        /** @description Name of the geocoder that produced the address */
+                                        geocoder?: string;
+                                        /** @description Lookup time of the address */
+                                        time?: string;
                                     };
                                     flow?: {
                                         [key: string]: string;
