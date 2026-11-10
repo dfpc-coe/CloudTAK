@@ -27,7 +27,11 @@
 
 ### Pending Release
 
-### v13.122.6 - 2026-11-09
+### v13.122.7 - 2026-11-10
+
+- :rocket: Include Auth Information for failing requests
+
+### v13.122.6 - 2026-11-10
 
 - :bug: HTTP Clients were reused and would then have a potential request killed if it was cutoff by the 60s ALB timeout for the hub
 - :bug: Add 8 sec timeouts to Tile Lambda internal timeouts

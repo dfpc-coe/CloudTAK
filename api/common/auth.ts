@@ -378,6 +378,25 @@ export function hasScope(permissions: Array<string>, scope: string): boolean {
     return permissions.includes(scope) || permissions.includes(wildcard);
 }
 
+const identities = new WeakMap<object, string>();
+
+/**
+ * The verified identity of a request for the request logger
+ */
+export function identityOf(req: object): string | undefined {
+    return identities.get(req);
+}
+
+function identify<T extends AuthResource | AuthUser>(req: Request<any, any, any, any>, auth: T): T {
+    const identity = auth instanceof AuthUser
+        ? auth.email
+        : `${auth.access}:${auth.id ?? 'internal'}`;
+
+    identities.set(req, identity.replace(/[^\x21-\x7E]/g, '_'));
+
+    return auth;
+}
+
 async function auth_request(
     config: Config,
     req: Request<any, any, any, any>,
@@ -397,7 +416,7 @@ async function auth_request(
                 throw new Err(401, null, 'No bearer token present');
             }
 
-            return await tokenParser(config, authorization[1], config.SigningSecret);
+            return identify(req, await tokenParser(config, authorization[1], config.SigningSecret));
         } else if (
             opts
             && opts.token
@@ -405,7 +424,7 @@ async function auth_request(
             && req.query.token
             && typeof req.query.token === 'string'
         ) {
-            return await tokenParser(config, req.query.token, config.SigningSecret);
+            return identify(req, await tokenParser(config, req.query.token, config.SigningSecret));
         } else {
             throw new Err(401, null, 'No Auth Present');
         }

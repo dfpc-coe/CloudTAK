@@ -165,9 +165,9 @@ export default {
                             query: `
                                 SOURCE '$\{Apache\}'
                                 | fields @timestamp, @message | sort @timestamp desc
-                                | parse @message '* - - [*] "* * *" * * "*" "*" "*"' as client, dateTimeString, httpVerb, url, protocol, statusCode, bytes, referer, userAgent, origIp
+                                | parse @message '* - * [*] "* * *" * * "*" "*" "*"' as client, user, dateTimeString, httpVerb, url, protocol, statusCode, bytes, referer, userAgent, origIp
                                 | filter statusCode >= "500" and statusCode <= 599
-                                | display @timestamp, statusCode, httpVerb, url, userAgent, @log, @logStream
+                                | display @timestamp, statusCode, httpVerb, url, user, userAgent, @log, @logStream
                             `,
                             region: '${AWS::Region}',
                             stacked: false,
