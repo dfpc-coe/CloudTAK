@@ -10,7 +10,7 @@ export default {
         PMTilesReservedConcurrency: {
             Description: 'Reserved concurrency ceiling for the PMTiles Lambda so a tile storm cannot starve other functions in the account',
             Type: 'Number',
-            Default: 100,
+            Default: 300,
             MinValue: 1
         },
         PMTilesProvisionedConcurrency: {

@@ -1,7 +1,7 @@
 import type { Response } from 'express';
 import Err from '@openaddresses/batch-error';
 import { fetch as typedFetch } from '@tak-ps/node-safeurl';
-import { BasemapProtocol, ResolvedTileOpts, TileBuffer, assertTileSize } from './protocol.js';
+import { BasemapProtocol, ResolvedTileOpts, TileBuffer, UPSTREAM_TIMEOUT_MS, assertTileSize } from './protocol.js';
 
 /**
  * ESRI ImageServer basemap protocol.
@@ -38,7 +38,7 @@ export default class ImageServerBasemap extends BasemapProtocol {
         try {
             const url = ImageServerBasemap.esriRasterTileURL(this.basemap.url, z, x, y);
 
-            const tileRes = await typedFetch(url);
+            const tileRes = await typedFetch(url, { timeout: UPSTREAM_TIMEOUT_MS });
 
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
