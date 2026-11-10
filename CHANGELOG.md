@@ -27,6 +27,10 @@
 
 ### Pending Release
 
+### v13.122.5 - 2026-11-09
+
+- :rocket: Allow users to configure desired notifications.
+
 ### v13.122.4 - 2026-11-09
 
 - :rocket: Add support for ephemeral PolyLines via node-cot
