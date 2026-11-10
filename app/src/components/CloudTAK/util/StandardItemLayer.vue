@@ -55,6 +55,12 @@
                 </div>
             </div>
 
+            <span
+                class='text-white-50 small font-monospace flex-shrink-0 user-select-all'
+                title='Layer ID'
+                v-text='`#${layer.id}`'
+            />
+
             <slot name='actions' />
         </div>
     </StandardItem>

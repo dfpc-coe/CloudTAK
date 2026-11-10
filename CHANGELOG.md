@@ -27,6 +27,10 @@
 
 ### Pending Release
 
+### v13.122.8 - 2026-11-10
+
+- :rocket: Display and allow filtering by Layer ID
+
 ### v13.122.7 - 2026-11-10
 
 - :rocket: Include Auth Information for failing requests

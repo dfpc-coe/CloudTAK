@@ -211,6 +211,35 @@ test('POST: api/connection/1/layer', async () => {
     Sinon.restore();
 });
 
+test('GET: api/layer & api/connection/1/layer - filter by layer id', async () => {
+    try {
+        for (const url of ['/api/layer', '/api/connection/1/layer']) {
+            const match = await flight.fetch(`${url}?filter=1`, {
+                method: 'GET',
+                auth: {
+                    bearer: flight.token.admin,
+                },
+            }, false);
+
+            assert.equal(match.status, 200);
+            assert.equal(match.body.total, 1);
+            assert.equal(match.body.items[0].id, 1);
+
+            const miss = await flight.fetch(`${url}?filter=2`, {
+                method: 'GET',
+                auth: {
+                    bearer: flight.token.admin,
+                },
+            }, false);
+
+            assert.equal(miss.status, 200);
+            assert.equal(miss.body.total, 0);
+        }
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: api/connection/1/layer/1', async () => {
     try {
         const res = await flight.fetch('/api/connection/1/layer/1', {
