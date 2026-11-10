@@ -37,6 +37,9 @@ export interface TileBuffer {
     contentType?: string;
 }
 
+// A stalled upstream holds a Lambda concurrency slot until it gives up
+export const UPSTREAM_TIMEOUT_MS = 8 * 1000;
+
 // Synchronous Lambda responses cap at 6 MiB after base64 encoding
 export const MAX_TILE_BYTES = Math.floor((6 * 1024 * 1024) * 3 / 4);
 
@@ -223,6 +226,7 @@ export class BasemapProtocol {
             const upstream = await undici.request(url, {
                 method: 'GET',
                 headers: opts.headers as Record<string, string>,
+                signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
             });
 
             if (upstream.statusCode === 204 || upstream.statusCode === 404) {
@@ -285,6 +289,7 @@ export class BasemapProtocol {
             const upstream = await undici.request(url, {
                 method: 'GET',
                 headers: opts.headers as Record<string, string>,
+                signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
             });
 
             const contentLength = Number(upstream.headers['content-length']);

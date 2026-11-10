@@ -408,11 +408,18 @@ test('GET /tiles/basemap/:basemapid/tiles merges ESRI metadata for MapServer lay
 test('GET /tiles/basemap/:basemapid/tiles/:z/:x/:y renders a MapServer vector tile (live network)', async () => {
     const res = await fetch(`${baseURL()}/tiles/basemap/46/tiles/4/3/6?token=${userToken}`);
 
-    assert.ok([200, 404].includes(res.status), `Unexpected status ${res.status}`);
+    assert.ok([200, 204].includes(res.status), `Unexpected status ${res.status}`);
     if (res.status === 200) {
         assert.equal(res.headers.get('content-type'), 'application/vnd.mapbox-vector-tile');
         assert.ok((await res.arrayBuffer()).byteLength > 0);
     }
+});
+
+test('GET /tiles/basemap/:basemapid/tiles/:z/:x/:y returns a cacheable 204 for a MapServer vector tile without features (live network)', async () => {
+    const res = await fetch(`${baseURL()}/tiles/basemap/46/tiles/10/0/0?token=${userToken}`);
+
+    assert.equal(res.status, 204);
+    assert.equal(res.headers.get('cache-control'), 'public, max-age=3600');
 });
 
 test('GET /tiles/basemap/:basemapid/tiles passes through API errors', async () => {

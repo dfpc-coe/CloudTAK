@@ -7,7 +7,7 @@ import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import type { Static } from '@sinclair/typebox';
 import { TileJSONActions } from '../tilejson.js';
 import { esriToGeoJSON, parseFeatureSet } from '../esri/geojson.js';
-import { BasemapProtocol, ResolvedTileOpts, assertTileSize } from './protocol.js';
+import { BasemapProtocol, ResolvedTileOpts, UPSTREAM_TIMEOUT_MS, assertTileSize } from './protocol.js';
 
 /**
  * ESRI FeatureServer basemap protocol.
@@ -68,6 +68,11 @@ export default class FeatureServerBasemap extends BasemapProtocol {
         return 360 / Math.pow(2, z) / 4096;
     }
 
+    static empty(res: Response): void {
+        res.writeHead(204, { 'Cache-Control': 'public, max-age=3600' });
+        res.end();
+    }
+
     actions(): Static<typeof TileJSONActions> {
         return {
             feature: ['fetch', 'query'],
@@ -82,19 +87,13 @@ export default class FeatureServerBasemap extends BasemapProtocol {
         try {
             const url = FeatureServerBasemap.esriVectorTileURL(this.basemap.url, z, x, y);
 
-            const tileRes = await typedFetch(url);
+            const tileRes = await typedFetch(url, { timeout: UPSTREAM_TIMEOUT_MS });
 
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
             const fc = esriToGeoJSON(parseFeatureSet(await tileRes.json()));
 
-            if (!fc.features.length) {
-                res.status(404).json({
-                    status: 404,
-                    message: 'No Features Found',
-                });
-                return;
-            }
+            if (!fc.features.length) return FeatureServerBasemap.empty(res);
 
             const geojson = {
                 type: 'FeatureCollection' as const,
@@ -113,7 +112,7 @@ export default class FeatureServerBasemap extends BasemapProtocol {
 
             const tileFeatures = tileIndex.getTile(z, x, y);
 
-            if (!tileFeatures) throw new Err(404, null, 'No Features Found in Tile');
+            if (!tileFeatures) return FeatureServerBasemap.empty(res);
 
             const tile = vtpbf.fromGeojsonVt({ out: tileFeatures });
 

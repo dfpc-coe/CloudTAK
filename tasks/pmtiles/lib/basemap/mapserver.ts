@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import { fetch as typedFetch } from '@tak-ps/node-safeurl';
 import type { Static } from '@sinclair/typebox';
 import { TileJSONActions } from '../tilejson.js';
-import { BasemapProtocol, ResolvedTileOpts, TileBuffer, assertTileSize } from './protocol.js';
+import { BasemapProtocol, ResolvedTileOpts, TileBuffer, UPSTREAM_TIMEOUT_MS, assertTileSize } from './protocol.js';
 import FeatureServerBasemap from './featureserver.js';
 
 /**
@@ -66,7 +66,7 @@ export default class MapServerBasemap extends FeatureServerBasemap {
         try {
             const url = MapServerBasemap.esriMapServerTileURL(this.basemap.url, z, x, y);
 
-            const tileRes = await typedFetch(url);
+            const tileRes = await typedFetch(url, { timeout: UPSTREAM_TIMEOUT_MS });
 
             if (!tileRes.ok) throw new Err(400, null, `Upstream Error: ${await tileRes.text()}`);
 
