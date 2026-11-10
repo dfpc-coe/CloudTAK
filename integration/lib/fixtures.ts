@@ -4,6 +4,10 @@ import { MapPage } from '../pages/MapPage.ts';
 import { MenuPackages } from '../pages/MenuPackages.ts';
 import { cloudtakUsername, cloudtakPassword } from './env.ts';
 
+type Options = {
+    autoLogin: boolean;
+};
+
 export async function skipPermissionsModal(page: Page): Promise<void> {
     const skip = page.getByRole('button', { name: 'Skip for now' });
     if (await skip.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -20,7 +24,19 @@ type Fixtures = {
     menuPackages: MenuPackages;
 };
 
-export const test = base.extend<Fixtures>({
+export const test = base.extend<Fixtures & Options>({
+
+    autoLogin: [true, { option: true }],
+
+    page: async ({ page, autoLogin }, use) => {
+        if (autoLogin) {
+            const login = new LoginPage(page);
+            await login.goto();
+            await login.login(cloudtakUsername(), cloudtakPassword());
+        }
+        await use(page);
+    },
+
     // Unauthenticated LoginPage, already on /login.
     loginPage: async ({ page }, use) => {
         const login = new LoginPage(page);
@@ -34,10 +50,12 @@ export const test = base.extend<Fixtures>({
     },
 
     // Password login -> map loaded -> permissions modal skipped.
-    authedMap: async ({ page }, use) => {
-        const login = new LoginPage(page);
-        await login.goto();
-        await login.login(cloudtakUsername(), cloudtakPassword());
+    authedMap: async ({ page, autoLogin }, use) => {
+        if (!autoLogin) {
+            const login = new LoginPage(page);
+            await login.goto();
+            await login.login(cloudtakUsername(), cloudtakPassword());
+        }
         const map = new MapPage(page);
         await map.waitUntilLoaded();
         await skipPermissionsModal(page);
@@ -51,7 +69,7 @@ export const test = base.extend<Fixtures>({
         await use(errors);
     },
 
-    // Map opened from the saved storage state, loaded, permissions modal skipped, tiles idle.
+    // Map opened on the logged-in page, loaded, permissions modal skipped, tiles idle.
     // Depends on pageErrors so the listener is attached before goto().
     readyMap: async ({ page, pageErrors: _pageErrors }, use) => {
         const map = new MapPage(page);

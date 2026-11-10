@@ -5,7 +5,7 @@ import { MapPage } from '../pages/MapPage.ts';
 import { cloudtakUsername, cloudtakPassword } from '../lib/env.ts';
 import { getStoredToken } from '../lib/session.ts';
 
-test.use({ storageState: { cookies: [], origins: [] } });
+test.use({ storageState: { cookies: [], origins: [] }, autoLogin: false });
 
 const passkeyButton = (page: Page) => page.getByRole('button', { name: 'Sign in with Passkey' });
 const errorModal = (page: Page) => page.getByText('Website Error');
@@ -93,9 +93,9 @@ test.describe('Auth: passkey enrollment and login', () => {
      * We verify sign-in by landing on the map, not by clicking the button
      * (which appears briefly then vanishes once login succeeds).
      *
-     * Also: CloudTAK's logout is client-side only and the session is held in
-     * memory (appStore + Capacitor's in-memory Preferences cache), so we
-     * clear persisted storage AND hard-reload to get a truly logged-out app.
+     * Also: part of the session lives in memory (appStore + Capacitor's
+     * in-memory Preferences cache), so we clear persisted storage AND
+     * hard-reload to get a truly logged-out app.
      *
      * CLEANUP IS MANDATORY: the server-side credential outlives the virtual
      * authenticator, so the test removes the QA-TEST passkey it created. This
@@ -325,10 +325,6 @@ test.describe('Auth: access control', () => {
         await page.getByTitle('Logout').click();
         await expect(login.password).toBeVisible({ timeout: 30_000 });
 
-        // Press Back: the authenticated map must NOT be restored from history.
-        // (Note: logout is client-side only per AUTH-04, so this checks the
-        // client protection - a bystander pressing Back on the device should
-        // not land back on the map.)
         await page.goBack();
 
         // Still on login, no map canvas exposed.

@@ -75,9 +75,7 @@ export class MapPage {
     // "A new version of CloudTAK is ready" banner (App.vue); absent most of the time
     readonly updateBanner: Locator;
     readonly updateBannerClose: Locator;
-    // Search modal
-    readonly searchTitle: Locator;
-    readonly searchClose: Locator;
+    readonly searchModal: Locator;
     readonly searchInput: Locator;
     // Manual location pane
     readonly setLocationPane: Locator;
@@ -160,9 +158,8 @@ export class MapPage {
 
         this.panelTitle = page.locator('[role="menubar"] .cloudtak-header .strong');
 
-        this.searchTitle = page.locator('.modal-title', { hasText: /^\s*Search\s*$/ });
-        this.searchClose = page.locator('.modal-header').filter({ has: this.searchTitle }).locator('.btn-close');
-        this.searchInput = page.getByPlaceholder('Search...');
+        this.searchModal = page.locator('.modal.show').filter({ has: page.locator('.search-box') });
+        this.searchInput = this.searchModal.locator('.search-box input');
 
         this.setLocationPane = page.getByText(/Click on the map to (set|update) your location/);
         this.useGps = page.getByRole('button', { name: 'Use GPS' });
@@ -197,6 +194,17 @@ export class MapPage {
         }).toBe(true);
     }
 
+    async openDataSyncs(): Promise<void> {
+        await expect(async () => {
+            await this.activeMission.click();
+            await expect(this.panelTitle).toHaveText('Data Syncs', { timeout: 10_000 });
+        }).toPass({ timeout: 45_000 });
+    }
+
+    async closeSearch(): Promise<void> {
+        await this.searchModal.click({ position: { x: 5, y: 5 } });
+    }
+
     // Record basemap tile responses (URL template read from the TileJSON). Call BEFORE goto().
     startTileTracking(): void {
         this.tileResponses = [];
@@ -205,7 +213,7 @@ export class MapPage {
         this.page.on('response', (res) => {
             const url = res.url();
 
-            if (/\/api\/basemap\/\d+\/tiles(\?|$)/.test(url) && !this.tileTemplate) {
+            if (/\/(?:api|tiles)\/basemap\/\d+\/tiles(\?|$)/.test(url) && !this.tileTemplate) {
                 void res.json().then((json: { tiles?: string[] }) => {
                     const template = json.tiles?.[0]?.split('?')[0];
                     if (!template) return;
@@ -217,7 +225,7 @@ export class MapPage {
                 return;
             }
 
-            if (/\/api\/basemap\/\d+\/tiles\/\d+\/\d+\/\d+/.test(url)) {
+            if (/\/(?:api|tiles)\/basemap\/\d+\/tiles\/\d+\/\d+\/\d+/.test(url)) {
                 this.tileResponses.push(res);
             } else if (this.tileTemplate && this.tileTemplate.test(url)) {
                 this.tileResponses.push(res);

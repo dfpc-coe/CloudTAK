@@ -302,10 +302,9 @@ test.describe('Map: interaction', () => {
     test('MAP-19 Search dialog opens with a focused input', async ({ readyMap: map }) => {
         await map.search.click();
 
-        await expect(map.searchTitle).toBeVisible();
+        await expect(map.searchModal).toBeVisible();
         await expect(map.searchInput).toBeVisible();
         await expect(map.searchInput).toBeFocused();
-        await expect(map.searchClose).toBeVisible();
     });
 
     test('MAP-20 Search dialog closes with Escape and the map is interactive', async ({ readyMap: map, page }) => {
@@ -314,19 +313,19 @@ test.describe('Map: interaction', () => {
 
         await page.keyboard.press('Escape');
 
-        await expect(map.searchTitle).toBeHidden();
+        await expect(map.searchModal).toBeHidden();
         const zoom = await map.zoom();
         await map.zoomIn.click();
         await map.expectZoom(zoom + 1);
     });
 
-    test('MAP-21 Search dialog closes with the × button and the map is interactive', async ({ readyMap: map }) => {
+    test('MAP-21 Search dialog closes without the keyboard and the map is interactive', async ({ readyMap: map }) => {
         await map.search.click();
         await expect(map.searchInput).toBeFocused();
 
-        await map.searchClose.click();
+        await map.closeSearch();
 
-        await expect(map.searchTitle).toBeHidden();
+        await expect(map.searchModal).toBeHidden();
         const zoom = await map.zoom();
         await map.zoomIn.click();
         await map.expectZoom(zoom + 1);
@@ -360,7 +359,7 @@ test.describe('Map: permissions modal', () => {
 
         await modal.getByRole('button', { name: 'Request Permission' }).first().click();
 
-        await expect(modal.getByText('Location access')).toBeVisible();
+        await expect(modal.getByText('Location access', { exact: true })).toBeVisible();
         await expect(modal.getByText('CloudTAK does not use your location for advertising.')).toBeVisible();
         await expect(modal.getByRole('button', { name: 'Agree and continue' })).toBeVisible();
 
@@ -624,7 +623,7 @@ test.describe('Map: negatives and boundaries', () => {
 
         expect(await map.view()).toEqual(before);
         expect(page.url()).toBe(url);
-        await expect(map.searchTitle).toHaveCount(0);
+        await expect(map.searchModal).toHaveCount(0);
         await expect(map.menubar).toBeVisible();
     });
 
@@ -640,20 +639,22 @@ test.describe('Map: negatives and boundaries', () => {
         await page.waitForTimeout(500);
 
         expect(searchRequests).toEqual([]);
-        await expect(map.searchTitle).toBeVisible();
+        await expect(map.searchModal).toBeVisible();
     });
 
     test('MAP-44 long and special-character queries keep the search usable', async ({ readyMap: map, page }) => {
         const errorModal = page.getByText('Website Error');
-        const okButton = page.getByText('OK', { exact: true });
 
-        // Backend failure: the app surfaces its error modal and stays usable.
         await page.route('**/api/search/suggest**', (route) => route.fulfill({ status: 500, body: '{}' }));
+        const searchFailed = page.waitForEvent('console', {
+            predicate: (msg) => msg.type() === 'error' && msg.text().includes('Search failed'),
+            timeout: 10_000,
+        });
         await map.search.click();
         await map.searchInput.fill('x'.repeat(300));
-        await expect(errorModal).toBeVisible({ timeout: 10_000 });
-        await okButton.click();
-        await expect(errorModal).toBeHidden();
+        await searchFailed;
+        await expect(errorModal).toHaveCount(0);
+        await expect(map.searchModal).toBeVisible();
 
         // Empty result set: no error, dialog still open.
         await page.unroute('**/api/search/suggest**');
@@ -665,7 +666,7 @@ test.describe('Map: negatives and boundaries', () => {
         for (const query of ['<script>alert(1)</script>', '%', '\'']) {
             await map.searchInput.fill(query);
             await page.waitForTimeout(300);
-            await expect(map.searchTitle).toBeVisible();
+            await expect(map.searchModal).toBeVisible();
             await expect(errorModal).toHaveCount(0);
         }
         await expect(map.searchInput).toHaveValue('\'');
@@ -756,7 +757,7 @@ test.describe('Map: console health', () => {
         await map.search.click();
         await expect(map.searchInput).toBeFocused();
         await page.keyboard.press('Escape');
-        await expect(map.searchTitle).toBeHidden();
+        await expect(map.searchModal).toBeHidden();
 
         expect(pageErrors).toEqual([]);
         const unexpected = consoleErrors.filter((text) => !allowlist.some((re) => re.test(text)));

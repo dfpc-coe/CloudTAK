@@ -20,8 +20,7 @@ import {
 test.describe('Data Sync list panel', () => {
     test.beforeEach(async ({ readyMap, page }) => {
         await waitForSubscriptionSync(page);
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test('DS-01 "No Active Mission" badge opens the Data Syncs panel at /menu/missions', async ({ readyMap, page }) => {
@@ -131,8 +130,7 @@ test.describe('Data Sync list panel (seeded)', () => {
     const created: Array<{ guid: string; password?: string }> = [];
 
     test.beforeEach(async ({ readyMap }) => {
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test.afterEach(async ({ page }) => {
@@ -208,8 +206,7 @@ test.describe('Data Sync: subscribed empty state', () => {
             const overlays = await waitForSubscriptionSync(other.page);
             test.skip(overlays.length > 0, 'secondary user has subscriptions; DS-03 needs none');
 
-            await other.map.activeMission.click();
-            await expect(other.map.panelTitle).toHaveText('Data Syncs');
+            await other.map.openDataSyncs();
 
             // With no subscriptions the panel auto-switches to Available
             await expect(other.missions.tabRadio('Available')).toBeChecked();
@@ -226,8 +223,7 @@ test.describe('Data Sync: subscribed empty state', () => {
 
 test.describe('Data Sync create mission modal', () => {
     test.beforeEach(async ({ readyMap }) => {
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test('DS-11 "Create Sync" opens the Create Mission modal with its fields; Close closes it', async ({ page }) => {
@@ -314,8 +310,7 @@ test.describe('Data Sync creation methods', () => {
     const created: Array<{ guid: string; password?: string }> = [];
 
     test.beforeEach(async ({ readyMap }) => {
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test.afterEach(async ({ page }) => {
@@ -394,7 +389,8 @@ test.describe('Data Sync creation methods', () => {
         await expect(page).toHaveURL(new RegExp(`/menu/missions/${guid}/info`), { timeout: 15_000 });
     });
 
-    test.skip('DS-20 create password protected sends the password and flags the mission', async ({ page }) => {
+    //BUG-0002
+    test('DS-20 create password protected sends the password and flags the mission', async ({ page }) => {
         const missions = new MenuMissions(page);
         const name = `QA-TEST-DS-20-${Date.now()}`;
         const password = `QA-TEST-pw-${Date.now()}`;
@@ -411,9 +407,6 @@ test.describe('Data Sync creation methods', () => {
         const listed = (await apiListMissions(page)).find((mission) => mission.guid === guid);
         expect(listed?.passwordProtected).toBe(true);
 
-        // BUG-0002: create succeeds but the auto-subscribe fails with FORBIDDEN
-        // "No token role provided", leaving the modal open under a Website Error
-        // dialog and never navigating to the mission page
         await expect(missions.errorDialog).toBeVisible();
         await expect(missions.errorDialog).toContainText('Illegal attempt to subscribe to mission');
         await missions.errorDialog.locator('button.btn-close').click();
@@ -438,7 +431,7 @@ test.describe('Data Sync creation methods', () => {
 
         const other = await openSecondUser(browser);
         try {
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.showAvailable();
             await expect(other.missions.rows.filter({ hasText: name })).toHaveCount(0);
 
@@ -467,8 +460,7 @@ test.describe('Data Sync: mission page', () => {
     const created: Array<{ guid: string }> = [];
 
     test.beforeEach(async ({ readyMap }) => {
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test.afterEach(async ({ page }) => {
@@ -709,10 +701,8 @@ test.describe('Data Sync: multi-user', () => {
     const created: Array<{ guid: string }> = [];
 
     test.beforeEach(async ({ readyMap }) => {
-        // Two full map loads per test
         test.setTimeout(240_000);
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test.afterEach(async ({ page }) => {
@@ -780,7 +770,7 @@ test.describe('Data Sync: multi-user', () => {
             await expect(other.mission.unsubscribeButton).toBeVisible({ timeout: 30_000 });
 
             // Invitee side: mission is now in the Subscribed tab
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.tab('Subscribed').click();
             await expect(other.missions.rows.filter({ hasText: name })).toBeVisible({ timeout: 30_000 });
 
@@ -814,7 +804,7 @@ test.describe('Data Sync: multi-user', () => {
             await other.mission.inviteDecline.click();
             await expect(other.mission.inviteModal).toBeHidden();
 
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.tab('Subscribed').click();
             await expect(other.missions.rows.filter({ hasText: name })).toHaveCount(0);
 
@@ -1029,7 +1019,8 @@ test.describe('Data Sync: multi-user', () => {
         }
     });
 
-    test.skip('DS-44 promoting Read-Only to Subscriber takes effect server-side; UI stays stale', async ({ page, browser }) => {
+    //BUG-0003
+    test('DS-44 promoting Read-Only to Subscriber takes effect server-side; UI stays stale', async ({ page, browser }) => {
         const missions = new MenuMissions(page);
         const mission = new MenuMission(page);
         const name = `QA-TEST-DS-44-${Date.now()}`;
@@ -1060,7 +1051,6 @@ test.describe('Data Sync: multi-user', () => {
             await expect.poll(async () => apiSubmitMissionFeature(other.page, guid, marker), { timeout: 30_000 })
                 .toBe(200);
 
-            // BUG-0003: the subscriber's UI does not update to reflect the new role; a reload is required to see the edit control
             await other.page.reload();
             await other.map.waitUntilLoaded();
             await completeFirstLoginSetup(other.page, USER2_CALLSIGN);
@@ -1071,7 +1061,8 @@ test.describe('Data Sync: multi-user', () => {
         }
     });
 
-    test.skip('DS-45 demoting a Subscriber to Read-Only removes write access', async ({ page, browser }) => {
+    //BUG-0004
+    test('DS-45 demoting a Subscriber to Read-Only removes write access', async ({ page, browser }) => {
         const missions = new MenuMissions(page);
         const mission = new MenuMission(page);
         const name = `QA-TEST-DS-45-${Date.now()}`;
@@ -1112,7 +1103,6 @@ test.describe('Data Sync: multi-user', () => {
             await expect.poll(async () => (await apiGetMissionRole(other.page, guid)).type, { timeout: 30_000 })
                 .toBe('MISSION_READONLY_SUBSCRIBER');
 
-            // B has lost write access BUG-0004
             await expect.poll(async () => apiSubmitMissionFeature(other.page, guid, marker), { timeout: 30_000 })
                 .toBeGreaterThanOrEqual(400);
         } finally {
@@ -1120,7 +1110,7 @@ test.describe('Data Sync: multi-user', () => {
         }
     });
 
-    test.skip('DS-46 removing a user ends their subscription', async ({ page, browser }) => {
+    test('DS-46 removing a user ends their subscription', async ({ page, browser }) => {
         const missions = new MenuMissions(page);
         const mission = new MenuMission(page);
         const name = `QA-TEST-DS-46-${Date.now()}`;
@@ -1137,17 +1127,11 @@ test.describe('Data Sync: multi-user', () => {
             await mission.confirmDialog.locator('.btn-danger').click();
             await expect(mission.userRow(cloudtakUsername1())).toHaveCount(0, { timeout: 30_000 });
 
-            // The removed user's local state still lists the mission as
-            // subscribed; opening it from the Subscribed tab resyncs and
-            // shows Subscribe again.
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.tab('Subscribed').click();
             await other.missions.rows.filter({ hasText: name }).click();
             await expect(other.mission.subscribeButton).toBeVisible({ timeout: 30_000 });
 
-            // Sheet expects the mission to leave the Subscribed tab; on 13.102
-            // the removed user keeps a stale local entry there even after the
-            // resync above - raise with Nicholas.
             await other.mission.back.click();
             await other.missions.tab('Subscribed').click();
             await expect(other.missions.rows.filter({ hasText: name })).toBeVisible();
@@ -1176,7 +1160,7 @@ test.describe('Data Sync: multi-user', () => {
             created.pop();
 
             // Gone from the subscriber's Available tab (server truth)
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.showAvailable();
             await Promise.all([
                 other.page.waitForResponse((res) => res.url().includes('/api/marti/mission?')),
@@ -1196,7 +1180,7 @@ test.describe('Data Sync: multi-user', () => {
         }
     });
 
-    test.skip('DS-48 a subscriber catches up on items added while offline', async ({ page, browser }) => {
+    test('DS-48 a subscriber catches up on items added while offline', async ({ page, browser }) => {
         const missions = new MenuMissions(page);
         const name = `QA-TEST-DS-48-${Date.now()}`;
         const marker = `QA-TEST-DS-48-marker-${Date.now()}`;
@@ -1212,7 +1196,6 @@ test.describe('Data Sync: multi-user', () => {
             expect(await apiSubmitMissionFeature(page, guid, marker)).toBe(200);
             await other.context.setOffline(false);
 
-            // BUG-0006: the subscriber's UI does not update to reflect the new change; a reload is required to see it
             await other.page.reload();
             await other.map.waitUntilLoaded();
             await completeFirstLoginSetup(other.page, USER2_CALLSIGN);
@@ -1228,8 +1211,7 @@ test.describe('Data Sync: password-protected', () => {
 
     test.beforeEach(async ({ readyMap }) => {
         test.setTimeout(240_000);
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test.afterEach(async ({ page }) => {
@@ -1256,7 +1238,7 @@ test.describe('Data Sync: password-protected', () => {
 
         const other = await openSecondUser(browser);
         try {
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.showAvailable();
             await other.missions.filterInput.fill(seeded.name);
             await other.missions.rows.filter({ hasText: seeded.name }).click();
@@ -1276,7 +1258,7 @@ test.describe('Data Sync: password-protected', () => {
 
         const other = await openSecondUser(browser);
         try {
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.showAvailable();
             await other.missions.filterInput.fill(seeded.name);
             await other.missions.rows.filter({ hasText: seeded.name }).click();
@@ -1296,7 +1278,7 @@ test.describe('Data Sync: password-protected', () => {
 
         const other = await openSecondUser(browser);
         try {
-            await other.map.activeMission.click();
+            await other.map.openDataSyncs();
             await other.missions.showAvailable();
             await other.missions.filterInput.fill(seeded.name);
             await other.missions.rows.filter({ hasText: seeded.name }).click();
@@ -1314,7 +1296,8 @@ test.describe('Data Sync: password-protected', () => {
         }
     });
 
-    test.skip('DS-53 the creator is also asked for the password', async ({ page }) => {
+    //BUG-0002
+    test('DS-53 the creator is also asked for the password', async ({ page }) => {
         const missions = new MenuMissions(page);
         const seeded = await seedLockedMission(page, 'DS-53');
 
@@ -1322,7 +1305,6 @@ test.describe('Data Sync: password-protected', () => {
         await missions.filterInput.fill(seeded.name);
         await missions.rows.filter({ hasText: seeded.name }).click();
 
-        // BUG-0002
         await expect(missions.rowPasswordInput(seeded.name)).toBeVisible({ timeout: 15_000 });
 
         // The correct password still gets the creator in.
@@ -1336,8 +1318,7 @@ test.describe('Data Sync: negatives and boundaries', () => {
     const created: Array<{ guid: string; password?: string }> = [];
 
     test.beforeEach(async ({ readyMap }) => {
-        await readyMap.activeMission.click();
-        await expect(readyMap.panelTitle).toHaveText('Data Syncs');
+        await readyMap.openDataSyncs();
     });
 
     test.afterEach(async ({ page }) => {
@@ -1379,7 +1360,7 @@ test.describe('Data Sync: negatives and boundaries', () => {
         await deleteMissionsNamed(page, name);
     });
 
-    test.skip('DS-56 a 300+ character name is rejected by the server with a 500', async ({ page, pageErrors }) => {
+    test('DS-56 a 300+ character name is rejected by the server with a 500', async ({ page, pageErrors }) => {
         const missions = new MenuMissions(page);
         const name = `QA-TEST-DS-56-${Date.now()}-${'x'.repeat(300)}`;
 
@@ -1388,7 +1369,6 @@ test.describe('Data Sync: negatives and boundaries', () => {
         await missions.channelsFilter.fill(CHANNEL);
         await missions.channelOption(CHANNEL).click();
 
-        // BUG-0007
         const [response] = await Promise.all([
             page.waitForResponse((res) => res.url().endsWith('/api/marti/mission') && res.request().method() === 'POST'),
             missions.createMission.click(),
@@ -1401,7 +1381,8 @@ test.describe('Data Sync: negatives and boundaries', () => {
         expect(pageErrors).toEqual([]);
     });
 
-    test.skip('DS-57 special characters render as plain text and run no script', async ({ page, pageErrors }) => {
+    //BUG-0008
+    test('DS-57 special characters render as plain text and run no script', async ({ page, pageErrors }) => {
         const missions = new MenuMissions(page);
         const name = `QA-TEST-DS-57-${Date.now()}`;
         const description = `100% 'quoted' QA-TEST DS-57`;
@@ -1418,7 +1399,6 @@ test.describe('Data Sync: negatives and boundaries', () => {
         await missions.field('Name').fill('<script>alert(1)</script>');
         await expect(missions.modal.getByText('Contains Invalid Character')).toBeVisible();
 
-        // BUG-0008
         await missions.field('Name').fill(name);
         await missions.field('Description').fill(description);
         await missions.channelsFilter.fill(CHANNEL);
@@ -1457,7 +1437,8 @@ test.describe('Data Sync: negatives and boundaries', () => {
         expect((await apiListMissions(page)).filter((m) => m.name === name)).toHaveLength(1);
     });
 
-    test.skip('DS-59 Password Protected with an empty password creates an unprotected mission', async ({ page }) => {
+    //BUG-0009
+    test('DS-59 Password Protected with an empty password creates an unprotected mission', async ({ page }) => {
         const missions = new MenuMissions(page);
         const name = `QA-TEST-DS-59-${Date.now()}`;
 
@@ -1468,7 +1449,6 @@ test.describe('Data Sync: negatives and boundaries', () => {
         await missions.advancedOptions.click();
         await missions.passwordToggle.setChecked(true);
 
-        // BUG-0009: the client allows an empty password to be submitted, and the server treats it as unprotected
         const [response] = await Promise.all([
             page.waitForResponse((res) => res.url().endsWith('/api/marti/mission') && res.request().method() === 'POST'),
             missions.createMission.click(),

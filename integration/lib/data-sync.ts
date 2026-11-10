@@ -46,17 +46,31 @@ export async function createMissionViaForm(page: Page, missions: MenuMissions, o
         }
     }
 
-    const [request] = await Promise.all([
-        page.waitForRequest((req) => req.method() === 'POST' && req.url().endsWith('/api/marti/mission')),
-        missions.createMission.click(),
-    ]);
+    let captured: MissionCreateBody | null = null;
+    await page.route('**/api/marti/mission', async (route) => {
+        if (route.request().method() === 'POST') {
+            captured = route.request().postDataJSON() as MissionCreateBody | null;
+        }
+        await route.continue();
+    });
 
-    const response = await request.response();
-    if (!response) throw new Error('POST /api/marti/mission got no response');
-    expect(response.ok(), `mission create should succeed, got HTTP ${response.status()}`).toBe(true);
+    try {
+        const [request] = await Promise.all([
+            page.waitForRequest((req) => req.method() === 'POST' && req.url().endsWith('/api/marti/mission')),
+            missions.createMission.click(),
+        ]);
 
-    const mission = await response.json() as { guid: string };
-    return { body: request.postDataJSON() as MissionCreateBody, guid: mission.guid };
+        const response = await request.response();
+        if (!response) throw new Error('POST /api/marti/mission got no response');
+        expect(response.ok(), `mission create should succeed, got HTTP ${response.status()}`).toBe(true);
+
+        const mission = await response.json() as { guid: string };
+        const body = captured ?? (request.postDataJSON() as MissionCreateBody | null);
+        if (!body) throw new Error('POST /api/marti/mission body was not captured');
+        return { body, guid: mission.guid };
+    } finally {
+        await page.unroute('**/api/marti/mission');
+    }
 }
 
 // Open an API-created (not yet subscribed) mission from the Available tab

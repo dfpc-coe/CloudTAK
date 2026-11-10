@@ -8,7 +8,6 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.join(root, '.env'), quiet: true });
 
-/** Storage state produced by tests/auth.setup.ts and reused by all tests */
 export const STORAGE_STATE = path.join(root, '.auth/user.json');
 
 export default defineConfig({
@@ -31,16 +30,10 @@ export default defineConfig({
     },
     projects: [
         {
-            name: 'setup',
-            testMatch: /.*\.setup\.ts/
-        },
-        {
             name: 'chromium',
             use: {
-                ...devices['Desktop Chrome'],
-                storageState: STORAGE_STATE
-            },
-            dependencies: ['setup']
+                ...devices['Desktop Chrome']
+            }
         }
     ]
 });

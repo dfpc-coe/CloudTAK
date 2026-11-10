@@ -56,7 +56,7 @@ export class MenuMissions {
         this.newKeyword = this.modal.getByTitle('Add keyword');
         this.passwordToggle = this.modal.locator('.form-switch input[type="checkbox"]');
         this.passwordInput = this.field('Password');
-        this.defaultRole = this.field('Default Role');
+        this.defaultRole = this.field('Default Subscriber Role');
         this.createMission = this.modal.getByRole('button', { name: 'Create Mission' });
     }
 
