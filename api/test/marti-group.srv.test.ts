@@ -9,6 +9,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user();
+flight.user({ admin: false });
 flight.integration('test-task');
 
 flight.connection();
@@ -262,6 +263,95 @@ test('GET: api/marti/group?connection=1 - TAK Server Failure', async () => {
     }
 
     flight.tak.reset();
+});
+
+test('GET: api/marti/group?impersonate - Admin lists the channels of another user', async () => {
+    try {
+        mockGroups();
+
+        const res = await flight.fetch('/api/marti/group?impersonate=user@example.com&useCache=true', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, true);
+
+        assert.deepEqual(res.body.data, groups);
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
+test('PUT: api/marti/group?impersonate - Admin updates the channels of another user', async () => {
+    try {
+        const updates: string[] = [];
+
+        flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {
+            if (request.method === 'PUT' && request.url === '/Marti/api/groups/active') {
+                let body = '';
+                for await (const chunk of request) body += chunk;
+                updates.push(body);
+
+                response.statusCode = 200;
+                response.end();
+                return true;
+            } else if (request.method === 'GET' && request.url === '/Marti/api/groups/all') {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: 3,
+                    type: 'com.bbn.marti.remote.groups.Group',
+                    data: groups,
+                }));
+                response.end();
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const body = [{ ...groups[0], active: false }];
+
+        await flight.fetch('/api/marti/group?impersonate=user@example.com', {
+            method: 'PUT',
+            auth: { bearer: flight.token.admin },
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        }, true);
+
+        assert.equal(updates.length, 1);
+        assert.deepEqual(JSON.parse(updates[0]), body);
+    } catch (err) {
+        assert.ifError(err);
+    }
+
+    flight.tak.reset();
+});
+
+test('GET: api/marti/group?impersonate - Non-admin is rejected', async () => {
+    try {
+        const res = await flight.fetch('/api/marti/group?impersonate=admin@example.com&useCache=true', {
+            method: 'GET',
+            auth: { bearer: flight.token.user },
+        }, false);
+
+        assert.equal(res.status, 401);
+        assert.equal(res.body.message, 'User must be a System Administrator to access this resource');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('GET: api/marti/group?impersonate&connection - Rejected', async () => {
+    try {
+        const res = await flight.fetch('/api/marti/group?impersonate=user@example.com&connection=1', {
+            method: 'GET',
+            auth: { bearer: flight.token.admin },
+        }, false);
+
+        assert.equal(res.status, 400);
+    } catch (err) {
+        assert.ifError(err);
+    }
 });
 
 flight.landing();

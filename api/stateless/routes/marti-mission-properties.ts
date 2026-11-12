@@ -3,6 +3,7 @@ import { StandardResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { MissionProperty } from '@tak-ps/node-tak/lib/api/mission-property';
+import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import {
     TAKItem,
@@ -28,9 +29,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(MissionProperty),
         }),
+        security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.context(req, req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid);
 
             const list = await api.MissionProperty.list(
                 req.params.guid,
@@ -58,9 +60,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         description: 'Helper API to get a single Mission Key/Value Property (TAK Server 5.9+)',
         res: TAKItem(MissionProperty),
+        security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.context(req, req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid);
 
             const property = await api.MissionProperty.get(
                 req.params.guid,
@@ -83,16 +86,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: 'Helper API to create or update (upsert) a Mission Key/Value Property (TAK Server 5.9+)',
         body: MissionProperty,
         res: TAKItem(MissionProperty),
+        security: Auth.security('mission:update'),
     }, async (req, res) => {
         try {
-            const { user, api, opts } = await missionControl.context(req, req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, 'mission:update', req.params.guid);
 
             const property = await api.MissionProperty.set(
                 req.params.guid,
                 {
                     key: req.body.key,
                     value: req.body.value,
-                    creatorUid: user.email,
+                    creatorUid: username,
                 },
                 opts,
             );
@@ -112,14 +116,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         description: 'Helper API to delete a single Mission Key/Value Property (TAK Server 5.9+)',
         res: StandardResponse,
+        security: Auth.security('mission:update'),
     }, async (req, res) => {
         try {
-            const { user, api, opts } = await missionControl.context(req, req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, 'mission:update', req.params.guid);
 
             await api.MissionProperty.delete(
                 req.params.guid,
                 req.params.key,
-                user.email,
+                username,
                 opts,
             );
 
@@ -140,13 +145,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         description: 'Helper API to delete all Mission Key/Value Properties (TAK Server 5.9+)',
         res: StandardResponse,
+        security: Auth.security('mission:update'),
     }, async (req, res) => {
         try {
-            const { user, api, opts } = await missionControl.context(req, req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, 'mission:update', req.params.guid);
 
             await api.MissionProperty.deleteAll(
                 req.params.guid,
-                user.email,
+                username,
                 opts,
             );
 

@@ -3,6 +3,7 @@ import { StandardResponse, GenericMartiResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { MissionLog } from '@tak-ps/node-tak/lib/api/mission-log';
+import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import {
     TAKItem,
@@ -35,9 +36,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(MissionLog),
         }),
+        security: Auth.security(['mission:read', 'mission-log:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.context(req, req.params.guid, { token: true });
+            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:read'], req.params.guid, { token: true });
 
             const mission = await api.Mission.get(
                 req.params.guid,
@@ -99,10 +101,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             keywords: Type.Optional(Type.Array(Type.String())),
         }),
         res: GenericMartiResponse,
+        security: Auth.security(['mission:read', 'mission-log:create']),
     }, async (req, res) => {
         try {
-            const { user, api, opts } = await missionControl.context(req, req.params.guid);
-            const creatorUid = user.email;
+            const { username: creatorUid, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:create'], req.params.guid);
 
             const log = await api.MissionLog.create(
                 req.params.guid,
@@ -139,10 +141,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             keywords: Type.Optional(Type.Array(Type.String())),
         }),
         res: TAKItem(MissionLog),
+        security: Auth.security(['mission:read', 'mission-log:update']),
     }, async (req, res) => {
         try {
-            const { user, api, opts } = await missionControl.context(req, req.params.guid);
-            const creatorUid = user.email;
+            const { username: creatorUid, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:update'], req.params.guid);
 
             const mission = await api.MissionLog.update(
                 req.params.guid,
@@ -171,9 +173,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         description: 'Helper API to delete a log',
         res: StandardResponse,
+        security: Auth.security(['mission:read', 'mission-log:delete']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.context(req, req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:delete'], req.params.guid);
 
             await api.MissionLog.delete(
                 req.params.log,
