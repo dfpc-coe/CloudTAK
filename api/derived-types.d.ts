@@ -45791,12 +45791,14 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Helper API to list groups that the client is part of. Pass connection to list the groups a Connection is part of, or connection=0 for the server certificate. Resource tokens require the `group:read` permission */
+        /** Helper API to list groups that the client is part of. Pass connection to list the groups a Connection is part of, connection=0 for the server certificate, or impersonate for another user (System Admin only). Resource tokens require the `group:read` permission */
         get: {
             parameters: {
                 query?: {
                     /** @description User tokens only - act as this Connection, or 0 for the server certificate (System Admin only). Connection & Layer tokens infer the Connection from the token */
                     connection?: number;
+                    /** @description System Admin only - act as the given username */
+                    impersonate?: string;
                     /** @description This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend. */
                     useCache?: boolean;
                 };
@@ -45909,6 +45911,8 @@ export interface paths {
                     clientUid?: string;
                     /** @description User tokens only - act as this Connection, or 0 for the server certificate (System Admin only). Connection & Layer tokens infer the Connection from the token */
                     connection?: number;
+                    /** @description System Admin only - act as the given username */
+                    impersonate?: string;
                 };
                 header?: never;
                 path?: never;

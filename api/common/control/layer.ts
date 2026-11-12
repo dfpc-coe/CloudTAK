@@ -8,9 +8,15 @@ import { PERMISSIONS as ETL_PERMISSIONS, StaticCapabilities } from '@tak-ps/etl'
  */
 export const PERMISSIONS: Record<string, Array<string>> = {
     ...ETL_PERMISSIONS,
-    assignment: ['create', 'read', 'update', 'delete'],
-    effect: ['create', 'read', 'update', 'delete'],
-    attachment: ['create', 'read'],
+    'assignment': ['create', 'read', 'update', 'delete'],
+    'effect': ['create', 'read', 'update', 'delete'],
+    'attachment': ['create', 'read'],
+    'mission': ['create', 'read', 'update', 'delete'],
+    'mission-feature': ['create', 'read', 'delete'],
+    'mission-layer': ['create', 'read', 'update', 'delete'],
+    'mission-log': ['create', 'read', 'update', 'delete'],
+    'mission-file': ['create', 'delete'],
+    'mission-user': ['create', 'read', 'update', 'delete'],
 };
 
 export default class LayerControl {

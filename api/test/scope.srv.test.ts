@@ -40,6 +40,22 @@ test('GET: api/scope', async () => {
             levels: ['create', 'read'],
             scopes: ['attachment:*', 'attachment:create', 'attachment:read'],
         });
+
+        const mission = res.body.items.find((item: { resource: string }) => item.resource === 'mission');
+        assert.deepEqual(mission, {
+            resource: 'mission',
+            levels: ['create', 'read', 'update', 'delete'],
+            scopes: ['mission:*', 'mission:create', 'mission:read', 'mission:update', 'mission:delete'],
+        });
+
+        const feature = res.body.items.find((item: { resource: string }) => item.resource === 'mission-feature');
+        assert.deepEqual(feature.scopes, ['mission-feature:*', 'mission-feature:create', 'mission-feature:read', 'mission-feature:delete']);
+
+        const file = res.body.items.find((item: { resource: string }) => item.resource === 'mission-file');
+        assert.deepEqual(file.scopes, ['mission-file:*', 'mission-file:create', 'mission-file:delete']);
+
+        const user = res.body.items.find((item: { resource: string }) => item.resource === 'mission-user');
+        assert.deepEqual(user.scopes, ['mission-user:*', 'mission-user:create', 'mission-user:read', 'mission-user:update', 'mission-user:delete']);
     } catch (err) {
         assert.ifError(err);
     }

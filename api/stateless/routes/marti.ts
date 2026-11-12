@@ -22,6 +22,7 @@ import TAKServerControl from '../../common/control/takserver.js';
  * `group:<level>` permission. User tokens act as the user's own
  * certificate unless `connection` is given - 0 selects the server certificate
  * (System Admin only), any other value a Connection the user administers.
+ * `impersonate` acts as another user's certificate (System Admin only).
  */
 async function serverApi(config: ConfigStateless): Promise<TAKAPI> {
     if (!config.server.auth.cert || !config.server.auth.key) {
@@ -37,7 +38,15 @@ async function groupApi(
     req: Request<any, any, any, any>,
     connection?: number,
     scope?: string,
+    impersonate?: string,
 ): Promise<TAKAPI> {
+    if (impersonate !== undefined) {
+        if (connection !== undefined) throw new Err(400, null, 'connection and impersonate cannot be combined');
+
+        const user = await Auth.impersonate(config, req, impersonate);
+        return await new TAKServerControl(config).asUser(user.email);
+    }
+
     const auth = await Auth.is_auth(config, req, {
         scope,
         resources: [
@@ -84,15 +93,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',
-        description: 'Helper API to list groups that the client is part of. Pass connection to list the groups a Connection is part of, or connection=0 for the server certificate. Resource tokens require the `group:read` permission',
+        description: 'Helper API to list groups that the client is part of. Pass connection to list the groups a Connection is part of, connection=0 for the server certificate, or impersonate for another user (System Admin only). Resource tokens require the `group:read` permission',
         query: Type.Object({
             connection: Type.Optional(Type.Integer({ minimum: 0, description: 'User tokens only - act as this Connection, or 0 for the server certificate (System Admin only). Connection & Layer tokens infer the Connection from the token' })),
+            impersonate: Type.Optional(Type.String({ description: 'System Admin only - act as the given username' })),
             useCache: Type.Optional(Type.Boolean({ description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.' })),
         }),
         res: TAKList(Group),
     }, async (req, res) => {
         try {
-            const api = await groupApi(config, req, req.query.connection, 'group:read');
+            const api = await groupApi(config, req, req.query.connection, 'group:read', req.query.impersonate);
 
             const groups = await api.Group.list({
                 useCache: req.query.useCache,
@@ -111,6 +121,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         query: Type.Object({
             clientUid: Type.Optional(Type.String()),
             connection: Type.Optional(Type.Integer({ minimum: 0, description: 'User tokens only - act as this Connection, or 0 for the server certificate (System Admin only). Connection & Layer tokens infer the Connection from the token' })),
+            impersonate: Type.Optional(Type.String({ description: 'System Admin only - act as the given username' })),
         }),
         body: Type.Array(Type.Object({
             name: Type.String(),
@@ -124,7 +135,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: GenericMartiResponse,
     }, async (req, res) => {
         try {
-            const api = await groupApi(config, req, req.query.connection, 'group:update');
+            const api = await groupApi(config, req, req.query.connection, 'group:update', req.query.impersonate);
 
             await api.Group.update(req.body, {});
 
