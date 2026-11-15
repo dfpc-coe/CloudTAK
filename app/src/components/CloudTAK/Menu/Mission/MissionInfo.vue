@@ -364,12 +364,16 @@
                     v-else-if='qr.error'
                     :err='qr.error'
                 />
-                <img
+                <div
                     v-else-if='qr.url'
-                    :src='qr.url'
-                    class='invite-qr-image img-fluid'
-                    :style='appStore.resolvedTheme === "dark" ? { filter: "invert(1)" } : undefined'
+                    class='invite-qr-frame'
                 >
+                    <img
+                        :src='qr.url'
+                        class='invite-qr-image img-fluid'
+                        alt='Invite QR Code'
+                    >
+                </div>
             </div>
         </div>
     </TablerModal>
@@ -408,10 +412,8 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import OverlayManager from '../../../../base/overlay.ts';
 import { useMapStore } from '../../../../stores/map.ts';
 import { useDeviceStore } from '../../../../stores/device.ts';
-import { useAppStore } from '../../../../stores/app.ts';
 const mapStore = useMapStore();
 const deviceStore = useDeviceStore();
-const appStore = useAppStore();
 const isOffline = computed(() => !deviceStore.network.isOnline);
 
 const emit = defineEmits(['subscribed']);
@@ -773,9 +775,27 @@ async function subscribe(next: boolean) {
     justify-content: center;
 }
 
+/* A QR code must be dark on a light background with a quiet zone of at least 4 modules,
+   so it stays white in dark mode instead of being inverted */
+/* The QR SVG only has a viewBox, so it has no size of its own: the frame needs a definite width */
+.invite-qr-frame {
+    box-sizing: border-box;
+    width: min(100%, 420px);
+    margin: 0 auto;
+    padding: 2.5rem;
+    background: #fff;
+    border-radius: 0.5rem;
+}
 .invite-qr-image {
-    max-width: min(100%, 420px);
+    display: block;
+    width: 100%;
+    max-width: 100%;
     height: auto;
+}
+@media (max-width: 576px) {
+    .invite-qr-frame {
+        padding: 1.5rem;
+    }
 }
 
 :global(html[data-bs-theme='dark']) .invite-qr-btn {

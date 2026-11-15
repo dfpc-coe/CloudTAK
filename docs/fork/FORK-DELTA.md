@@ -1074,6 +1074,8 @@ additions that would need to be proposed upstream separately.
   login token in the query string. An `<img>` cannot send the header, so the API fell back to
   the token stored on the user's overlay, which a password protected Data Sync refused with
   a 403. The route itself is unchanged from upstream.
+  The code sits on a white frame with 2.5rem padding in both themes. It used to be inverted in
+  dark mode, which no QR reader can decode, and had less than the 4 modules of quiet zone.
 - `api/derived-types.d.ts` was edited by hand for the consolidated `PATCH` (the password
   routes removed, `password` added to the body). Regenerate it from Test after deploying.
 
