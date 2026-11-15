@@ -81,6 +81,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(DataListResponse),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {
@@ -128,6 +129,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             mission_role: Type.Optional(Type.Enum(MissionSubscriberRole)),
         }),
         res: DataResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             let username: string | null = null;
@@ -194,6 +196,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             mission_sync: Type.Optional(Type.Boolean()),
         }),
         res: DataResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {
@@ -253,6 +256,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             dataid: Type.Integer({ minimum: 1 }),
         }),
         res: DataResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {
@@ -299,6 +303,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             dataid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {

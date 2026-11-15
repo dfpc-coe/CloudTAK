@@ -165,9 +165,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         res: ProfileFileResponse,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const head = await S3.head(`profile/${user.email}/${req.body.id}${path.parse(req.body.name).ext.toLowerCase()}`);
 
@@ -222,9 +223,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             channels: Type.Optional(Type.Array(Type.Integer({ minimum: 0 }), { uniqueItems: true })),
         }),
         res: ProfileFileResponse,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             let file = await config.models.ProfileFile.from(req.params.asset);
 
@@ -296,9 +298,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             ext: Type.String(),
         }),
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 
@@ -325,9 +328,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             asset: Type.String(),
         }),
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const file = await config.models.ProfileFile.augmented_from(req.params.asset);
 

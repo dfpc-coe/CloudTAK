@@ -8,7 +8,7 @@ import Schema from '@openaddresses/batch-schema';
 import { Feature } from '@tak-ps/node-cot';
 import S3 from '../../common/aws/s3.js';
 import Err from '@openaddresses/batch-error';
-import Auth from '../../common/auth.js';
+import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import MissionPackage, { resolveFeatures } from '../lib/mission-package.js';
 import { GenericMartiResponse, StandardResponse } from '../../common/types.js';
@@ -61,7 +61,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const mission = await api.Mission.get(
                 req.params.guid,
@@ -94,7 +94,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-feature:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-feature:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const feats = await api.Mission.latestFeats(req.params.guid, opts);
 
@@ -145,7 +145,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-feature:create']),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-feature:create'], req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const missionPkg = await MissionPackage.from(await resolveFeatures(req.body.features), {
                 username,
@@ -180,7 +180,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-feature:delete']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-feature:delete'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const missionContent = await api.Mission.detachContents(
                 req.params.guid,
@@ -203,10 +203,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             guid: Type.String(),
         }),
         description: 'Return an SVG of a QR Code for a mission',
-        security: Auth.security('mission:read'),
+        security: Auth.security({ resources: [AuthResourceAccess.LAYER], scope: 'mission:read', token: true }),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid, { token: true });
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const mission = await api.Mission.get(
                 req.params.guid,
@@ -240,7 +240,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const changes = await api.Mission.changes(
                 req.params.guid,
@@ -266,7 +266,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:delete'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, 'mission:delete', req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const mission = await api.Mission.delete(
                 req.params.guid,
@@ -289,7 +289,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:create'),
     }, async (req, res) => {
         try {
-            const { api, creatorUid } = await missionControl.scoped(req, 'mission:create');
+            const { api, creatorUid } = await missionControl.scoped(req);
 
             const mission = await api.Mission.create({
                 ...req.body,
@@ -328,7 +328,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:update'),
     }, async (req, res) => {
         try {
-            const { api, opts, creatorUid } = await missionControl.scoped(req, 'mission:update', req.params.guid);
+            const { api, opts, creatorUid } = await missionControl.scoped(req, req.params.guid);
 
             const { groups, password, ...rest } = req.body;
 
@@ -380,7 +380,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, creatorUid } = await missionControl.scoped(req, 'mission:read');
+            const { api, creatorUid } = await missionControl.scoped(req);
 
             const { sort, order, groups, ...query } = req.query;
 
@@ -441,7 +441,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const mission = await api.Mission.get(req.params.guid, {}, opts);
 
@@ -509,7 +509,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const role = await api.Mission.role(
                 req.params.guid,
@@ -533,7 +533,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const subs = await api.Mission.subscriptions(
                 req.params.guid,
@@ -557,7 +557,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const roles = await api.Mission.subscriptionRoles(
                 req.params.guid,
@@ -586,7 +586,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:update']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:update'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.Mission.setRole(
                 req.params.guid,
@@ -626,7 +626,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const missions = await api.Mission.contacts(
                 req.params.guid,
@@ -721,7 +721,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const { username: creatorUid, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-file:create'], req.params.guid);
+            const { username: creatorUid, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const bb = new Busboy({
                 headers: {
@@ -800,7 +800,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-file:delete']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-file:delete'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const missionContent = await api.Mission.detachContents(
                 req.params.guid,
@@ -829,7 +829,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const invites = await api.MissionInvite.get(req.params.guid, opts);
 
@@ -855,7 +855,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:create']),
     }, async (req, res) => {
         try {
-            const { creatorUid, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:create'], req.params.guid);
+            const { creatorUid, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionInvite.invite(
                 req.params.guid,
@@ -892,7 +892,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:delete']),
     }, async (req, res) => {
         try {
-            const { creatorUid, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:delete'], req.params.guid);
+            const { creatorUid, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionInvite.uninvite(
                 req.params.guid,
@@ -927,7 +927,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-user:delete']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-user:delete'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const uids = Array.isArray(req.query.uid) ? req.query.uid : [req.query.uid];
 

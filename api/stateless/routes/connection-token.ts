@@ -34,9 +34,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [],
-            }, req.params.connectionid);
+            const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
@@ -73,9 +71,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CreateConnectionTokenResponse,
     }, async (req, res) => {
         try {
-            const { auth, connection } = await Auth.is_connection(config, req, {
-                resources: [],
-            }, req.params.connectionid);
+            const { auth, connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
@@ -112,9 +108,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [],
-            }, req.params.connectionid);
+            const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 
@@ -145,9 +139,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [],
-            }, req.params.connectionid);
+            const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
             if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
 

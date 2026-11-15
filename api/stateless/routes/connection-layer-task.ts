@@ -32,9 +32,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, {
-                    resources: [],
-                }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -62,9 +60,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, {
-                    resources: [],
-                }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -97,9 +93,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, {
-                    resources: [],
-                }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -137,9 +131,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, {
-                    resources: [],
-                }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -167,9 +159,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, {
-                    resources: [],
-                }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -201,9 +191,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, {
-                    resources: [],
-                }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {}, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }

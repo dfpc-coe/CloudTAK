@@ -807,10 +807,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
         }),
         res: Type.Union([AugmentedBasemapWithChildrenResponse, Type.String()]),
+        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
                 ],
@@ -862,10 +862,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
         }),
         res: AugmentedTileJSON,
+        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
                 ],
@@ -902,10 +902,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         query: Type.Object({
             token: Type.Optional(Type.String()),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
                 ],
@@ -944,9 +944,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             polygon: Feature.Polygon,
         }),
         res: MultiGeoJSONFeatureCollection,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const basemap = await config.models.Basemap.from(req.params.basemapid);
 
@@ -988,9 +989,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             featureid: Type.String(),
         }),
         res: MultiGeoJSONFeature,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const basemap = await config.models.Basemap.from(req.params.basemapid);
 

@@ -3,7 +3,7 @@ import { StandardResponse, GenericMartiResponse } from '../../common/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { MissionLog } from '@tak-ps/node-tak/lib/api/mission-log';
-import Auth from '../../common/auth.js';
+import Auth, { AuthResourceAccess } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import {
     TAKItem,
@@ -36,10 +36,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(MissionLog),
         }),
-        security: Auth.security(['mission:read', 'mission-log:read']),
+        security: Auth.security({ resources: [AuthResourceAccess.LAYER], scope: ['mission:read', 'mission-log:read'], token: true }),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:read'], req.params.guid, { token: true });
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const mission = await api.Mission.get(
                 req.params.guid,
@@ -104,7 +104,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-log:create']),
     }, async (req, res) => {
         try {
-            const { username: creatorUid, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:create'], req.params.guid);
+            const { username: creatorUid, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const log = await api.MissionLog.create(
                 req.params.guid,
@@ -144,7 +144,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-log:update']),
     }, async (req, res) => {
         try {
-            const { username: creatorUid, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:update'], req.params.guid);
+            const { username: creatorUid, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const mission = await api.MissionLog.update(
                 req.params.guid,
@@ -176,7 +176,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-log:delete']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-log:delete'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionLog.delete(
                 req.params.log,

@@ -101,7 +101,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: ReverseResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.as_user_or_scope(config, req, 'search:read');
+            const auth = await Auth.is_auth(config, req);
             const elevationUnit = auth instanceof AuthUser
                 ? await config.models.ProfileConfig.from(auth.email).then(p => p['display::elevation'] as string).catch(() => 'feet')
                 : 'feet';
@@ -439,7 +439,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: ForwardResponse,
     }, async (req, res) => {
         try {
-            await Auth.as_user_or_scope(config, req, 'search:read');
+            await Auth.is_auth(config, req);
 
             const response: Static<typeof ForwardResponse> = {
                 items: [],
@@ -484,7 +484,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: SuggestResponse,
     }, async (req, res) => {
         try {
-            await Auth.as_user_or_scope(config, req, 'search:read');
+            await Auth.is_auth(config, req);
 
             const response: Static<typeof SuggestResponse> = {
                 items: [],

@@ -32,7 +32,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const list = await api.MissionProperty.list(
                 req.params.guid,
@@ -63,7 +63,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:read'),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, 'mission:read', req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const property = await api.MissionProperty.get(
                 req.params.guid,
@@ -89,7 +89,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:update'),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, 'mission:update', req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const property = await api.MissionProperty.set(
                 req.params.guid,
@@ -119,7 +119,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:update'),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, 'mission:update', req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionProperty.delete(
                 req.params.guid,
@@ -148,7 +148,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security('mission:update'),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, 'mission:update', req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionProperty.deleteAll(
                 req.params.guid,

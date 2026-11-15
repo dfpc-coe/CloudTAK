@@ -18,8 +18,7 @@ import TAKServerControl from '../../common/control/takserver.js';
  * Resolve the TAK API client a Marti helper should act as.
  *
  * Connection & Layer resource tokens are scoped to a single Connection, so the
- * Connection is inferred from the token and the token must hold the given
- * `group:<level>` permission. User tokens act as the user's own
+ * Connection is inferred from the token. User tokens act as the user's own
  * certificate unless `connection` is given - 0 selects the server certificate
  * (System Admin only), any other value a Connection the user administers.
  * `impersonate` acts as another user's certificate (System Admin only).
@@ -37,7 +36,6 @@ async function groupApi(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches Auth.as_user / Auth.is_connection
     req: Request<any, any, any, any>,
     connection?: number,
-    scope?: string,
     impersonate?: string,
 ): Promise<TAKAPI> {
     if (impersonate !== undefined) {
@@ -47,21 +45,14 @@ async function groupApi(
         return await new TAKServerControl(config).asUser(user.email);
     }
 
-    const auth = await Auth.is_auth(config, req, {
-        scope,
-        resources: [
-            { access: AuthResourceAccess.CONNECTION },
-            { access: AuthResourceAccess.LAYER },
-        ],
-    });
+    const auth = await Auth.is_auth(config, req);
 
     if (auth instanceof AuthResource) {
         let inferred: number;
 
         if (auth.access === AuthResourceAccess.LAYER) {
-            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
             // Server-level Layers have no Connection and use the server certificate
-            inferred = (await config.models.Layer.from(auth.id)).connection ?? 0;
+            inferred = (await Auth.layer(config, auth)).connection ?? 0;
         } else {
             if (auth.id === undefined) throw new Err(401, null, 'Connection Resource Token must contain a Connection ID');
             inferred = Number(auth.id);
@@ -100,9 +91,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             useCache: Type.Optional(Type.Boolean({ description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.' })),
         }),
         res: TAKList(Group),
+        security: Auth.security('group:read', { connection: true }),
     }, async (req, res) => {
         try {
-            const api = await groupApi(config, req, req.query.connection, 'group:read', req.query.impersonate);
+            const api = await groupApi(config, req, req.query.connection, req.query.impersonate);
 
             const groups = await api.Group.list({
                 useCache: req.query.useCache,
@@ -133,9 +125,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             description: Type.Optional(Type.String()),
         })),
         res: GenericMartiResponse,
+        security: Auth.security('group:update', { connection: true }),
     }, async (req, res) => {
         try {
-            const api = await groupApi(config, req, req.query.connection, 'group:update', req.query.impersonate);
+            const api = await groupApi(config, req, req.query.connection, req.query.impersonate);
 
             await api.Group.update(req.body, {});
 
@@ -160,6 +153,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             groups: Type.Optional(Type.String()),
         }),
         res: TAKList(ClientEndpoint),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const api = await groupApi(config, req, req.query.connection);

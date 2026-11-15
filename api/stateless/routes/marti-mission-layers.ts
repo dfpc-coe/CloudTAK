@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-layer:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-layer:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const list = await api.MissionLayer.list(
                 req.params.guid,
@@ -51,7 +51,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-layer:read']),
     }, async (req, res) => {
         try {
-            const { api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-layer:read'], req.params.guid);
+            const { api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const layer = await api.MissionLayer.get(
                 req.params.guid,
@@ -83,7 +83,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-layer:create']),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-layer:create'], req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             const create = await api.MissionLayer.create(
                 req.params.guid,
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-layer:update']),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-layer:update'], req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionLayer.attachUids(
                 req.params.guid,
@@ -149,7 +149,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-layer:update']),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-layer:update'], req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionLayer.setParent(
                 req.params.guid,
@@ -184,7 +184,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-layer:update']),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-layer:update'], req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             if (req.body.name) {
                 await api.MissionLayer.rename(
@@ -219,7 +219,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security(['mission:read', 'mission-layer:delete']),
     }, async (req, res) => {
         try {
-            const { username, api, opts } = await missionControl.scoped(req, ['mission:read', 'mission-layer:delete'], req.params.guid);
+            const { username, api, opts } = await missionControl.scoped(req, req.params.guid);
 
             await api.MissionLayer.delete(
                 req.params.guid,

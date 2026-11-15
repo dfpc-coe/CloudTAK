@@ -34,6 +34,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             features: Type.Array(Feature.InputFeature),
         }),
         res: StandardLayerResponse,
+        security: Auth.security({ user: false, resources: [AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await Auth.as_resource(config, req, {
@@ -283,6 +284,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             uid: Type.String(),
         }),
         res: Feature.Feature,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -324,6 +326,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             type: Type.String(),
             features: Type.Array(Feature.Feature),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
