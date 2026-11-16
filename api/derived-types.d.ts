@@ -19050,25 +19050,61 @@ export interface paths {
                                 proxy: null | string;
                             };
                             protocols: {
-                                rtmp?: {
+                                rtsps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 rtsp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                webrtc?: {
+                                rtmps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                hls?: {
+                                rtmp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 srt?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                             };
                         };
@@ -19304,25 +19340,61 @@ export interface paths {
                                 proxy: null | string;
                             };
                             protocols: {
-                                rtmp?: {
+                                rtsps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 rtsp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                webrtc?: {
+                                rtmps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                hls?: {
+                                rtmp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 srt?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                             };
                         };
@@ -19579,25 +19651,61 @@ export interface paths {
                                 proxy: null | string;
                             };
                             protocols: {
-                                rtmp?: {
+                                rtsps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 rtsp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                webrtc?: {
+                                rtmps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                hls?: {
+                                rtmp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 srt?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                             };
                         };
@@ -60986,25 +61094,61 @@ export interface paths {
                                 source_model: string;
                                 proxy?: null | string;
                                 protocols: {
-                                    rtmp?: {
+                                    rtsps?: {
                                         name: string;
                                         url: string;
+                                        /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                        encrypted?: boolean;
+                                        /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                        note?: string;
                                     };
                                     rtsp?: {
                                         name: string;
                                         url: string;
+                                        /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                        encrypted?: boolean;
+                                        /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                        note?: string;
                                     };
-                                    webrtc?: {
+                                    rtmps?: {
                                         name: string;
                                         url: string;
+                                        /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                        encrypted?: boolean;
+                                        /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                        note?: string;
                                     };
-                                    hls?: {
+                                    rtmp?: {
                                         name: string;
                                         url: string;
+                                        /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                        encrypted?: boolean;
+                                        /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                        note?: string;
                                     };
                                     srt?: {
                                         name: string;
                                         url: string;
+                                        /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                        encrypted?: boolean;
+                                        /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                        note?: string;
+                                    };
+                                    hls?: {
+                                        name: string;
+                                        url: string;
+                                        /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                        encrypted?: boolean;
+                                        /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                        note?: string;
+                                    };
+                                    webrtc?: {
+                                        name: string;
+                                        url: string;
+                                        /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                        encrypted?: boolean;
+                                        /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                        note?: string;
                                     };
                                 };
                             };
@@ -61818,25 +61962,61 @@ export interface paths {
                                 }[];
                             };
                             protocols: {
-                                rtmp?: {
+                                rtsps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 rtsp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                webrtc?: {
+                                rtmps?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
-                                hls?: {
+                                rtmp?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                                 srt?: {
                                     name: string;
                                     url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                hls?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
+                                };
+                                webrtc?: {
+                                    name: string;
+                                    url: string;
+                                    /** @description The traffic of this protocol is encrypted - a closed lock in the UI */
+                                    encrypted?: boolean;
+                                    /** @description Why the protocol is, or is not, encrypted when that is not obvious */
+                                    note?: string;
                                 };
                             };
                         };

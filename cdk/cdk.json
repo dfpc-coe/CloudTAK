@@ -67,7 +67,8 @@
         "enableVersioning": true
       },
       "mediainfra": {
-        "mediaHostname": "media"
+        "mediaHostname": "media",
+        "enableInsecurePorts": true
       }
     },
     "prod": {
@@ -120,7 +121,8 @@
         "enableVersioning": true
       },
       "mediainfra": {
-        "mediaHostname": "media"
+        "mediaHostname": "media",
+        "enableInsecurePorts": false
       }
     },
     "tak-defaults": {

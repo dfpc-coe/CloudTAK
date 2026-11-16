@@ -33,27 +33,25 @@ export enum Action {
     PPROF = 'pprof',
 }
 
+export const StreamProtocol = Type.Object({
+    name: Type.String(),
+    url: Type.String(),
+    encrypted: Type.Optional(Type.Boolean({
+        description: 'The traffic of this protocol is encrypted - a closed lock in the UI',
+    })),
+    note: Type.Optional(Type.String({
+        description: 'Why the protocol is, or is not, encrypted when that is not obvious',
+    })),
+});
+
 export const Protocols = Type.Object({
-    rtmp: Type.Optional(Type.Object({
-        name: Type.String(),
-        url: Type.String(),
-    })),
-    rtsp: Type.Optional(Type.Object({
-        name: Type.String(),
-        url: Type.String(),
-    })),
-    webrtc: Type.Optional(Type.Object({
-        name: Type.String(),
-        url: Type.String(),
-    })),
-    hls: Type.Optional(Type.Object({
-        name: Type.String(),
-        url: Type.String(),
-    })),
-    srt: Type.Optional(Type.Object({
-        name: Type.String(),
-        url: Type.String(),
-    })),
+    rtsps: Type.Optional(StreamProtocol),
+    rtsp: Type.Optional(StreamProtocol),
+    rtmps: Type.Optional(StreamProtocol),
+    rtmp: Type.Optional(StreamProtocol),
+    srt: Type.Optional(StreamProtocol),
+    hls: Type.Optional(StreamProtocol),
+    webrtc: Type.Optional(StreamProtocol),
 });
 
 export const VideoConfig = Type.Object({
@@ -260,6 +258,27 @@ export default class VideoServiceControl {
         return (await res.typed(PathsList)).items;
     }
 
+    /**
+     * Ports and exposure of the TLS terminating load balancer in front of the media
+     * server, which MediaMTX cannot report: its own encryption is off and it only knows
+     * the plaintext ports behind the balancer. Unset, only what MediaMTX reports is offered.
+     *
+     * - MEDIA_RTSPS_PORT / MEDIA_RTMPS_PORT: the TLS ports the balancer forwards to RTSP / RTMP
+     * - MEDIA_INSECURE_PORTS: set to `false` when the plaintext RTSP / RTMP ports are not reachable
+     */
+    private mediaPorts(): { rtsps?: number; rtmps?: number; insecure: boolean } {
+        const port = (value?: string): number | undefined => {
+            const n = Number(value);
+            return Number.isInteger(n) && n > 0 && n < 65536 ? n : undefined;
+        };
+
+        return {
+            rtsps: port(process.env.MEDIA_RTSPS_PORT),
+            rtmps: port(process.env.MEDIA_RTMPS_PORT),
+            insecure: process.env.MEDIA_INSECURE_PORTS !== 'false',
+        };
+    }
+
     async protocols(
         lease: Static<typeof VideoLeaseResponse>,
         populated = ProtocolPopulation.TEMPLATE,
@@ -269,64 +288,84 @@ export default class VideoServiceControl {
 
         if (!c.configured || !c.external) return protocols;
 
-        if (c.config && c.config.rtsp) {
-            // Format: rtsp://localhost:8554/mystream
-            const url = new URL(`/${lease.path}`, c.external.replace(/^http(s)?:/, 'rtsp:'));
-            url.port = c.config.rtspAddress.replace(':', '');
+        const external = c.external;
+        const ports = this.mediaPorts();
+
+        // Format: rtsp://localhost:8554/mystream, rtsps://localhost:8555/mystream
+        const rtsp = (scheme: 'rtsp' | 'rtsps', port: string, name: string): Static<typeof StreamProtocol> => {
+            const url = new URL(`/${lease.path}`, external.replace(/^http(s)?:/, `${scheme}:`));
+            url.port = port;
+
+            const encrypted = scheme === 'rtsps';
 
             if (lease.read_user && lease.stream_user) {
                 if (populated === ProtocolPopulation.READ && lease.read_user && lease.read_pass) {
                     url.username = lease.read_user;
                     url.password = lease.read_pass;
 
-                    protocols.rtsp = {
-                        name: 'Real-Time Streaming Protocol (RTSP)',
-                        url: String(url),
-                    };
+                    return { name, url: String(url), encrypted };
                 } else if (populated === ProtocolPopulation.WRITE && lease.stream_user && lease.stream_pass) {
                     url.username = lease.stream_user;
                     url.password = lease.stream_pass;
 
-                    protocols.rtsp = {
-                        name: 'Real-Time Streaming Protocol (RTSP)',
-                        url: String(url),
-                    };
+                    return { name, url: String(url), encrypted };
                 } else {
                     const rtspurl = new URL(String(url));
                     rtspurl.username = 'username';
                     rtspurl.password = 'password';
 
-                    protocols.rtsp = {
-                        name: 'Real-Time Streaming Protocol (RTSP)',
+                    return {
+                        name,
                         url: String(rtspurl).replace(/username:password/, '{{username}}:{{password}}'),
+                        encrypted,
                     };
                 }
-            } else {
-                protocols.rtsp = {
-                    name: 'Real-Time Streaming Protocol (RTSP)',
-                    url: String(url),
-                };
             }
-        }
 
-        if (c.config && c.config.rtmp) {
-            // Format: rtmp://localhost/mystream
-            const url = new URL(`/${lease.path}`, c.external.replace(/^http(s)?:/, 'rtmp:'));
-            url.port = c.config.rtmpAddress.replace(':', '');
+            return { name, url: String(url), encrypted };
+        };
 
-            protocols.rtmp = {
-                name: 'Real-Time Messaging Protocol (RTMP)',
+        // Format: rtmp://localhost/mystream, rtmps://localhost:1936/mystream
+        const rtmp = (scheme: 'rtmp' | 'rtmps', port: string, name: string): Static<typeof StreamProtocol> => {
+            const url = new URL(`/${lease.path}`, external.replace(/^http(s)?:/, `${scheme}:`));
+            url.port = port;
+
+            const protocol: Static<typeof StreamProtocol> = {
+                name,
                 url: String(url),
+                encrypted: scheme === 'rtmps',
             };
 
             if (lease.stream_user && lease.read_user) {
                 if (populated === ProtocolPopulation.TEMPLATE) {
-                    protocols.rtmp.url = `${protocols.rtmp.url}?user={{username}}&pass={{password}}`;
+                    protocol.url = `${protocol.url}?user={{username}}&pass={{password}}`;
                 } else if (populated === ProtocolPopulation.READ) {
-                    protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.read_user}&pass=${lease.read_pass}`;
+                    protocol.url = `${protocol.url}?user=${lease.read_user}&pass=${lease.read_pass}`;
                 } else if (populated === ProtocolPopulation.WRITE) {
-                    protocols.rtmp.url = `${protocols.rtmp.url}?user=${lease.stream_user}&pass=${lease.stream_pass}`;
+                    protocol.url = `${protocol.url}?user=${lease.stream_user}&pass=${lease.stream_pass}`;
                 }
+            }
+
+            return protocol;
+        };
+
+        if (c.config && c.config.rtsp) {
+            if (ports.rtsps) {
+                protocols.rtsps = rtsp('rtsps', String(ports.rtsps), 'Real-Time Streaming Protocol Secure (RTSPS)');
+            }
+
+            if (ports.insecure) {
+                protocols.rtsp = rtsp('rtsp', c.config.rtspAddress.replace(':', ''), 'Real-Time Streaming Protocol (RTSP)');
+            }
+        }
+
+        if (c.config && c.config.rtmp) {
+            if (ports.rtmps) {
+                protocols.rtmps = rtmp('rtmps', String(ports.rtmps), 'Real-Time Messaging Protocol Secure (RTMPS)');
+            }
+
+            if (ports.insecure) {
+                protocols.rtmp = rtmp('rtmp', c.config.rtmpAddress.replace(':', ''), 'Real-Time Messaging Protocol (RTMP)');
             }
         }
 
@@ -358,6 +397,9 @@ export default class VideoServiceControl {
             protocols.srt = {
                 name: 'Secure Reliable Transport (SRT)',
                 url: String(url) + `?streamid=${streamid}`,
+                // SRT only encrypts when both ends use a passphrase, and none is configured
+                encrypted: false,
+                note: 'SRT only encrypts when a passphrase is set, and none is configured',
             };
         }
 
@@ -441,6 +483,11 @@ export default class VideoServiceControl {
                 };
             }
         }
+
+        // HLS and the WebRTC signalling go through the media URL, and WebRTC media is DTLS encrypted
+        const secure = new URL(external).protocol === 'https:';
+        if (protocols.hls) protocols.hls.encrypted = secure;
+        if (protocols.webrtc) protocols.webrtc.encrypted = secure;
 
         return protocols;
     }

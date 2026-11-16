@@ -1205,6 +1205,30 @@ cover at all.
 
 ---
 
+## Video streaming protocols
+`api/stateless/lib/control/video-service.ts`, `api/derived-types.d.ts`,
+`app/src/components/CloudTAK/Menu/Videos/VideoLeaseModal.vue`,
+`app/src/components/CloudTAK/util/CopyField.vue`,
+`cdk/lib/constructs/cloudtak-api.ts`, `cdk/lib/stack-config.ts`, `cdk/cdk.json`
+- media-infra terminates TLS at its load balancer: RTMPS on 1936 and RTSPS on 8555 forward
+  to MediaMTX's plain RTMP and RTSP. MediaMTX has its own encryption off and only reports
+  the plain ports, so the Video Streaming Protocols list only ever had `rtsp://` and
+  `rtmp://`, and where the plain ports are off (`enableInsecurePorts: false`) it offered
+  URLs that cannot work.
+- `VideoService.protocols()` now also returns `rtsps` and `rtmps`, when the API has
+  `MEDIA_RTSPS_PORT` and `MEDIA_RTMPS_PORT`, and hides `rtsp` and `rtmp` when
+  `MEDIA_INSECURE_PORTS` is `false`. The CDK sets them from `mediainfra.enableInsecurePorts`
+  in `cdk.json` (`dev-test` true, `prod` false) and fixed ports 8555 and 1936. Unset, nothing
+  changes, which keeps other MediaMTX setups as they were.
+- Each protocol has an `encrypted` flag and the lease modal shows a closed lock for an
+  encrypted one and an open lock for the others. RTSPS and RTMPS are encrypted, RTSP and
+  RTMP are not, HLS and WebRTC follow the scheme of the media URL, and SRT is shown open
+  with a note: SRT only encrypts when a passphrase is set, and neither media-infra nor
+  CloudTAK sets one (media-infra's comment saying SRT carries its own encryption is wrong
+  as deployed). `CopyField.vue` has a `label` slot for the lock.
+- `api/derived-types.d.ts` was edited by hand for the new protocol fields; regenerate it from
+  Test after deploying.
+---
 ## Notes for future syncs
 
 1. **Regenerate `api/derived-types.d.ts`** after the new API is live, then commit
