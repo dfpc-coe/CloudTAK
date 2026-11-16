@@ -1098,9 +1098,13 @@ the `ATAK-CloudTAK` platform.
   nothing links to. Deleting the CoT removes its trail as well.
 - The Breadcrumb dropdown of a CoT has a Trail section (point count and span, Zoom,
   History, Clear Trail) and the Breadcrumb button shows a dot whenever a trail exists, not
-  only while it records. Clear asks for a second click in place: the dropdown closes on any
-  click outside its menu, so the usual confirmation dialog (teleported to the body) would
-  be unmounted before the click is handled.
+  only while it records. Clear opens the usual deletion confirmation (`TrailClearDialog.vue`,
+  laid out like `TablerDelete`'s). It is its own component, owned by the host of the dropdown
+  (`CoTView.vue`) or by the viewer banner, because the dropdown closes on any click outside
+  its menu and the dialog is teleported to the body, so a `TablerDelete` inside the
+  dropdown would be unmounted before the click on its confirm button is handled. The
+  Clear and Clear All buttons of the History menu use `TablerDelete`; the radial menu's
+  trail clear still asks for nothing, like the radial delete of a CoT.
 - Clicking within 8px of the trail line opens the radial menu in a new `trail` mode
   (`HistoryLayer.onTrailClick` calls `mapStore.radialClick`) with only the items that make
   sense for a trail: open the CoT, zoom, History and clear (no confirmation, like the
