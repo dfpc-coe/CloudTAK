@@ -661,7 +661,7 @@ the data is LINZ, CC BY 4.0, so the station's `attribution` text is shown).
 `tasks/pmtiles/**`
 
 Elevation and profile route additions with their test suites, plus
-`tasks/pmtiles/src/lib/auth.ts`. Note the LINZ vector style JSON files in
+`tasks/pmtiles/lib/auth.ts`. Note the LINZ vector style JSON files in
 `LINZ_Vector_Map_Styles/` prefix every `fill-pattern`, `line-pattern` and
 `icon-image` with `linz-topographic:` to match the sprite id MapLibre assigns to
 non-default named sprites.

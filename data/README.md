@@ -80,7 +80,7 @@ Observed throughput is roughly 8.6 MB/s, so about two and a half minutes.
 
 Uploaded to `s3://<assets-bucket>/public/nz-building-heights.pmtiles`, which is
 the prefix CloudTAK's own PMTiles service lists and opens
-(`tasks/pmtiles/src/routes/public.ts`).
+(`tasks/pmtiles/routes/public.ts`).
 
 Note that `tiles.test.tak.nz` is **TileServer GL**, not that service — it serves
 `/data/<id>/{z}/{x}/{y}` and reads from its own configuration, so publishing
