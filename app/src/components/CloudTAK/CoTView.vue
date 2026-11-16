@@ -169,10 +169,17 @@
                                 <Breadcrumb
                                     :uid='cot.id'
                                     @live='breadcrumbLive = $event'
+                                    @clear='trailClearing = true'
                                 />
                             </div>
                         </template>
                     </TablerDropdown>
+                    <TrailClearDialog
+                        v-if='trailClearing && cot'
+                        :uid='cot.id'
+                        @close='trailClearing = false'
+                        @cleared='breadcrumbLive = false'
+                    />
 
                     <TablerDelete
                         v-if='is_editable'
@@ -632,6 +639,7 @@ import PropertyCreator from './Property/PropertyCreator.vue';
 import PropertyAuthor from './Property/PropertyAuthor.vue';
 import PropertySpeed from './Property/PropertySpeed.vue';
 import Breadcrumb from './util/Breadcrumb.vue';
+import TrailClearDialog from './util/TrailClearDialog.vue';
 import PropertyElevation from './Property/PropertyElevation.vue';
 import PropertyAttachments from './Property/PropertyAttachments.vue';
 import PropertyLinks from './Property/PropertyLinks.vue';
@@ -720,6 +728,8 @@ const modeOptions = computed<Array<PropertyTab>>(() => {
     return opts;
 });
 const breadcrumbLive = ref(false);
+// Confirming the clear of this CoT's trail, kept here because the dropdown that asks closes with the click
+const trailClearing = ref(false);
 // A recorded trail exists for this CoT, even when it is no longer recording
 const breadcrumbTrail = ref(false);
 let breadcrumbTrailSubscription: { unsubscribe(): void } | undefined;

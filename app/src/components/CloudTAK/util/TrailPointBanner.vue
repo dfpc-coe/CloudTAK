@@ -8,6 +8,12 @@
         </div>
         <TrailActions
             :uid='uid'
+            @clear='confirming = true'
+        />
+        <TrailClearDialog
+            v-if='confirming'
+            :uid='uid'
+            @close='confirming = false'
             @cleared='onCleared'
         />
     </div>
@@ -21,6 +27,7 @@
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import TrailActions from './TrailActions.vue';
+import TrailClearDialog from './TrailClearDialog.vue';
 import { historyPointUid } from '../../../base/trail.ts';
 
 const props = defineProps<{
@@ -29,9 +36,11 @@ const props = defineProps<{
 
 const router = useRouter();
 const uid = ref<string | undefined>(undefined);
+const confirming = ref(false);
 
 watch(() => props.featureId, async (id) => {
     uid.value = undefined;
+    confirming.value = false;
     try {
         uid.value = await historyPointUid(id);
     } catch (err) {

@@ -39,7 +39,7 @@
         <div class='px-3 pb-2'>
             <TrailActions
                 :uid='uid'
-                @cleared='onTrailCleared'
+                @clear='emit("clear")'
             />
         </div>
         <div class='dropdown-divider my-0' />
@@ -115,6 +115,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     live: [enabled: boolean]
+    clear: []
 }>();
 
 const query = ref({
@@ -135,12 +136,6 @@ watch(() => props.uid, async (uid) => {
     liveEnabled.value = await mapStore.worker.db.breadcrumb.get(uid);
 });
 
-// Clearing a trail also stops its live recording
-function onTrailCleared(): void {
-    liveEnabled.value = false;
-    loaded.value = null;
-    emit('live', false);
-}
 
 async function onLiveToggle(enabled: boolean): Promise<void> {
     await mapStore.worker.db.breadcrumb.set(props.uid, enabled);
