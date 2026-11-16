@@ -1025,9 +1025,10 @@ additions that would need to be proposed upstream separately.
 - **Default role and password.** `PATCH /marti/missions/:guid` accepts `defaultRole` and
   `password` (a string sets or replaces it, `null` removes it), using node-tak 12.36's
   `Mission.update()`, `setPassword()` and `removePassword()`. The password calls pass the
-  acting user's UID as `creatorUid`. The "Access" section of `MissionInfo.vue` shows and
-  edits both through `Subscription.update()`. This follows upstream PR #2020; our earlier
+  acting user's UID as `creatorUid`. This follows upstream PR #2020; our earlier
   `MissionControl` helpers and the `PUT`/`DELETE .../password` routes were removed.
+  Since v13.122 upstream's own "Advanced" section of `MissionInfo.vue` edits both, and our
+  "Access" section was dropped in that sync.
 - **Chat and role fetches.** The Data Sync chat box needs `MISSION_WRITE` (TAK Server drops
   chat from read-only subscribers). `Subscription.load` and `Subscription.update` no longer
   fetch the caller's role more than once per subscribe.
@@ -1047,7 +1048,8 @@ additions that would need to be proposed upstream separately.
 - **Stale local copy.** `Subscription.fetch()` now persists what it fetched, and
   `MenuMission.vue` refreshes in the background after opening from the local copy.
   Otherwise fields added later (`defaultRole`) stayed empty for missions opened before.
-- **Invites.** `UserClientSelect.vue` hides current members and pending invitees. TAK Server
+- **Invites.** `UserClientSelect.vue` hides current members and pending invitees (upstream has
+  carried this itself since v13.122, `MissionUsers.vue` just passes the lists). TAK Server
   answers a duplicate invite with a bare 500.
 - **ATAK's role-change warning.** ATAK shows "running an older version of the TAK platform"
   unless the `takv` platform starts with `ATAK` (tested: `ATAK-CIV` and `ATAK-CloudTAK`
@@ -1077,7 +1079,8 @@ additions that would need to be proposed upstream separately.
   The code sits on a white frame with 2.5rem padding in both themes. It used to be inverted in
   dark mode, which no QR reader can decode, and had less than the 4 modules of quiet zone.
 - `api/derived-types.d.ts` was edited by hand for the consolidated `PATCH` (the password
-  routes removed, `password` added to the body). Regenerate it from Test after deploying.
+  routes removed, `password` added to the body). Upstream's regenerated copy now has these
+  fields. Regenerate it from Test after deploying.
 
 Upstream now has the removal and the default role/password controls. What remains ours is
 the role-change guard in `MissionUsers.vue`, the stale-copy refresh, `t-x-m-r` handling and
