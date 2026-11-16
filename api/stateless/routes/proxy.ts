@@ -88,9 +88,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             url: Type.String({ description: 'Absolute http(s) URL of the image to proxy' }),
             token: Type.Optional(Type.String()),
         }),
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            await Auth.is_auth(config, req);
 
             const { contentType, body } = await fetchProxyImage(config, req.query.url);
 

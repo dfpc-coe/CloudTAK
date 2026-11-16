@@ -47,6 +47,7 @@ export const CoreEntity = pgTable('core_entity', {
     links: jsonb().$type<Array<Static<typeof CoreEntityLink>>>().notNull().default([]),
     style: jsonb().$type<Static<typeof CoreEntityStyle>>().notNull().default({}),
     geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(), // Required for Events - a Device may be unlocated
+    stale: integer(), // Seconds after its last update the Entity stops being broadcast - NULL never expires
 });
 
 /**

@@ -122,9 +122,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: 'Update Config Key/Values',
         body: Type.Partial(FullConfig),
         res: Type.Partial(FullConfig),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const updatedKeys = Object.keys(req.body) as (keyof Static<typeof FullConfig>)[];
             const refreshGeofence = updatedKeys.some(key => GeofenceConfigKeys.has(key));
@@ -220,6 +221,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     });
 
     await schema.get('/config/login', {
+        security: [],
         name: 'Login Config',
         group: 'Config',
         description: 'Return Login Config',
@@ -290,6 +292,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     });
 
     await schema.get('/config/tiles', {
+        security: [],
         name: 'Tile Config',
         group: 'Config',
         description: 'Return Tile Config',

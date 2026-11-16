@@ -27,11 +27,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         description: 'Return MapLibre Font Glyphs',
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                token: true,
-            });
+            await Auth.is_auth(config, req);
 
             try {
                 await fsp.access(new URL(`../../fonts/${req.params.fontstack}/${req.params.start}-${req.params.end}.pbf`, import.meta.url));

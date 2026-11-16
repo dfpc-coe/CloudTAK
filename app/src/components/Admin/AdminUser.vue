@@ -284,6 +284,8 @@
                     </div>
                 </div>
 
+                <AdminUserChannels :username='String(route.params.user)' />
+
                 <AdminUserSession :username='String(route.params.user)' />
             </template>
         </div>
@@ -298,6 +300,7 @@ import StatusDot from '../util/StatusDot.vue';
 import CertificateBadge from '../util/CertificateBadge.vue';
 import CertificateChannelsBadge from '../util/CertificateChannelsBadge.vue';
 import CertificateInfo from '../util/CertificateInfo.vue';
+import AdminUserChannels from './AdminUserChannels.vue';
 import AdminUserSession from './AdminUserSession.vue';
 import {
     TablerInput,

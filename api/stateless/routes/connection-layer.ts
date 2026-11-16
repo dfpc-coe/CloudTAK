@@ -62,9 +62,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'LayerAdmin',
         description: 'Redeploy all Layers with latest CloudFormation output',
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             let page = 0;
             let list;
@@ -97,9 +98,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'LayerAdmin',
         description: 'List all layers and whether a newer task version is available',
         res: LayerUpdateManagementListResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const items = await layerControl.listUpdates();
 
@@ -144,6 +146,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             items: Type.Array(LayerResponse),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const resources = [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }];
@@ -151,7 +154,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
             } else {
-                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
             }
 
@@ -270,6 +275,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
         }),
         res: LayerResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             let username: string | null = null;
@@ -345,6 +351,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             config: Type.Optional(Layer_Config),
         }),
         res: LayerIncomingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -442,6 +449,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             config: Type.Optional(Layer_Config),
         }),
         res: LayerIncomingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -559,6 +567,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -618,6 +627,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             filters: Type.Optional(FilterContainer),
         }),
         res: LayerOutgoingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -682,6 +692,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             filters: Type.Optional(FilterContainer),
         }),
         res: LayerOutgoingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -737,6 +748,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -842,6 +854,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
         }),
         res: LayerResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             CommonLayerControl.validatePermissions(req.body.permissions);
@@ -860,7 +873,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     throw new Err(400, null, 'Layer is not an admin layer');
                 }
             } else {
-                const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const auth = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
 
                 if (req.body.permissions !== undefined && auth.layer) {
                     throw new Err(403, null, 'Layer tokens cannot modify Layer permissions');
@@ -986,6 +1001,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER], token: true }),
     }, async (req, res) => {
         try {
             const resources = [
@@ -995,12 +1011,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let layer;
             if (req.params.connectionid === 0) {
-                await Auth.as_user(config, req, { admin: true, token: true });
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
                 const { connection } = await Auth.is_connection(config, req, {
-                    token: true, resources,
+                    resources,
                 }, req.params.connectionid);
 
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -1044,6 +1060,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const resources = [
@@ -1056,7 +1073,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -1088,6 +1107,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const resources = [
@@ -1099,7 +1119,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
                 layer = await layerControl.from(connection, req.params.layerid);
             }
 

@@ -21,11 +21,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const eventControl = new EntityControl(config, 'Event');
     const deviceControl = new EntityControl(config, 'Device');
 
-    const resources = [
-        { access: AuthResourceAccess.CONNECTION },
-        { access: AuthResourceAccess.LAYER },
-    ];
-
     const EntityParam = Type.Object({
         entity: Type.String({ format: 'uuid' }),
     });
@@ -137,10 +132,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'timeline:read',
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
@@ -179,10 +171,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEntityTimelineResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'timeline:read',
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
@@ -204,10 +193,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEntityTimelineResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'timeline:create',
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
@@ -240,10 +226,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'timeline:create',
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
@@ -303,10 +286,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEntityTimelineResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'timeline:update',
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;
@@ -334,10 +314,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'timeline:delete',
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { entity, control } = await loadEntity(auth, req.params.entity);
             const connection = auth instanceof AuthResource ? await control.resourceConnection(auth) : null;

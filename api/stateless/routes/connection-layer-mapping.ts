@@ -104,6 +104,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(LayerMappingResponse),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await layerAccess(req, req.params.connectionid, req.params.layerid);
@@ -138,6 +139,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             mapping: Type.Optional(MappingObject),
         }),
         res: LayerMappingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await layerAccess(req, req.params.connectionid, req.params.layerid);
@@ -173,6 +175,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: 'Get a Mapping of an incoming layer configuration',
         params: MappingParams,
         res: LayerMappingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await layerAccess(req, req.params.connectionid, req.params.layerid);
@@ -196,6 +199,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             mapping: Type.Optional(MappingObject),
         }),
         res: LayerMappingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await layerAccess(req, req.params.connectionid, req.params.layerid);
@@ -228,6 +232,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: 'Delete a Mapping of an incoming layer configuration',
         params: MappingParams,
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await layerAccess(req, req.params.connectionid, req.params.layerid);

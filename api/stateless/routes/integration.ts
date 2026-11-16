@@ -94,9 +94,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             readme: Type.Optional(Type.String()),
         }),
         res: IntegrationResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const integration = await config.models.Integration.generate(req.body);
 
@@ -114,9 +115,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             integrationid: Type.Integer(),
         }),
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const layers = await config.models.Layer.count({
                 where: eq(LayerSchema.task, req.params.integrationid),
@@ -248,9 +250,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         description: 'Delete a given Integration version from the Registry',
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const { tasks } = await ECR.versions();
 
@@ -310,9 +313,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
         }),
         res: IntegrationResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const integration = await config.models.Integration.commit(req.params.integrationid, req.body);
 

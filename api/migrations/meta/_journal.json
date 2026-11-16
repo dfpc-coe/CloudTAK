@@ -1604,6 +1604,13 @@
       "when": 1794065767147,
       "tag": "0229_core_entity_timeline_layer",
       "breakpoints": true
+    },
+    {
+      "idx": 230,
+      "version": "7",
+      "when": 1794848431879,
+      "tag": "0230_core_entity_stale",
+      "breakpoints": true
     }
   ]
 }

@@ -29,10 +29,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(ProfileVideoResponse),
         }),
-
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const list = await config.models.ProfileVideo.list({
                 limit: req.query.limit,

@@ -27,6 +27,12 @@
 
 ### Pending Release
 
+- :tada: `API` Core Devices accept a `stale` number of seconds - the Device is no longer broadcast to TAK clients once that long has passed since it was last updated, until its next update. The value is stored on the Core Entity so other kinds can adopt it
+- :rocket: `API` A Core Device without a `stale` is broadcast with a 30 second stale time in place of 30 minutes, so a Device that loses its location or is deleted drops from TAK clients promptly
+- :rocket: `API` Route `security` declarations are now enforced by `@openaddresses/batch-schema` before a request body is parsed or validated - a route without a declaration accepts users only, and every route that accepts Layer, Connection or other resource tokens, a `token` query parameter, or requires a System Administrator declares it via `Auth.security()`
+- :rocket: `API` The token of a request is parsed once and shared by every `Auth` call of a route handler
+- :rocket: `API` An unauthenticated request now receives its `401` before any validation error, with a `WWW-Authenticate` header
+
 ### v13.122.8 - 2026-11-10
 
 - :rocket: Display and allow filtering by Layer ID

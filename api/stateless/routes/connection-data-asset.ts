@@ -31,6 +31,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             assets: Type.Array(AssetResponse),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -72,6 +73,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             'multipart/form-data': true,
         },
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         let data: InferSelectModel<typeof Data>;
         try {
@@ -173,6 +175,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             ext: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -237,10 +240,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             asset: Type.String(),
             ext: Type.String(),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION], token: true }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },

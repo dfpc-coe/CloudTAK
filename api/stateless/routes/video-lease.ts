@@ -21,6 +21,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const videoControl = new ECSVideoControl(config);
 
     await schema.post('/video/auth', {
+        security: [],
         name: 'Auth Lease',
         group: 'VideoLease',
         description: `Authenticate a request to view a lease`,
@@ -232,11 +233,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 active: Type.Boolean({ description: 'True if the Media Server currently reports the lease path as ready' }),
             })])),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.LEASE] }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LEASE, id: undefined }],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const ephemeral = AllBooleanCast(req.query.ephemeral);
             const expired = AllBooleanCast(req.query.expired);
@@ -327,11 +327,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             lease: Type.Union([Type.Integer(), Type.String()]),
         }),
         res: VideoLeaseResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.LEASE] }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LEASE, id: undefined }],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             let lease: Static<typeof VideoLeaseResponse>;
             if (auth instanceof AuthResource) {
@@ -366,11 +365,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             path: Type.Optional(PathListItem),
             protocols: Protocols,
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.LEASE] }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LEASE, id: undefined }],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             let lease: Static<typeof VideoLeaseResponse>;
             if (auth instanceof AuthResource) {
