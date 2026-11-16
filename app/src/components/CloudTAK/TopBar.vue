@@ -21,39 +21,38 @@
                 style='height: 32px;'
             />
 
-            <TablerDropdown>
-                <TablerIconButton
-                    id='map-notifications'
-                    title='Notifications Icon'
-                    class='cloudtak-hover'
-                    :class='{ "alert-pulse": alertNotifications }'
-                    :hover='false'
-                >
-                    <IconAlertTriangle
-                        v-if='alertNotifications'
-                        :size='40'
-                        stroke='1'
-                        class='text-danger'
-                    />
-                    <IconBell
-                        v-else
-                        :size='40'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <template #dropdown>
-                    <Notifications />
-                </template>
-            </TablerDropdown>
+            <div class='position-relative'>
+                <TablerDropdown>
+                    <TablerIconButton
+                        id='map-notifications'
+                        title='Notifications Icon'
+                        class='cloudtak-hover'
+                        :class='{ "alert-pulse": alertNotifications }'
+                        :hover='false'
+                    >
+                        <IconAlertTriangle
+                            v-if='alertNotifications'
+                            :size='40'
+                            stroke='1'
+                            class='text-danger'
+                        />
+                        <IconBell
+                            v-else
+                            :size='40'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <template #dropdown>
+                        <Notifications />
+                    </template>
+                </TablerDropdown>
 
-            <span
-                v-if='notifications'
-                class='badge bg-red mb-2'
-            />
-            <span
-                v-else
-                style='width: 10px;'
-            />
+                <span
+                    v-if='notifications'
+                    class='badge bg-red text-white notification-count'
+                    v-text='notificationCount'
+                />
+            </div>
 
             <DrawTools />
 
@@ -124,6 +123,11 @@ const notifications = useObservable<number>(
     }))
 );
 
+const notificationCount = computed(() => {
+    const count = notifications.value || 0;
+    return count > 99 ? '99+' : String(count);
+});
+
 const alertNotifications = useObservable<number>(
     from(liveQuery(async () => {
         return await TAKNotification.countByType(NotificationType.Alert)
@@ -158,5 +162,15 @@ const alertNotifications = useObservable<number>(
 
 .alert-pulse {
     animation: alert-pulse 1.2s ease-in-out infinite;
+}
+
+.notification-count {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 2px 5px;
+    font-size: 11px;
+    line-height: 1;
+    pointer-events: none;
 }
 </style>

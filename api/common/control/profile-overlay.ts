@@ -27,6 +27,7 @@ export type ProfileOverlayPatch = {
     url?: string;
     mode_id?: string;
     styles?: Array<unknown>;
+    args?: Record<string, string | string[]>;
 };
 
 export type ProfileOverlayInput = ProfileOverlayPatch & {

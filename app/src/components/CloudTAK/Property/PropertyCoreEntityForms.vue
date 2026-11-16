@@ -112,6 +112,11 @@
             :err='error'
         />
         <template v-else>
+            <TablerAlert
+                v-if='actionError'
+                :err='actionError'
+            />
+
             <TablerNone
                 v-if='!responses.length'
                 label='No Completed Forms'
@@ -142,6 +147,27 @@
                             <span class='mx-1'>&middot;</span>
                             <TablerEpoch :date='item.created' />
                         </div>
+                    </div>
+                    <div
+                        v-if='canEdit(item)'
+                        class='d-flex align-items-center flex-shrink-0'
+                        @click.stop
+                    >
+                        <TablerIconButton
+                            title='Edit Response'
+                            @click='emit("edit", item)'
+                        >
+                            <IconPencil
+                                :size='18'
+                                stroke='1'
+                            />
+                        </TablerIconButton>
+                        <TablerDelete
+                            displaytype='icon'
+                            title='Delete Response'
+                            :size='18'
+                            @delete='deleteResponse(item)'
+                        />
                     </div>
                     <IconChevronUp
                         v-if='opened.has(item.id)'
@@ -178,12 +204,15 @@
  * Event: every Form Response linked to it, expandable into a read-only
  * render of the submitted values against the Form's schema. When editable,
  * a picker offers every Form shared with one of the Event's Channels so a
- * new Response can be completed for it
+ * new Response can be completed for it. A Response's submitter, the Form's
+ * author and System Admins can edit or delete it
  */
 
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import type { CoreForm, CoreEntityFormResponse } from '../../../types.ts';
+import { loadProfileIdentity } from '../../../utils/entity-access.ts';
+import type { ProfileIdentity } from '../../../utils/entity-access.ts';
 import PropertySection from '../util/PropertySection.vue';
 import {
     TablerNone,
@@ -191,6 +220,7 @@ import {
     TablerEpoch,
     TablerInput,
     TablerSchema,
+    TablerDelete,
     TablerLoading,
     TablerDropdown,
     TablerIconButton,
@@ -199,6 +229,7 @@ import {
 import {
     IconPlus,
     IconForms,
+    IconPencil,
     IconChevronUp,
     IconChevronDown,
 } from '@tabler/icons-vue';
@@ -216,12 +247,16 @@ const props = defineProps<{
 const emit = defineEmits<{
     /** A Form was picked for completion - the parent opens the FormWizard */
     (e: 'add', form: CoreForm): void;
+    /** An existing Response was picked for editing - the parent opens the FormWizard on it */
+    (e: 'edit', response: CoreEntityFormResponse): void;
 }>();
 
 const loading = ref(true);
 const error = ref<Error | undefined>();
+const actionError = ref<Error | undefined>();
 const responses = ref<Array<CoreEntityFormResponse>>([]);
 const opened = ref<Set<string>>(new Set());
+const profile = ref<ProfileIdentity>({});
 
 const search = ref('');
 const forms = ref<Array<CoreForm>>([]);
@@ -246,6 +281,41 @@ const filtered = computed<Array<CoreForm>>(() => {
 watch(() => [props.event, props.refresh], async () => {
     await listResponses();
 }, { immediate: true });
+
+onMounted(async () => {
+    profile.value = await loadProfileIdentity();
+});
+
+/** Mirrors the API rule - the submitter, the Form author, or a System Admin */
+function canEdit(item: CoreEntityFormResponse): boolean {
+    if (profile.value.system_admin) return true;
+    if (!profile.value.username) return false;
+
+    return item.username === profile.value.username
+        || item.form.username === profile.value.username;
+}
+
+async function deleteResponse(item: CoreEntityFormResponse): Promise<void> {
+    actionError.value = undefined;
+
+    try {
+        const res = await server.DELETE('/api/core/form/{:form}/response/{:response}', {
+            params: {
+                path: {
+                    ':form': item.form.id,
+                    ':response': item.id,
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        responses.value = responses.value.filter((r) => r.id !== item.id);
+        opened.value.delete(item.id);
+    } catch (err) {
+        actionError.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
 
 /** Fetched lazily when the picker opens - the list rarely changes so it is only refetched on demand */
 async function listForms(force = false): Promise<void> {

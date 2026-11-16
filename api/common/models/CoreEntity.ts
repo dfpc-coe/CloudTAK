@@ -224,6 +224,36 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         }
     }
 
+    /** The kind and sharing columns of an Entity of any kind - enough for access control */
+    async shared_from(id: string): Promise<{
+        id: string;
+        kind: LayerMapping_Destination;
+        username: string | null;
+        connection: number | null;
+        editable: boolean;
+        channels: number[];
+    }> {
+        const SubTable = channelsSubquery(this.pool);
+
+        const pgres = await this.pool
+            .select({
+                id: CoreEntity.id,
+                kind: CoreEntity.kind,
+                username: CoreEntity.username,
+                connection: CoreEntity.connection,
+                editable: CoreEntity.editable,
+                channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
+            })
+            .from(CoreEntity)
+            .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
+            .where(eq(CoreEntity.id, id))
+            .limit(1);
+
+        if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
+
+        return { ...pgres[0], channels: pgres[0].channels as number[] };
+    }
+
     async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEventResponse>> {
         const SubTable = channelsSubquery(this.pool);
 

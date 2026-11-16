@@ -9,15 +9,8 @@
             v-if='event'
             #header
         >
-            <div class='flex-shrink-0'>
-                <FeatureIcon
-                    :key='event.type'
-                    :size='32'
-                    :feature='iconFeature'
-                />
-            </div>
             <div
-                class='flex-grow-1 mx-2'
+                class='flex-grow-1 me-2'
                 style='min-width: 0'
             >
                 <CopyField
@@ -61,6 +54,14 @@
             style='min-height: 0;'
         >
             <div class='entity-actions d-flex align-items-center flex-nowrap px-2 py-1 border-bottom cloudtak-header flex-shrink-0'>
+                <PropertyCoreEntityStatus
+                    class='ps-1 me-1 flex-shrink-1'
+                    style='min-width: 0; overflow: hidden;'
+                    :started='event.started'
+                    :ended='event.ended'
+                    :priority='event.priority'
+                />
+
                 <TablerIconButton
                     v-if='hasMap'
                     title='Zoom To'
@@ -139,17 +140,46 @@
                 />
             </div>
 
+            <PropertyTabs
+                v-model='tab'
+                :tabs='tabs'
+                class='flex-shrink-0 pt-2'
+            />
+
             <div
                 class='overflow-auto overflow-x-hidden flex-grow-1'
                 style='min-height: 0;'
             >
-                <div class='pt-1'>
+                <div
+                    v-show='tab === "timeline"'
+                    class='h-100'
+                >
+                    <PropertyCoreEntityTimeline
+                        :entity='event.id'
+                        :edit='is_editable'
+                        @change='timelineChanged'
+                    />
+                </div>
+
+                <div
+                    v-show='tab === "details"'
+                    class='pt-1'
+                >
                     <div class='px-2 pb-2'>
-                        <PropertyType
-                            :key='event.id'
+                        <AppearanceRow
+                            :properties='entityAppearance(event)'
+                            :geometry='event.geometry'
+                            :edit='is_editable && !embedded'
+                            @click='router.push(`/event/${event.id}/appearance`)'
+                        />
+                    </div>
+
+                    <div class='px-2 pb-2'>
+                        <PropertyCoreEntityLatestActivity
+                            :entry='latest'
+                            :total='timelineTotal'
                             :edit='is_editable'
-                            :model-value='event.type'
-                            @update:model-value='patch({ type: String($event) })'
+                            @open='tab = "timeline"'
                         />
                     </div>
 
@@ -199,21 +229,13 @@
                         :key='event.id'
                         :username='event.username'
                     />
-                </div>
 
-                <PropertyRemarks
-                    :model-value='event.remarks'
-                    :edit='is_editable'
-                    @submit='patch({ remarks: $event })'
-                />
+                    <PropertyRemarks
+                        :model-value='event.remarks'
+                        :edit='is_editable'
+                        @submit='patch({ remarks: $event })'
+                    />
 
-                <PropertyTabs
-                    v-model='tab'
-                    :tabs='tabs'
-                    class='mt-2'
-                />
-
-                <div v-show='tab === "details"'>
                     <PropertyCoreEntityLinks
                         :model-value='event.links'
                         :edit='is_editable'
@@ -227,14 +249,6 @@
                         :remarks='event.remarks'
                         :channels='event.channels'
                         @update:model-value='patch({ missions: $event })'
-                    />
-
-                    <!-- PropertyStyle has no read-only mode so hide it for non-editors -->
-                    <PropertyStyle
-                        v-if='is_editable'
-                        geometry='Point'
-                        :model-value='styleProperties'
-                        @update:model-value='updateStyle($event)'
                     />
 
                     <PropertyCoreEntityExternalId
@@ -274,6 +288,7 @@
                         :channels='event.channels'
                         :edit='is_editable'
                         @add='completeForm($event)'
+                        @edit='editResponse($event)'
                     />
                 </div>
             </div>
@@ -291,6 +306,7 @@
             :event-name='event.name'
             :forms='formWizard.forms'
             :title='formWizard.title'
+            :response='formWizard.response'
             @complete='completeFormWizard'
             @close='formWizard = undefined; formsRefresh += 1'
         />
@@ -315,15 +331,18 @@ import {
     IconCircleX,
     IconPlayerStop,
     IconPlayerPlay,
+    IconForms,
+    IconClockEdit,
+    IconAffiliate,
+    IconUserCheck,
+    IconListDetails,
 } from '@tabler/icons-vue';
 import MenuTemplate from './util/MenuTemplate.vue';
-import FeatureIcon from './util/FeatureIcon.vue';
 import CopyField from './util/CopyField.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyFactRow from './util/PropertyFactRow.vue';
 import PropertyTabs, { type PropertyTab } from './util/PropertyTabs.vue';
-import PropertyType from './Property/PropertyType.vue';
-import PropertyStyle from './Property/PropertyStyle.vue';
+import AppearanceRow from './Appearance/AppearanceRow.vue';
 import PropertyAuthor from './Property/PropertyAuthor.vue';
 import PropertyRemarks from './Property/PropertyRemarks.vue';
 import PropertyCoreEntityPriority from './Property/PropertyCoreEntityPriority.vue';
@@ -336,14 +355,18 @@ import PropertyCoreEntityAssignments from './Property/PropertyCoreEntityAssignme
 import PropertyCoreEntityMetadata from './Property/PropertyCoreEntityMetadata.vue';
 import PropertyCoreEntityMission from './Property/PropertyCoreEntityMission.vue';
 import PropertyCoreEntityTimes from './Property/PropertyCoreEntityTimes.vue';
+import PropertyCoreEntityStatus from './Property/PropertyCoreEntityStatus.vue';
+import PropertyCoreEntityTimeline from './Property/PropertyCoreEntityTimeline.vue';
+import PropertyCoreEntityLatestActivity from './Property/PropertyCoreEntityLatestActivity.vue';
 import FormWizard from './util/FormWizard.vue';
-import type { CoreForm, CoreEntity, CoreEntityStyle, CoreEntityBoardSummary } from '../../types.ts';
+import type { CoreForm, CoreEntity, CoreEntityBoardSummary, CoreEntityFormResponse, CoreEntityTimelineEntry } from '../../types.ts';
 import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useEntityAccess } from '../../utils/entity-access.ts';
-import { entityMarkerProperties } from '../../utils/core-entity.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
+import { entityMarkerProperties, entityAppearance } from '../../utils/core-entity.ts';
 
 // When an eventId prop is provided the view runs embedded (the Event Board
 // modal) - the Event comes from the prop instead of the route and map
@@ -382,43 +405,32 @@ const formWizard = ref<{
     forms: Array<CoreForm>;
     column?: string;
     title?: string;
+    response?: { id: string; response: Record<string, unknown> };
 } | undefined>();
 
 /** Bumped when the wizard submits Responses so the Forms section re-fetches */
 const formsRefresh = ref(0);
 
-const tab = ref('details');
+/** Newest Timeline entry & total - the Latest Activity row and the tab badge */
+const latest = ref<CoreEntityTimelineEntry | undefined>();
+const timelineTotal = ref(0);
 
-const tabs: Array<PropertyTab> = [
-    { value: 'details', label: 'Details' },
-    { value: 'channels', label: 'Channels' },
-    { value: 'assignments', label: 'Assignments' },
-    { value: 'forms', label: 'Forms' },
-];
+const tabs = computed<Array<PropertyTab>>(() => [
+    { value: 'details', label: 'Details', icon: IconListDetails },
+    { value: 'timeline', label: 'Timeline', icon: IconClockEdit, count: timelineTotal.value },
+    { value: 'channels', label: 'Channels', icon: IconAffiliate },
+    { value: 'assignments', label: 'Assignments', icon: IconUserCheck },
+    { value: 'forms', label: 'Forms', icon: IconForms },
+]);
+
+const tab = useRouteTab({
+    base: () => `/event/${eventKey.value}`,
+    tabs: () => tabs.value.map((t) => t.value),
+    fallback: 'details',
+    embedded: () => embedded.value,
+});
 
 const { is_creator, is_editable, load: loadAccess } = useEntityAccess(event);
-
-// The header icon isn't a CoT - FeatureIcon derives the MIL-STD symbol from the
-// type the same way it does for one
-const iconFeature = computed(() => {
-    if (!event.value) return { properties: {}, geometry: { type: 'Point' } };
-
-    return {
-        properties: {
-            type: event.value.type,
-            icon: event.value.style.icon,
-            'marker-color': event.value.style['marker-color'],
-        },
-        geometry: event.value.geometry,
-    };
-});
-
-const styleProperties = computed(() => {
-    if (!event.value) return {};
-
-    // PropertyStyle falls back to the type when an icon is cleared
-    return { ...event.value.style, type: event.value.type };
-});
 
 onMounted(async () => {
     await loadAccess();
@@ -443,11 +455,44 @@ async function fetchEvent(): Promise<void> {
 
     try {
         event.value = await loadEvent();
+        await loadLatest();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 
     loading.value = false;
+}
+
+/** The newest Timeline entry - a failure here leaves the Event up without the Latest Activity row */
+async function loadLatest(): Promise<void> {
+    if (!event.value) return;
+
+    try {
+        const res = await server.GET('/api/core/entity/{:entity}/timeline', {
+            params: {
+                path: { ':entity': event.value.id },
+                query: {
+                    limit: 1,
+                    page: 0,
+                    order: 'desc',
+                    sort: 'occurred',
+                    filter: '',
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        latest.value = res.data.items[0];
+        timelineTotal.value = res.data.total;
+    } catch (err) {
+        console.error('Failed to load the Timeline of Core Event', err);
+    }
+}
+
+function timelineChanged(total: number): void {
+    timelineTotal.value = total;
+    void loadLatest();
 }
 
 /** Reload server state in place - no loading flash, the current Event stays up on failure */
@@ -590,6 +635,14 @@ function completeForm(form: CoreForm): void {
     formWizard.value = { forms: [form], title: 'Complete Form' };
 }
 
+function editResponse(item: CoreEntityFormResponse): void {
+    formWizard.value = {
+        forms: [item.form],
+        title: 'Edit Response',
+        response: { id: item.id, response: item.response },
+    };
+}
+
 async function completeFormWizard(): Promise<void> {
     const pending = formWizard.value;
     formWizard.value = undefined;
@@ -627,21 +680,6 @@ function updateCoordinates(coordinates: number[]): void {
             coordinates: coordinates.slice(0, 2)
         }
     });
-}
-
-function updateStyle(properties: Record<string, unknown>): void {
-    // PropertyStyle round trips the whole property object - only the keys the
-    // Event style supports can be submitted back to the API
-    const style: CoreEntityStyle = {};
-
-    if (typeof properties.icon === 'string') style.icon = properties.icon;
-    if (typeof properties['marker-color'] === 'string') style['marker-color'] = properties['marker-color'];
-
-    if (properties['marker-opacity'] !== undefined && !isNaN(Number(properties['marker-opacity']))) {
-        style['marker-opacity'] = Number(properties['marker-opacity']);
-    }
-
-    void patch({ style });
 }
 
 function flyTo(): void {

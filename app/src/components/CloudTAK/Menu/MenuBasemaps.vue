@@ -338,7 +338,8 @@ async function setBasemap(basemap: Basemap) {
             frequency: basemap.frequency,
             url: `/api/basemap/${basemap.id}/tiles`,
             mode_id: String(basemap.id),
-            styles: basemap.styles
+            styles: basemap.styles,
+            args: basemap.args
         });
 
         await mapStore.reconcileOverlays();
@@ -353,7 +354,8 @@ async function setBasemap(basemap: Basemap) {
             url: `/api/basemap/${basemap.id}/tiles`,
             mode: 'basemap',
             mode_id: String(basemap.id),
-            styles: basemap.styles
+            styles: basemap.styles,
+            args: basemap.args
         });
     }
 }
@@ -409,7 +411,8 @@ async function addOverlay(basemap: Basemap) {
             mode_id: String(basemap.id),
             frequency: basemap.frequency,
             type: basemap.type,
-            styles: basemap.styles
+            styles: basemap.styles,
+            args: basemap.args
         });
 
         loading.value = false;

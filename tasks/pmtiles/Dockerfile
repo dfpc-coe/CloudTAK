@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/nodejs:24
+FROM public.ecr.aws/lambda/nodejs:26
 
 COPY tasks/pmtiles/package*.json ${LAMBDA_TASK_ROOT}/
 

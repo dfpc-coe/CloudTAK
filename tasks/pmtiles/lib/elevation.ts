@@ -7,7 +7,9 @@ import type { LineString } from 'geojson';
 import tileCover from '@mapbox/tile-cover';
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { Type } from '@sinclair/typebox';
-import sharp from 'sharp';
+import { Tile, Terrain } from '@tak-ps/node-tiles';
+import type { Raster } from '@tak-ps/node-tiles';
+import { decodeImage } from '@tak-ps/node-tiles/node';
 import { fetch } from '@tak-ps/node-safeurl';
 import s3client from './s3.js';
 
@@ -78,31 +80,12 @@ export const ElevationProfileType = Type.Object({
 });
 
 interface DecodedTile {
-    x: number;
-    y: number;
-    z: number;
-    width: number;
-    height: number;
-    data: Uint8Array;
+    raster: Raster;
+    terrain: Terrain;
 }
 
 function clamp(value: number, min: number, max: number): number {
     return Math.min(Math.max(value, min), max);
-}
-
-function tileKey(x: number, y: number, z: number): string {
-    return `${z}/${x}/${y}`;
-}
-
-function mercatorFraction(lon: number, lat: number, zoom: number): { x: number; y: number } {
-    const scale = 2 ** zoom;
-    const clampedLat = clamp(lat, -85.05112878, 85.05112878);
-    const sin = Math.sin((clampedLat * Math.PI) / 180);
-
-    return {
-        x: ((lon + 180) / 360) * scale,
-        y: (0.5 - (Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI))) * scale,
-    };
 }
 
 export type ElevationFetch = (url: string) => Promise<Pick<Response, 'ok' | 'status' | 'statusText' | 'arrayBuffer'>>;
@@ -239,50 +222,43 @@ export async function getElevationProfile(
 
             if (!buffer) return null;
 
-            let image;
+            let raster: Raster;
             try {
-                image = await sharp(buffer)
-                    .ensureAlpha()
-                    .raw()
-                    .toBuffer({ resolveWithObject: true });
+                raster = await decodeImage(buffer);
             } catch (err) {
                 throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Tile is not a supported raster image');
             }
 
-            return {
-                x: tile[0],
-                y: tile[1],
-                z: tile[2],
-                width: image.info.width,
-                height: image.info.height,
-                data: image.data,
-            } satisfies DecodedTile;
+            let terrain: Terrain;
+            try {
+                terrain = Terrain.decode(new Tile(tile[2], tile[0], tile[1]), raster, encoding);
+            } catch (err) {
+                throw new Err(400, err instanceof Error ? err : new Error(String(err)), 'Tile is not a square RGB raster-dem tile');
+            }
+
+            return { raster, terrain } satisfies DecodedTile;
         });
 
     const tileMap = new Map<string, DecodedTile>();
     for (const tile of results) {
         if (!tile) continue;
-        tileMap.set(tileKey(tile.x, tile.y, tile.z), tile);
+        tileMap.set(tile.terrain.tile.key, tile);
     }
 
     const samples = distances.map((sampleDistance) => {
         const sampledPoint = along(line, sampleDistance, { units: 'kilometers' });
         const coordinate = sampledPoint.geometry.coordinates as [number, number];
-        const fractional = mercatorFraction(coordinate[0], coordinate[1], opts.zoom);
-        const x = Math.floor(fractional.x);
-        const y = Math.floor(fractional.y);
-        const tile = tileMap.get(tileKey(x, y, opts.zoom));
+        const tile = tileMap.get(Tile.fromLngLat(coordinate[0], coordinate[1], opts.zoom).key);
 
         let elevation: number | null = null;
         if (tile) {
-            const px = clamp(Math.floor((fractional.x - tile.x) * tile.width), 0, tile.width - 1);
-            const py = clamp(Math.floor((fractional.y - tile.y) * tile.height), 0, tile.height - 1);
-            const index = (py * tile.width + px) * 4;
+            const { raster, terrain } = tile;
+            const [fx, fy] = terrain.tile.project(coordinate[0], coordinate[1], terrain.size);
+            const px = clamp(Math.floor(fx), 0, terrain.size - 1);
+            const py = clamp(Math.floor(fy), 0, terrain.size - 1);
 
-            if (tile.data[index + 3] !== 0) {
-                elevation = encoding === 'terrarium'
-                    ? tile.data[index] * 256 + tile.data[index + 1] + tile.data[index + 2] / 256 - 32768
-                    : -10000 + ((tile.data[index] * 256 * 256 + tile.data[index + 1] * 256 + tile.data[index + 2]) * 0.1);
+            if (raster.channels < 4 || raster.get(px, py)[3] !== 0) {
+                elevation = terrain.at(px, py);
             }
         }
 

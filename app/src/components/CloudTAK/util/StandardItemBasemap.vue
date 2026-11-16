@@ -12,7 +12,17 @@
 
         <div class='basemap-content ms-3 flex-grow-1'>
             <div class='basemap-title-row d-flex align-items-center gap-2'>
-                <span class='fw-semibold flex-grow-1'>{{ basemap.name }}</span>
+                <span class='fw-semibold'>{{ basemap.name }}</span>
+                <TablerBadge
+                    v-if='isBeta'
+                    class='rounded-pill small'
+                    :title='`${isSlopeURL(basemap.url) ? "Slope angle shading" : "Raster compositing"} is in beta - rendering may change`'
+                    background-color='rgba(255, 171, 0, 0.15)'
+                    border-color='rgba(255, 171, 0, 0.35)'
+                    text-color='#c98500'
+                >
+                    Beta
+                </TablerBadge>
             </div>
 
             <div
@@ -77,6 +87,8 @@
 import StandardItem from './StandardItem.vue';
 import { TablerBadge } from '@tak-ps/vue-tabler';
 import { BasemapTypeConfig } from '../Menu/Basemaps/types.ts';
+import { isSlopeURL } from '../Menu/Basemaps/slope.ts';
+import { isCompositeURL } from '../Menu/Basemaps/composite.ts';
 import type { BasemapSourceType } from '../Menu/Basemaps/types.ts';
 import type { Basemap } from '../../../types.ts';
 import { computed } from 'vue';
@@ -91,6 +103,7 @@ const props = defineProps<{
 }>();
 
 const isPrivate = computed(() => Boolean(props.basemap.username));
+const isBeta = computed(() => isSlopeURL(props.basemap.url) || isCompositeURL(props.basemap.url));
 
 const badges = computed<BasemapBadge[]>(() => {
     const output: BasemapBadge[] = [];

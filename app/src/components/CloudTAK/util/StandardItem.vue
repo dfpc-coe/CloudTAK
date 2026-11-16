@@ -26,10 +26,6 @@ const interactive = computed(() => {
     return props.hover && typeof attrs.onClick === 'function';
 });
 
-// Enter and Space click the row, but only when the row itself has focus. A key
-// pressed in a control inside the row (a password input, a button) bubbles up
-// here too, and clicking the row then would act on it instead of the control
-// and block typing a space.
 function activate(event: KeyboardEvent): void {
     if (!interactive.value || event.target !== event.currentTarget) return;
 

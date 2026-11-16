@@ -149,6 +149,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let data = await config.models.Data.generate({
                 ...req.body,
+                name: req.body.name.trim(),
                 connection: req.params.connectionid,
                 username,
             });
