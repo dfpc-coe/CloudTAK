@@ -61,7 +61,7 @@ export default class DataMission {
             }
 
             const mission = await api.Mission.create({
-                name: data.name,
+                name: data.name.trim(),
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
                 description: data.description,
                 defaultRole: data.mission_role,

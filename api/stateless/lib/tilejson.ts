@@ -7,6 +7,8 @@ import type ConfigStateless from '../config.js';
 import { TileJSON } from '../../common/types.js';
 import { BasemapProtocol, TileJSONActions } from './interface-basemap.js';
 import { EsriBase, EsriProxyLayer } from './esri.js';
+import BasemapControl from '../../common/control/basemap.js';
+import type { TileArgs } from '../../common/control/basemap.js';
 
 export const AugmentedTileJSON = Type.Composite([
     TileJSON,
@@ -43,8 +45,8 @@ export async function basemapTileJSON(
     let tileURL: string;
     if (hosted) {
         // Hosted PMTiles — pass the direct URL through; already on the same trusted host.
-        tileURL = basemap.url;
-        if (opts.token) tileURL = tileURL + `?token=${opts.token}`;
+        tileURL = BasemapControl.applyTileArgs(basemap.url, basemap.args);
+        if (opts.token) tileURL = tileURL + `${tileURL.includes('?') ? '&' : '?'}token=${opts.token}`;
     } else {
         // For external basemaps, check if the hostname is in the trusted-origins
         // allowlist (CLOUDTAK_TILE_ORIGINS). If so, return the direct URL so the
@@ -62,14 +64,14 @@ export async function basemapTileJSON(
             // Translate CloudTAK's {$z}/{$x}/{$y} storage notation to MapLibre's
             // standard {z}/{x}/{y} — the proxy handles both via regex, but the
             // browser receives the URL verbatim so it must use the standard form.
-            tileURL = basemap.url
+            tileURL = BasemapControl.applyTileArgs(basemap.url
                 .replace(/\{\$?z\}/g, '{z}')
                 .replace(/\{\$?x\}/g, '{x}')
                 .replace(/\{\$?y\}/g, '{y}')
-                .replace(/\{\$?q\}/g, '{q}');
+                .replace(/\{\$?q\}/g, '{q}'), basemap.args);
         } else {
-            tileURL = `${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{z}/{x}/{y}`;
-            if (opts.token) tileURL = tileURL + `?token=${opts.token}`;
+            tileURL = BasemapControl.applyTileArgs(`${config.BASEMAP_TILES_URL}/${basemap.id}/tiles/{z}/{x}/{y}`, basemap.args);
+            if (opts.token) tileURL = tileURL + `${tileURL.includes('?') ? '&' : '?'}token=${opts.token}`;
         }
     }
 
@@ -93,7 +95,7 @@ export async function basemapTileJSON(
     }
 
     if (basemap.tilejson && (basemap.tilejson.startsWith('http://') || basemap.tilejson.startsWith('https://'))) {
-        const url = new URL(basemap.tilejson);
+        const url = new URL(BasemapControl.applyTileArgs(basemap.tilejson, basemap.args));
 
         if (url.hostname === pmtilesHost) {
             url.searchParams.set('token', opts.upstreamToken);
@@ -133,6 +135,9 @@ export async function basemapTileJSON(
         // URL.pathname percent-encodes the `{z}/{x}/{y}` template braces to
         // `%7B`/`%7D`, so decode before stripping the tile-coordinate segment.
         tilejsonUrl.pathname = decodeURIComponent(parsedUrl.pathname).replace(/\/tiles\/\{[^}]+\}.*$/, '');
+        for (const [key, value] of Object.entries((basemap.args ?? {}) as TileArgs)) {
+            for (const v of Array.isArray(value) ? value : [value]) tilejsonUrl.searchParams.append(key, v);
+        }
         tilejsonUrl.searchParams.set('token', opts.upstreamToken);
 
         const tj = await fetch(tilejsonUrl);

@@ -137,24 +137,15 @@
                     stroke='2.5'
                 />
             </button>
-            <div class='d-flex align-items-center mx-2 mb-2 mt-1'>
-                <div class='flex-grow-1 me-2'>
-                    <TablerInput
-                        v-model='message'
-                        :placeholder='placeholder'
-                        @keyup.enter='sendMessage'
-                    />
-                </div>
-                <TablerIconButton
-                    title='Send Message'
-                    @click='sendMessage'
-                >
-                    <IconSend
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-            </div>
+            <MessageComposer
+                ref='composer'
+                class='mx-2 mb-2 mt-1'
+                submit-label='Send'
+                :placeholder='placeholder'
+                :collapse-on-send='false'
+                :toolbar='false'
+                @send='sendMessage'
+            />
         </div>
     </div>
 </template>
@@ -162,7 +153,6 @@
 <script setup lang='ts'>
 import { ref, watch, onMounted, nextTick } from 'vue';
 import {
-    IconSend,
     IconArrowDown,
     IconClock,
     IconCheck,
@@ -173,12 +163,11 @@ import { ChatStatus } from '../../../database.ts';
 import {
     TablerAlert,
     TablerDelete,
-    TablerIconButton,
-    TablerInput,
     TablerLoading,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import timeDiff from '../../../timediff.ts';
+import MessageComposer from './MessageComposer.vue';
 
 export type ChatMessage = {
     id: string | number;
@@ -215,7 +204,7 @@ const emit = defineEmits<{
 
 const scrollContainer = ref<HTMLElement | null>(null);
 const atBottom = ref(true);
-const message = ref('');
+const composer = ref<InstanceType<typeof MessageComposer>>();
 const selected = ref<Set<string | number>>(new Set());
 
 watch(atBottom, (value) => {
@@ -255,10 +244,10 @@ function toggleSelect(id: string | number) {
     }
 }
 
-function sendMessage() {
-    if (!message.value.trim().length) return;
-    emit('send', message.value);
-    message.value = '';
+function sendMessage(text: string) {
+    if (!text.trim().length) return;
+    emit('send', text);
+    void composer.value?.reset();
 }
 
 function emitDelete() {

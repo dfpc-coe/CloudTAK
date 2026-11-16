@@ -3,15 +3,22 @@ import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
 import history, { Context } from 'connect-history-api-fallback';
+import morgan from 'morgan';
 import Schema from '@openaddresses/batch-schema';
 import '../../../common/error.js';
 import { StandardResponse } from '../../../common/types.js';
+import { identityOf } from '../../../common/auth.js';
 import type Config from '../../../common/config.js';
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('../../../package.json', import.meta.url))));
 
 export default async function buildApi(config: Config): Promise<express.Application> {
     const app = express();
+
+    // Resolve the client address from X-Forwarded-For set by nginx and any private load balancer
+    app.set('trust proxy', 'loopback, linklocal, uniquelocal');
+
+    morgan.token('remote-user', req => identityOf(req));
 
     const schema = new Schema(express.Router(), {
         prefix: '/api',

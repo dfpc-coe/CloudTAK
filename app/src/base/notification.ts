@@ -3,9 +3,22 @@ import type { Observable } from 'dexie';
 import type { DBNotification } from '../database.ts';
 import { v4 as randomUUID } from 'uuid';
 import BaseInterface from './interface.ts';
+import ProfileConfig from './profile.ts';
+import type { Profile } from '../types.ts';
 import type { BaseInterface_FromOptions } from './interface.ts';
 
 export { NotificationType };
+
+export type NotificationProfileKey = Extract<keyof Profile, `notification_${string}`>;
+
+export const NotificationProfileKeys: Record<NotificationType, NotificationProfileKey> = {
+    [NotificationType.Contact]: 'notification_contact',
+    [NotificationType.Import]: 'notification_import',
+    [NotificationType.Alert]: 'notification_alert',
+    [NotificationType.Medical]: 'notification_medical',
+    [NotificationType.Mission]: 'notification_mission',
+    [NotificationType.Chat]: 'notification_chat',
+};
 
 export default class TAKNotification extends BaseInterface {
     static readonly listCacheKey = 'notification';
@@ -84,7 +97,9 @@ export default class TAKNotification extends BaseInterface {
         body: string,
         url: string,
         toast?: boolean
-    ): Promise<TAKNotification> {
+    ): Promise<TAKNotification | null> {
+        if (!await TAKNotification.enabled(type)) return null;
+
         const id = randomUUID();
 
         const notification = new TAKNotification(
@@ -112,6 +127,14 @@ export default class TAKNotification extends BaseInterface {
         });
 
         return notification;
+    }
+
+    /**
+     * Whether the user's Profile allows notifications of the given type
+     */
+    static async enabled(type: NotificationType): Promise<boolean> {
+        const config = await ProfileConfig.get(NotificationProfileKeys[type]);
+        return config?.value !== false;
     }
 
     static async update(id: string, opts: {

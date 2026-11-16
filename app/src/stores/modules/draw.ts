@@ -302,7 +302,8 @@ export default class DrawTool {
                     showCoordinatePoints: true
                 }),
                 new terraDraw.TerraDrawCircleMode({
-                    drawInteraction
+                    drawInteraction,
+                    snapping: { toCustom }
                 }),
                 new terraDraw.TerraDrawSelectMode({
                     flags: {
@@ -469,7 +470,9 @@ export default class DrawTool {
                     await this.stop();
 
                     await this.mapStore.worker.db.add(feat, {
-                        authored: true
+                        authored: true,
+                        // Newly drawn - its id cannot already be in a Mission
+                        skipMissionLookup: true
                     });
 
                     await this.mapStore.refresh();

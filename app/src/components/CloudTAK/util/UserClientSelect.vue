@@ -37,9 +37,7 @@ const props = defineProps<{
     input?: boolean;
     limit?: number;
     groups?: string[];
-    /** Contacts with one of these UIDs are not listed (eg: users that are already members) */
     excludeUids?: string[];
-    /** Contacts with one of these callsigns (case insensitive) are not listed (eg: pending invites) */
     excludeCallsigns?: string[];
 }>();
 
@@ -48,23 +46,18 @@ const emit = defineEmits(['select', 'update:modelValue']);
 const contacts = ref<ContactType[]>([]);
 const filter = ref(props.modelValue || '');
 
-const selectable = computed(() => {
-    const uids = new Set(props.excludeUids || []);
-    const callsigns = new Set((props.excludeCallsigns || []).map((callsign) => callsign.toLowerCase()));
-
-    return contacts.value.filter((c) => {
-        return !uids.has(c.uid) && !callsigns.has(c.callsign.toLowerCase());
-    });
-});
+const excludedUids = computed(() => new Set(props.excludeUids || []));
+const excludedCallsigns = computed(() => new Set((props.excludeCallsigns || []).map(c => c.toLowerCase())));
 
 const filteredList = computed(() => {
-    if (!filter.value) {
-        return selectable.value.slice(0, props.limit || 10);
-    }
-
-    return selectable.value.filter(c => {
+    const list = contacts.value.filter(c => {
+        if (excludedUids.value.has(c.uid)) return false;
+        if (excludedCallsigns.value.has(c.callsign.toLowerCase())) return false;
+        if (!filter.value) return true;
         return c.callsign.toLowerCase().includes(filter.value.toLowerCase());
-    }).slice(0, props.limit || 10);
+    });
+
+    return list.slice(0, props.limit || 10);
 });
 
 onMounted(async () => {

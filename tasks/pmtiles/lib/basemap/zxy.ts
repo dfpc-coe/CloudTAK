@@ -1,5 +1,5 @@
 import type { Response } from 'express';
-import { BasemapProtocol, TileOpts } from './protocol.js';
+import { BasemapProtocol, ResolvedTileOpts, TileBuffer } from './protocol.js';
 
 /**
  * ZXY / Quadkey basemap protocol.
@@ -7,18 +7,27 @@ import { BasemapProtocol, TileOpts } from './protocol.js';
  * by streaming the upstream response directly to the client.
  */
 export default class ZXYBasemap extends BasemapProtocol {
-    protected async _tile(
-        z: number, x: number, y: number,
-        res: Response,
-        opts: Required<TileOpts>,
-    ): Promise<void> {
-        const url = new URL(this.basemap.url
+    url(z: number, x: number, y: number): URL {
+        return new URL(this.basemap.url
             .replace(/\{\$?z\}/, String(z))
             .replace(/\{\$?x\}/, String(x))
             .replace(/\{\$?y\}/, String(y))
             .replace(/\{\$?q\}/, String(BasemapProtocol.quadkey(z, x, y))),
         );
+    }
 
-        return this.pipe(url, res, opts);
+    protected async _tile(
+        z: number, x: number, y: number,
+        res: Response,
+        opts: ResolvedTileOpts,
+    ): Promise<void> {
+        return this.pipe(this.url(z, x, y), res, opts);
+    }
+
+    protected async _buffer(
+        z: number, x: number, y: number,
+        opts: ResolvedTileOpts,
+    ): Promise<TileBuffer | null> {
+        return this.fetchBuffer(this.url(z, x, y), opts);
     }
 }

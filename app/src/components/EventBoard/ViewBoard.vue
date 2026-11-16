@@ -162,7 +162,6 @@
                                     :size='18'
                                     label='Remove'
                                     title='Remove from Board'
-                                    class='mt-1'
                                     @delete='removeEvent(column, placement)'
                                 />
                             </template>

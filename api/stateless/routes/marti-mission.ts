@@ -327,12 +327,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'Updated set of groups (channels) to assign to the Mission. Caller must be MISSION_OWNER or admin.',
             })),
             defaultRole: Type.Optional(Type.Enum(MissionSubscriberRole, {
-                description: 'Role given to anyone who subscribes without an explicit role. Requires the MISSION_SET_ROLE permission',
+                description: 'Role granted to new subscribers. Caller must have MISSION_SET_ROLE and every permission of the new role.',
             })),
             password: Type.Optional(Type.Unsafe<string | null>({
                 type: ['string', 'null'],
                 minLength: 1,
-                description: 'New password, or null to remove the password. Requires the MISSION_SET_PASSWORD permission',
+                description: 'New password, or null to remove the password. Caller must have MISSION_SET_PASSWORD.',
             })),
         }),
         res: Mission,

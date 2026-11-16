@@ -78,6 +78,7 @@ export default async function router(schema: Schema) {
                 req.params.y,
                 res,
                 {
+                    token: auth.token,
                     headers: Basemap.upstreamHeaders({
                         accept: req.headers['accept'],
                         acceptLanguage: req.headers['accept-language'],

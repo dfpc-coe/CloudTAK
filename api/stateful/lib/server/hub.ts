@@ -308,6 +308,10 @@ export async function startHubRpc(config: ConfigStateful): Promise<Server> {
             resolve(srv);
         });
 
+        // Must exceed the hub ALB's 60s idle timeout or reused connections are closed mid-request and surface as 502s
+        srv.keepAliveTimeout = 65 * 1000;
+        srv.headersTimeout = 66 * 1000;
+
         srv.on('error', (err) => {
             reject(new Error(`Hub RPC server failed to start: ${err.message}`, { cause: err }));
         });

@@ -1,0 +1,2 @@
+ALTER TABLE "core_entity_timeline" ADD COLUMN "layer" integer;--> statement-breakpoint
+ALTER TABLE "core_entity_timeline" ADD CONSTRAINT "core_entity_timeline_layer_layers_id_fk" FOREIGN KEY ("layer") REFERENCES "public"."layers"("id") ON DELETE set null ON UPDATE no action;

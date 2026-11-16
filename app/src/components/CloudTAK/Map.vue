@@ -787,7 +787,7 @@ async function toLocation() {
     const location = await mapStore.worker.profile.location;
 
     if ([LocationState.Preset, LocationState.Live].includes(location.source)) {
-        mapStore.map.flyTo({
+        mapStore.map.jumpTo({
             center: location.coordinates as LngLatLike,
             zoom: 14
         });
@@ -921,7 +921,9 @@ async function handleRadial(event: string): Promise<void> {
         const feat = toRaw(mapStore.radial.cot as Feature) as Feature;
 
         await mapStore.worker.db.add(feat, {
-            authored: true
+            authored: true,
+            // Fresh id from the contextmenu - it cannot already be in a Mission
+            skipMissionLookup: true
         });
 
         await mapStore.refresh();
@@ -965,7 +967,9 @@ async function handleRadial(event: string): Promise<void> {
         feat.properties.archived = true;
 
         await mapStore.worker.db.add(feat, {
-            authored: true
+            authored: true,
+            // Fresh id - it cannot already be in a Mission
+            skipMissionLookup: true
         });
 
         await mapStore.refresh();

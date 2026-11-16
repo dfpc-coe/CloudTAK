@@ -168,6 +168,7 @@
         <NominateModal
             v-if='nominate && channel !== undefined'
             :channel='channel'
+            :channel-name='channelName'
             :placed='placedEvents'
             @nominate='nominateEvent($event)'
             @close='nominate = false'
@@ -328,6 +329,10 @@ const viewEvent = ref<string | undefined>();
 
 const selectedBoard = computed<CoreEntityBoard | undefined>(() => {
     return boards.value.find((b) => b.id === board.value);
+});
+
+const channelName = computed<string | undefined>(() => {
+    return channels.value.find((ch) => ch.bitpos === channel.value)?.name;
 });
 
 const placedEvents = computed<Set<string>>(() => {

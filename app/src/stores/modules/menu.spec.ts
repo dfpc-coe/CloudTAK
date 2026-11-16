@@ -24,6 +24,19 @@ describe('MenuManager.items', () => {
         expect(menu.items.value.map((i) => i.key)).toContain('server');
     });
 
+    it('lists a single features entry and ignores a stale devices preference', () => {
+        const menu = new MenuManager({});
+        menu.preferenceOrder.value = [
+            { key: 'devices', visibility: 'full' },
+            { key: 'features', visibility: 'full' },
+        ];
+
+        const keys = menu.items.value.map((i) => i.key);
+        expect(keys).not.toContain('devices');
+        expect(keys[0]).toBe('features');
+        expect(menu.items.value[0].route).toBe('/menu/features');
+    });
+
     it('hides external routes on native platforms', () => {
         isNativePlatform.mockReturnValue(true);
 
