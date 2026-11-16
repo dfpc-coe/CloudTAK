@@ -1,10 +1,13 @@
 <template>
     <div v-bind='$attrs'>
         <label
-            v-if='label'
+            v-if='label || $slots.label'
             class='mx-1'
-            v-text='props.label'
-        />
+        >
+            <slot name='label'>
+                <span v-text='props.label' />
+            </slot>
+        </label>
 
         <div
             v-if='editing && wysiwyg'

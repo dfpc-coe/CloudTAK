@@ -175,20 +175,32 @@
                         >
                             <template v-if='protocol'>
                                 <CopyField
-                                    v-if='secure && mode === "read"'
                                     :label='protocol.name'
-                                    :model-value='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.read_user || "").replace("{{password}}", editLease.read_pass || "")'
-                                />
-                                <CopyField
-                                    v-else-if='secure && mode === "publish"'
-                                    :label='protocol.name'
-                                    :model-value='protocol.url.replace("{{mode}}", mode).replace("{{username}}", editLease.stream_user || "").replace("{{password}}", editLease.stream_pass || "")'
-                                />
-                                <CopyField
-                                    v-else
-                                    :label='protocol.name'
-                                    :model-value='protocol.url.replace("{{mode}}", mode)'
-                                />
+                                    :model-value='protocolUrl(protocol.url)'
+                                >
+                                    <template #label>
+                                        <span
+                                            v-if='protocol.encrypted !== undefined'
+                                            class='me-1'
+                                            :class='protocol.encrypted ? "text-success" : "text-warning"'
+                                            role='img'
+                                            :title='protocolLockTitle(protocol)'
+                                            :aria-label='protocolLockTitle(protocol)'
+                                        >
+                                            <IconLock
+                                                v-if='protocol.encrypted'
+                                                :size='16'
+                                                stroke='1'
+                                            />
+                                            <IconLockOpen
+                                                v-else
+                                                :size='16'
+                                                stroke='1'
+                                            />
+                                        </span>
+                                        <span v-text='protocol.name' />
+                                    </template>
+                                </CopyField>
                             </template>
                         </div>
                     </template>
@@ -438,6 +450,8 @@ import {
     IconPencil,
     IconBook2,
     IconAffiliate,
+    IconLock,
+    IconLockOpen,
 } from '@tabler/icons-vue';
 import {
     TablerRefreshButton,
@@ -466,6 +480,29 @@ const loading = ref(true);
 const secure = ref(false);
 const disabled = ref(true);
 const protocols = ref<VideoLeaseProtocols>({});
+
+type VideoProtocol = NonNullable<VideoLeaseProtocols[keyof VideoLeaseProtocols]>;
+
+// Fill the mode and, for a secured lease, the credentials of the chosen mode into a protocol URL
+function protocolUrl(url: string): string {
+    const filled = url.replace('{{mode}}', mode.value);
+
+    if (secure.value && mode.value === 'read') {
+        return filled
+            .replace('{{username}}', editLease.value.read_user || '')
+            .replace('{{password}}', editLease.value.read_pass || '');
+    } else if (secure.value && mode.value === 'publish') {
+        return filled
+            .replace('{{username}}', editLease.value.stream_user || '')
+            .replace('{{password}}', editLease.value.stream_pass || '');
+    }
+
+    return filled;
+}
+
+function protocolLockTitle(protocol: VideoProtocol): string {
+    return protocol.note || (protocol.encrypted ? 'Encrypted' : 'Not encrypted');
+}
 
 const channels = ref<string[]>([]);
 

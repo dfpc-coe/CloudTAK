@@ -67,5 +67,11 @@ export interface ContextEnvironmentConfig {
   };
   mediainfra: {
     mediaHostname: string;
+    /**
+     * Whether media-infra exposes the plaintext RTSP (8554) and RTMP (1935) ports, its
+     * `enableInsecurePorts`. When false CloudTAK only offers the TLS variants.
+     * Defaults to true when unset.
+     */
+    enableInsecurePorts?: boolean;
   };
 }

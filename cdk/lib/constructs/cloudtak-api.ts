@@ -497,6 +497,11 @@ export class CloudTakApi extends Construct {
         // PR #717 - Configurable ECR and ECS names
         'ECR_TASKS_REPOSITORY_NAME': etlEcrRepository.repositoryName,
         'ECS_CLUSTER_PREFIX': `TAK-${envConfig.stackName}-BaseInfra`,
+        // The TLS ports of the media-infra load balancer (RTSPS and RTMPS) and whether its
+        // plaintext RTSP and RTMP ports exist, which MediaMTX cannot report itself
+        'MEDIA_RTSPS_PORT': '8555',
+        'MEDIA_RTMPS_PORT': '1936',
+        'MEDIA_INSECURE_PORTS': envConfig.mediainfra.enableInsecurePorts === false ? 'false' : 'true',
         // Media server URL
         'MEDIA_URL': `https://${envConfig.mediainfra.mediaHostname}.${cdk.Fn.importValue(createBaseImportValue(envConfig.stackName, BASE_EXPORT_NAMES.HOSTED_ZONE_NAME))}:9997`,
         // OIDC configuration - CloudTAK performs the Authorization Code flow
