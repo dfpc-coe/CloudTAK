@@ -31,9 +31,9 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>User's are able to login to the service via FaceID or a Passkey</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>CloudTAK shared location with other authenticated users for real-time team situational awareness</string>
+	<string>CloudTAK shares location with other authenticated users for real-time team situational awareness</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>CloudTAK shared location with other authenticated users for real-time team situational awareness</string>
+	<string>CloudTAK shares location with other authenticated users for real-time team situational awareness</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

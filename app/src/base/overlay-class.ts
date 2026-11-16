@@ -70,6 +70,8 @@ export default class Overlay {
     styles: Array<LayerSpecification>;
     token: string | null;
     tilejson: OverlayTileJSON | null;
+    /** Query params applied to every tile request - the user's copy of the basemap args */
+    args: Record<string, string | string[]>;
 
     static async create(
         body: ProfileOverlay | ProfileOverlay_Create,
@@ -112,6 +114,7 @@ export default class Overlay {
             mode: 'internal',
             mode_id: undefined,
             styles: body.styles || [],
+            args: {},
             pos: 3,
         }, {
             clickable: body.clickable,
@@ -170,6 +173,7 @@ export default class Overlay {
         this.styles = overlay.styles as Array<LayerSpecification>;
         this.token = overlay.token;
         this.tilejson = overlay.tilejson ?? null;
+        this.args = overlay.args ?? {};
 
         if (this.frequency) {
             this._timer = setInterval(async () => {
@@ -393,7 +397,7 @@ export default class Overlay {
             if (!mapStore.map.getSource(String(this.id))) {
                 // TileJSON load failures surface via the map `error` event (see map store)
                 registerTileJSONProtocol();
-                setOverlayTileJSON(this.id, { url: this.url, tilejson: this.tilejson });
+                setOverlayTileJSON(this.id, { url: this.url, tilejson: this.tilejson, args: this.args });
 
                 try {
                     mapStore.map.addSource(String(this.id), this.sourceSpec());
@@ -542,6 +546,7 @@ export default class Overlay {
             || record.token !== current.token
             || (record.encoding ?? null) !== (current.encoding ?? null)
             || (!!record.tilejson && !!current.tilejson && JSON.stringify(record.tilejson) !== JSON.stringify(current.tilejson))
+            || JSON.stringify(record.args ?? {}) !== JSON.stringify(current.args ?? {})
             || (record.styles.length > 0 && JSON.stringify(record.styles) !== JSON.stringify(current.styles));
 
         if (sourceChanged) this.remove();
@@ -562,6 +567,7 @@ export default class Overlay {
         this.url = record.url;
         this.token = record.token;
         this.tilejson = record.url !== current.url ? (record.tilejson ?? null) : (record.tilejson ?? this.tilejson);
+        this.args = record.args ?? {};
 
         if (record.frequency !== current.frequency) {
             if (this._timer) clearInterval(this._timer);
@@ -616,10 +622,20 @@ export default class Overlay {
     async update(body: {
         visible?: boolean;
         opacity?: number;
+        args?: Record<string, string | string[]>;
     }): Promise<void> {
         const mapStore = useMapStore();
 
         let changed = false;
+
+        if (body.args !== undefined && JSON.stringify(body.args) !== JSON.stringify(this.args)) {
+            this.args = body.args;
+
+            // Tile URLs carry the args, so the source is rebuilt from the updated TileJSON entry
+            this.remove();
+            await this.init();
+            changed = true;
+        }
 
         if (body.opacity !== undefined && body.opacity !== this.opacity) {
             this.opacity = body.opacity;
@@ -673,7 +689,8 @@ export default class Overlay {
                 mode_id: this.mode_id ?? undefined,
                 url: this.url,
                 visible: this.visible,
-                styles: dropStyles ? [] : this.styles
+                styles: dropStyles ? [] : this.styles,
+                args: this.args
             }
         });
 
@@ -713,6 +730,7 @@ export default class Overlay {
             actions: this.actions,
             url: this.url,
             styles,
+            args: JSON.parse(JSON.stringify(this.args)) as Record<string, string | string[]>,
             token: this.token,
             tilejson: this.tilejson
         } as DBOverlay;

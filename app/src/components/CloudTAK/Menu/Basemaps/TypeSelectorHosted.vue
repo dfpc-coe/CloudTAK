@@ -1,7 +1,7 @@
 <template>
     <div class='row row-cards'>
         <TypeSelectorSelected
-            type='hosted'
+            :type='type'
             @change-type='emit("change-type")'
         />
 
@@ -65,6 +65,9 @@ import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../../std.ts';
 import StandardItem from '../../util/StandardItem.vue';
 import TypeSelectorSelected from './TypeSelectorSelected.vue';
+import { fromImport } from './modes.ts';
+import type { BasemapImported } from './modes.ts';
+import type { BasemapImport, BasemapSourceType } from './types.ts';
 import {
     TablerNone,
     TablerInput,
@@ -75,9 +78,13 @@ import {
     IconDatabase,
 } from '@tabler/icons-vue';
 
+defineProps<{
+    type: BasemapSourceType;
+}>();
+
 const emit = defineEmits<{
     'change-type': [];
-    done: [value: unknown];
+    imported: [value: BasemapImported];
 }>();
 
 const loading = ref({
@@ -130,7 +137,7 @@ async function select(tile: { name: string }) {
         detail.tiles = detail.tiles.map((tile) => stripToken(String(tile)));
     }
 
-    emit('done', detail);
+    emit('imported', fromImport(detail as BasemapImport));
 }
 
 function stripToken(tile: string): string {

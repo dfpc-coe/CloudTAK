@@ -26,6 +26,13 @@ export const ProfileConfigDefaults = {
     'geometry::point::color': '#ff0000',
     'geometry::point::icon': '',
 
+    'notification::contact': true,
+    'notification::import': true,
+    'notification::alert': true,
+    'notification::medical': true,
+    'notification::mission': true,
+    'notification::chat': true,
+
     'menu::order': [],
 
     'tak::phone': '',

@@ -116,6 +116,18 @@ describe('Subscription', () => {
         expect(call?.[1].headers).toEqual({ MissionAuthorization: 'secret' });
     });
 
+    it('adopts the stored role when the same subscription change was already applied', async () => {
+        const sub = await Subscription.from(GUID);
+        if (!sub) throw new Error('missing subscription');
+
+        await db.subscription.update(GUID, { role: owner });
+
+        await sub.update({ subscribed: true });
+
+        expect(roleCalls()).toBe(0);
+        expect(sub.role.type).toBe('MISSION_OWNER');
+    });
+
     it('does not refetch the role for metadata only updates', async () => {
         const sub = await Subscription.from(GUID);
         if (!sub) throw new Error('missing subscription');

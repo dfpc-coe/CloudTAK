@@ -39,6 +39,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             scheme: input.scheme,
             overlay: input.overlay,
             tilejson: input.tilejson,
+            args: input.args,
         });
 
         if (input.type === Basemap_Type.VECTOR) {
@@ -114,6 +115,7 @@ export default class BasemapModel extends Modeler<typeof Basemap> {
             scheme: input.scheme,
             updated: input.updated,
             tilejson: input.tilejson,
+            args: input.args,
         });
 
         if (base.type === Basemap_Type.VECTOR) {

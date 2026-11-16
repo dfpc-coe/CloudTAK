@@ -4,15 +4,8 @@
             v-if='cot'
             #header
         >
-            <div class='flex-shrink-0'>
-                <FeatureIcon
-                    :key='cot.properties.type'
-                    :size='32'
-                    :feature='cot'
-                />
-            </div>
             <div
-                class='flex-grow-1 mx-2'
+                class='flex-grow-1 me-2'
                 style='min-width: 0'
             >
                 <CopyField
@@ -314,178 +307,176 @@
                 </div>
             </div>
 
+            <PropertyTabs
+                v-model='mode'
+                :tabs='modeOptions'
+                class='flex-shrink-0 pt-2'
+            />
+
             <div
                 class='overflow-auto overflow-x-hidden flex-grow-1'
                 style='min-height: 0;'
             >
-                <PropertyOrigin
-                    v-if='subscription'
-                    :key='cot.id'
-                    :subscription='subscription'
-                    :uid='cot.id'
-                />
+                <div v-if='mode === "details"'>
+                    <PropertyOrigin
+                        v-if='subscription'
+                        :key='cot.id'
+                        :subscription='subscription'
+                        :uid='cot.id'
+                    />
 
-                <div class='pt-1'>
-                    <div
-                        v-if='cot.properties.type.startsWith("a-") || cot.properties.type.startsWith("u-") || isSIDCType(cot.properties.type)'
-                        class='px-2 py-2'
-                    >
-                        <!-- Not keyed on the type - a remount would collapse the
-                             type selector every time a new type is picked -->
-                        <PropertyType
-                            :key='cot.properties.id'
+                    <div class='pt-1'>
+                        <div
+                            v-if='hasAppearance'
+                            class='px-2 py-2'
+                        >
+                            <AppearanceRow
+                                :properties='cot.properties'
+                                :geometry='cot.geometry'
+                                :edit='is_editable'
+                                @click='router.push(`/cot/${cot.id}/appearance`)'
+                            />
+                        </div>
+
+                        <div
+                            v-for='guid of missionLinks'
+                            :key='guid'
+                            class='px-2 pb-2'
+                        >
+                            <PropertyMission :guid='guid' />
+                        </div>
+
+                        <Coordinate
+                            :key='String(route.params.uid)'
+                            :label='cot.geometry.type === "Point" ? "Location" : "Center"'
                             :edit='is_editable'
-                            :model-value='cot.properties.type'
-                            @update:model-value='updatePropertyType($event)'
+                            :hover='is_editable'
+                            :model-value='center'
+                            @update:model-value='updateCoordinates($event)'
+                        />
+
+                        <PropertyElevation
+                            v-if='center.length > 2'
+                            :key='String(route.params.uid)'
+                            label='Elevation'
+                            :unit='units.display_elevation'
+                            :elevation='center[2]'
+                        />
+
+                        <LineLength
+                            v-if='cot.geometry.type === "LineString"'
+                            :key='String(route.params.uid)'
+                            :geometry='cot.geometry'
+                            :unit='units.display_distance'
+                        />
+
+                        <PolygonArea
+                            v-if='cot.geometry.type === "Polygon"'
+                            :key='String(route.params.uid)'
+                            :geometry='cot.geometry'
+                            :unit='units.display_area'
+                        />
+
+                        <PropertyDistance
+                            v-if='cot.properties.shape && cot.properties.shape.ellipse && cot.properties.shape.ellipse.major === cot.properties.shape.ellipse.minor'
+                            :key='cot.properties.id'
+                            label='Radius'
+                            :unit='units.display_distance'
+                            :edit='is_editable'
+                            :hover='is_editable'
+                            :model-value='cot.properties.shape.ellipse.major * 0.001'
+                            @submit='updateRadius($event)'
+                        />
+
+                        <!-- Speed & Course share one row when both are reported -->
+                        <PropertyFactRow
+                            v-if='hasSpeed && hasCourse'
+                            label='Speed'
+                            class='py-1'
+                        >
+                            <div class='row g-2'>
+                                <div class='col-6'>
+                                    <PropertySpeed
+                                        :key='cot.properties.id'
+                                        :inline='true'
+                                        :unit='units.display_speed'
+                                        :speed='Number(cot.properties.speed)'
+                                    />
+                                </div>
+                                <div class='col-6'>
+                                    <PropertyBearing
+                                        :key='cot.properties.id'
+                                        :inline='true'
+                                        label='Course'
+                                        :model-value='Number(cot.properties.course)'
+                                    />
+                                </div>
+                            </div>
+                        </PropertyFactRow>
+
+                        <PropertySpeed
+                            v-else-if='hasSpeed'
+                            :key='cot.properties.id'
+                            :unit='units.display_speed'
+                            :speed='Number(cot.properties.speed)'
+                        />
+
+                        <PropertyBearing
+                            v-else-if='hasCourse'
+                            :key='cot.properties.id'
+                            label='Course'
+                            :model-value='Number(cot.properties.course)'
+                        />
+
+                        <PropertyPhone
+                            v-if='cot.properties.contact && cot.properties.contact.phone'
+                            :key='cot.properties.id'
+                            :phone='cot.properties.contact.phone'
+                        />
+
+                        <PropertyEmail
+                            v-if='username'
+                            :key='cot.properties.id'
+                            :email='username'
+                        />
+
+                        <PropertyFactRow
+                            v-if='battery !== undefined'
+                            label='Battery'
+                            class='py-1'
+                        >
+                            <div class='d-flex align-items-center gap-1'>
+                                <PropertyBattery
+                                    :battery='battery'
+                                    :size='18'
+                                />
+                                <span v-text='`${battery}%`' />
+                            </div>
+                        </PropertyFactRow>
+
+                        <PropertyCreator
+                            v-if='cot.creator'
+                            :key='cot.properties.id'
+                            :creator='cot.creator'
                         />
                     </div>
 
-                    <div
-                        v-for='guid of missionLinks'
-                        :key='guid'
-                        class='px-2 pb-2'
-                    >
-                        <PropertyMission :guid='guid' />
-                    </div>
+                    <PropertyProfile
+                        v-if='lineGeometry && terrainBasemapId'
+                        :key='`${route.params.uid}-${terrainBasemapId}`'
+                        :geometry='lineGeometry'
+                        :terrain-basemap-id='terrainBasemapId'
+                        :distance-unit='units.display_distance'
+                        :elevation-unit='units.display_elevation'
+                    />
 
-                    <Coordinate
-                        :key='String(route.params.uid)'
-                        :label='cot.geometry.type === "Point" ? "Location" : "Center"'
+                    <PropertyRemarks
+                        v-if='cot.properties.remarks !== undefined'
+                        :model-value='cot.properties.remarks'
                         :edit='is_editable'
-                        :hover='is_editable'
-                        :model-value='center'
-                        @update:model-value='updateCoordinates($event)'
+                        @submit='updateProperty("remarks", $event)'
                     />
 
-                    <PropertyElevation
-                        v-if='center.length > 2'
-                        :key='String(route.params.uid)'
-                        label='Elevation'
-                        :unit='units.display_elevation'
-                        :elevation='center[2]'
-                    />
-
-                    <LineLength
-                        v-if='cot.geometry.type === "LineString"'
-                        :key='String(route.params.uid)'
-                        :geometry='cot.geometry'
-                        :unit='units.display_distance'
-                    />
-
-                    <PolygonArea
-                        v-if='cot.geometry.type === "Polygon"'
-                        :key='String(route.params.uid)'
-                        :geometry='cot.geometry'
-                        :unit='units.display_area'
-                    />
-
-                    <PropertyDistance
-                        v-if='cot.properties.shape && cot.properties.shape.ellipse && cot.properties.shape.ellipse.major === cot.properties.shape.ellipse.minor'
-                        :key='cot.properties.id'
-                        label='Radius'
-                        :unit='units.display_distance'
-                        :edit='is_editable'
-                        :hover='is_editable'
-                        :model-value='cot.properties.shape.ellipse.major * 0.001'
-                        @submit='updateRadius($event)'
-                    />
-
-                    <!-- Speed & Course share one row when both are reported -->
-                    <PropertyFactRow
-                        v-if='hasSpeed && hasCourse'
-                        label='Speed'
-                        class='py-1'
-                    >
-                        <div class='row g-2'>
-                            <div class='col-6'>
-                                <PropertySpeed
-                                    :key='cot.properties.id'
-                                    :inline='true'
-                                    :unit='units.display_speed'
-                                    :speed='Number(cot.properties.speed)'
-                                />
-                            </div>
-                            <div class='col-6'>
-                                <PropertyBearing
-                                    :key='cot.properties.id'
-                                    :inline='true'
-                                    label='Course'
-                                    :model-value='Number(cot.properties.course)'
-                                />
-                            </div>
-                        </div>
-                    </PropertyFactRow>
-
-                    <PropertySpeed
-                        v-else-if='hasSpeed'
-                        :key='cot.properties.id'
-                        :unit='units.display_speed'
-                        :speed='Number(cot.properties.speed)'
-                    />
-
-                    <PropertyBearing
-                        v-else-if='hasCourse'
-                        :key='cot.properties.id'
-                        label='Course'
-                        :model-value='Number(cot.properties.course)'
-                    />
-
-                    <PropertyPhone
-                        v-if='cot.properties.contact && cot.properties.contact.phone'
-                        :key='cot.properties.id'
-                        :phone='cot.properties.contact.phone'
-                    />
-
-                    <PropertyEmail
-                        v-if='username'
-                        :key='cot.properties.id'
-                        :email='username'
-                    />
-
-                    <PropertyFactRow
-                        v-if='battery !== undefined'
-                        label='Battery'
-                        class='py-1'
-                    >
-                        <div class='d-flex align-items-center gap-1'>
-                            <PropertyBattery
-                                :battery='battery'
-                                :size='18'
-                            />
-                            <span v-text='`${battery}%`' />
-                        </div>
-                    </PropertyFactRow>
-
-                    <PropertyCreator
-                        v-if='cot.creator'
-                        :key='cot.properties.id'
-                        :creator='cot.creator'
-                    />
-                </div>
-
-                <PropertyProfile
-                    v-if='lineGeometry && terrainBasemapId'
-                    :key='`${route.params.uid}-${terrainBasemapId}`'
-                    :geometry='lineGeometry'
-                    :terrain-basemap-id='terrainBasemapId'
-                    :distance-unit='units.display_distance'
-                    :elevation-unit='units.display_elevation'
-                />
-
-                <PropertyRemarks
-                    v-if='cot.properties.remarks !== undefined'
-                    :model-value='cot.properties.remarks'
-                    :edit='is_editable'
-                    @submit='updateProperty("remarks", $event)'
-                />
-
-                <PropertyTabs
-                    v-model='mode'
-                    :tabs='modeOptions'
-                    class='mt-2'
-                />
-
-                <div v-if='mode === "default"'>
                     <PropertyAttachments
                         v-if='!cot.properties.contact'
                         :key='cot.properties.id'
@@ -538,13 +529,6 @@
                         :cot='cot'
                     />
                 </div>
-                <div v-else-if='mode === "style"'>
-                    <PropertyStyle
-                        :geometry='cot.geometry.type'
-                        :model-value='cot.properties'
-                        @update:model-value='updateStyle($event)'
-                    />
-                </div>
                 <div v-else-if='mode === "channels"'>
                     <Subscriptions :cot='cot' />
                 </div>
@@ -583,12 +567,10 @@
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import FeatureIcon from './util/FeatureIcon.vue';
 import BufferInput from './Inputs/BufferInput.vue';
 import MenuTemplate from './util/MenuTemplate.vue';
 import type COT from '../../base/cot.ts';
 import type { DBTaxonomy } from '../../database.ts';
-import type { Feature } from '../../types.ts';
 import { OriginMode } from '../../base/cot.ts'
 import Subscription from '../../base/subscription.ts'
 import {
@@ -606,7 +588,7 @@ import LineLength from './util/LineLength.vue';
 import PolygonArea from './util/PolygonArea.vue';
 import Coordinate from './util/Coordinate.vue';
 import PropertyProfile from './Property/PropertyProfile.vue';
-import PropertyType from './Property/PropertyType.vue';
+import AppearanceRow from './Appearance/AppearanceRow.vue';
 import PropertyMission from './Property/PropertyMission.vue';
 import PropertyOrigin from './Property/PropertyOrigin.vue';
 import PropertyRemarks from './Property/PropertyRemarks.vue';
@@ -633,7 +615,6 @@ import PropertyLinks from './Property/PropertyLinks.vue';
 import PropertyVideo from './Property/PropertyVideo.vue';
 import PropertyTimes from './Property/PropertyTimes.vue';
 import PropertyMetadata from './Property/PropertyMetadata.vue';
-import PropertyStyle from './Property/PropertyStyle.vue';
 import PropertyGeofence from './Property/PropertyGeofence.vue';
 import PropertyRadSensor from './Property/PropertyRadSensor.vue';
 import PropertyChemSensor from './Property/PropertyChemSensor.vue';
@@ -658,6 +639,9 @@ import {
     IconLockOpen,
     IconNavigation,
     IconNavigationFilled,
+    IconBug,
+    IconAffiliate,
+    IconListDetails,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import { server } from '../../std.ts';
@@ -668,6 +652,7 @@ import ProfileConfig from '../../base/profile.ts';
 import OverlayManager from '../../base/overlay.ts';
 import { entityLink, entityLabel, entityRoute, entityRouteName } from '../../utils/core-entity.ts';
 import type { CoreEntityRef } from '../../utils/core-entity.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
@@ -685,11 +670,6 @@ const router = useRouter();
 
 const cot = ref<COT | undefined>(undefined);
 
-function updateStyle(properties: Record<string, unknown>): void {
-    if (!cot.value) return;
-    cot.value.update({ properties: properties as Feature['properties'] });
-}
-
 const subscription = ref<Subscription | undefined>();
 
 const share = ref(false);
@@ -702,20 +682,30 @@ const units = ref({
 
 const username = ref<string | undefined>();
 const type = ref<DBTaxonomy | undefined>();
-const mode = ref('default');
-
-// PropertyStyle has no read-only mode so the tab only exists for editors
-const hasStyle = computed(() => is_editable.value && !!cot.value && !cot.value.is_self);
-
 const modeOptions = computed<Array<PropertyTab>>(() => {
-    const opts: Array<PropertyTab> = [{ value: 'default', label: 'Details' }];
-    if (hasStyle.value) opts.push({ value: 'style', label: 'Style' });
-    if (cot.value?.is_skittle) opts.push({ value: 'channels', label: 'Channels' });
-    opts.push({ value: 'debug', label: 'Debug' });
+    const opts: Array<PropertyTab> = [{ value: 'details', label: 'Details', icon: IconListDetails }];
+    if (cot.value?.is_skittle) opts.push({ value: 'channels', label: 'Channels', icon: IconAffiliate });
+    opts.push({ value: 'debug', label: 'Debug', icon: IconBug });
     return opts;
+});
+
+const mode = useRouteTab({
+    base: () => `/cot/${String(route.params.uid)}`,
+    tabs: () => modeOptions.value.map((t) => t.value),
+    fallback: 'details',
 });
 const breadcrumbLive = ref(false);
 const bufferCotId = ref<string | null>(null);
+
+// Lines and polygons edit stroke/fill; points edit affiliation/type/marker
+// when they are Atom types, Custom Points or MIL-STD symbols
+const hasAppearance = computed(() => {
+    if (!cot.value || cot.value.is_self) return false;
+    if (cot.value.geometry.type !== 'Point') return true;
+
+    const type = cot.value.properties.type;
+    return type.startsWith('a-') || type === 'u-d-p' || isSIDCType(type);
+});
 const actionIconSize = 28;
 
 // The Entity a CoT is a projection of, when it couldn't be opened because
@@ -752,8 +742,7 @@ watch(cot, async () => {
     }
 });
 
-watch(route, async () => {
-    mode.value = 'default'
+watch(() => route.params.uid, async () => {
     breadcrumbLive.value = false;
     offlineEntity.value = undefined;
     await load_cot();
@@ -994,37 +983,6 @@ function updateProperty(key: string, event: any) {
         cot.value.properties[key] = event;
         cot.value.update({})
     }
-}
-
-function updatePropertyType(type: string): void {
-    if (!cot.value) return;
-
-    const isSIDC = Type2525.isNumericSIDCConvertable(type);
-
-    // The type property is authoritative - a stale milicon would otherwise be
-    // preferred by node-cot's from_geojson when the Feature is converted to a CoT
-    if (cot.value.properties.milicon) {
-        delete cot.value.properties.milicon;
-    }
-
-    if ((type.startsWith('a-') || isSIDC) && cot.value.properties.type.startsWith('u-')) {
-        cot.value.properties["marker-color"] = '#FFFFFF';
-    }
-
-    cot.value.properties.type = type;
-
-    // An Iconset icon is the user's own pick and survives a type change - the
-    // type otherwise drives the icon, and a MIL-STD symbol needs none at all
-    // since renderedIcon derives its key from the type
-    if (!cot.value.properties.icon || !cot.value.properties.icon.includes(':')) {
-        if (isSIDC) {
-            delete cot.value.properties.icon;
-        } else {
-            cot.value.properties.icon = type;
-        }
-    }
-
-    cot.value.update({});
 }
 
 function updateCoordinates(center: number[]): void {

@@ -2,7 +2,6 @@ import { ref, computed, toRaw, markRaw } from 'vue';
 import type { Component, Ref, ComputedRef } from "vue";
 import {
     IconBug,
-    IconCpu,
     IconMap,
     IconFiles,
     IconUsers,
@@ -99,10 +98,10 @@ export default class MenuManager {
         return [
             {
                 key: 'features',
-                label: 'Your Features',
+                label: 'Features',
                 route: '/menu/features',
-                tooltip: 'Your Features',
-                description: 'Manage saved features',
+                tooltip: 'Features',
+                description: 'Saved features, events, and devices',
                 icon: IconMapPin,
             },
             {
@@ -120,14 +119,6 @@ export default class MenuManager {
                 tooltip: 'Contacts',
                 description: 'Manage and search for contacts',
                 icon: IconUsers,
-            },
-            {
-                key: 'devices',
-                label: 'Devices',
-                route: '/menu/devices',
-                tooltip: 'Devices',
-                description: 'Sensors and tracked hardware',
-                icon: IconCpu,
             },
             {
                 key: 'basemaps',

@@ -159,28 +159,49 @@ export default class Auth {
                 throw new Err(403, null, 'Resource token cannot access this resource');
             }
 
-            const scopes = opts.scope === undefined ? [] : Array.isArray(opts.scope) ? opts.scope : [opts.scope];
-
-            if (scopes.length && auth_resource.access === AuthResourceAccess.LAYER) {
-                if (auth_resource.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
-
-                const layer = await config.models.Layer.from(auth_resource.id);
-
-                for (const scope of scopes) {
-                    if (!hasScope(layer.permissions, scope)) {
-                        throw new Err(403, null, `Layer token does not have the ${scope} permission`);
-                    }
-                }
-            } else if (scopes.length && auth_resource.access === AuthResourceAccess.CONNECTION && connectionToken) {
-                for (const scope of scopes) {
-                    if (!hasScope(connectionToken.permissions, scope)) {
-                        throw new Err(403, null, `Connection token does not have the ${scope} permission`);
-                    }
-                }
+            if (opts.scope !== undefined) {
+                await this.ensure_scope(config, auth_resource, opts.scope, connectionToken);
             }
         }
 
         return auth;
+    }
+
+    /**
+     * Ensure a Layer or Connection token holds every given `<permission>:<level>`
+     * scope - for checks that depend on state loaded after `is_auth`, such as
+     * the kind of the Entity a route resolves to. Users always pass
+     */
+    static async ensure_scope(
+        config: Config,
+        auth: AuthResource | AuthUser,
+        scope: string | Array<string>,
+        connectionToken?: InferSelectModel<typeof ConnectionToken>,
+    ): Promise<void> {
+        if (!(auth instanceof AuthResource)) return;
+
+        const scopes = Array.isArray(scope) ? scope : [scope];
+        if (!scopes.length) return;
+
+        if (auth.access === AuthResourceAccess.LAYER) {
+            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
+
+            const layer = await config.models.Layer.from(auth.id);
+
+            for (const s of scopes) {
+                if (!hasScope(layer.permissions, s)) {
+                    throw new Err(403, null, `Layer token does not have the ${s} permission`);
+                }
+            }
+        } else if (auth.access === AuthResourceAccess.CONNECTION && !auth.internal) {
+            const token = connectionToken ?? await config.models.ConnectionToken.from(auth.token);
+
+            for (const s of scopes) {
+                if (!hasScope(token.permissions, s)) {
+                    throw new Err(403, null, `Connection token does not have the ${s} permission`);
+                }
+            }
+        }
     }
 
     static async is_connection(config: Config, req: Request<any, any, any, any>, opts: {
@@ -357,6 +378,25 @@ export function hasScope(permissions: Array<string>, scope: string): boolean {
     return permissions.includes(scope) || permissions.includes(wildcard);
 }
 
+const identities = new WeakMap<object, string>();
+
+/**
+ * The verified identity of a request for the request logger
+ */
+export function identityOf(req: object): string | undefined {
+    return identities.get(req);
+}
+
+function identify<T extends AuthResource | AuthUser>(req: Request<any, any, any, any>, auth: T): T {
+    const identity = auth instanceof AuthUser
+        ? auth.email
+        : `${auth.access}:${auth.id ?? 'internal'}`;
+
+    identities.set(req, identity.replace(/[^\x21-\x7E]/g, '_'));
+
+    return auth;
+}
+
 async function auth_request(
     config: Config,
     req: Request<any, any, any, any>,
@@ -376,7 +416,7 @@ async function auth_request(
                 throw new Err(401, null, 'No bearer token present');
             }
 
-            return await tokenParser(config, authorization[1], config.SigningSecret);
+            return identify(req, await tokenParser(config, authorization[1], config.SigningSecret));
         } else if (
             opts
             && opts.token
@@ -384,7 +424,7 @@ async function auth_request(
             && req.query.token
             && typeof req.query.token === 'string'
         ) {
-            return await tokenParser(config, req.query.token, config.SigningSecret);
+            return identify(req, await tokenParser(config, req.query.token, config.SigningSecret));
         } else {
             throw new Err(401, null, 'No Auth Present');
         }

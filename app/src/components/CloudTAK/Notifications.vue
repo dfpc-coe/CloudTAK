@@ -34,6 +34,15 @@
                         stroke='1'
                     />
                 </TablerIconButton>
+                <TablerIconButton
+                    title='Notification Settings'
+                    @click='router.push("/menu/settings/notifications")'
+                >
+                    <IconSettings
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div
@@ -142,6 +151,7 @@ import {
 import {
     IconTrash,
     IconSearch,
+    IconSettings,
 } from '@tabler/icons-vue';
 
 const router = useRouter();

@@ -53,6 +53,26 @@ function asFeature(row: DBSubscriptionFeature): Feature {
     };
 }
 
+/**
+ * A Mission feature as it is drawn on its overlay. Shared by the full overlay
+ * render and the optimistic render of a local edit so both produce the same feature
+ */
+export function renderMissionFeature(feat: Feature): Feature {
+    const icon = renderedIcon(feat.properties);
+
+    return {
+        id: feat.id,
+        type: 'Feature',
+        path: feat.path,
+        properties: {
+            ...feat.properties,
+            path: feat.path || '/',
+            ...(icon !== undefined ? { icon } : {})
+        },
+        geometry: feat.geometry,
+    };
+}
+
 function isPending(row: DBSubscriptionFeature): boolean {
     return row.synced === false || row.deleted === true;
 }
@@ -274,16 +294,7 @@ export default class SubscriptionFeature {
                 }
 
                 if (!blocked) {
-                    const icon = renderedIcon(feat.properties);
-
-                    filtered.push({
-                        ...feat,
-                        properties: {
-                            ...feat.properties,
-                            path: feat.path || '/',
-                            ...(icon !== undefined ? { icon } : {})
-                        }
-                    });
+                    filtered.push(renderMissionFeature(feat));
                 }
             }
 

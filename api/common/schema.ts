@@ -17,7 +17,8 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status, LayerMapping_Destination,
+    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status,
+    CoreEntityTimeline_Type, LayerMapping_Destination,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { AnyPgColumn } from 'drizzle-orm/pg-core';
@@ -163,6 +164,27 @@ export const CoreEventAssignment = pgTable('core_entity_assignment', {
 }, (table) => {
     return {
         event_uid_idx: uniqueIndex('core_entity_assignment_event_uid_idx').on(table.event, table.uid).where(sql`uid IS NOT NULL`),
+    };
+});
+
+/** A dated entry on a Core Entity - a comment, a CAD unit status, a location fix, etc. */
+export const CoreEntityTimeline = pgTable('core_entity_timeline', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    occurred: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`), // When the entry happened at its source
+    entity: uuid().notNull().references(() => CoreEntity.id, { onDelete: 'cascade' }),
+    type: text().$type<CoreEntityTimeline_Type>().notNull().default(CoreEntityTimeline_Type.COMMENT),
+    username: text().references(() => Profile.username, { onDelete: 'set null' }), // Set when the author has a Profile
+    layer: integer().references(() => Layer.id, { onDelete: 'set null' }), // Set when written by a Layer token
+    author: text().notNull().default(''), // Display name - a dispatcher, a unit, an ETL
+    body: text().notNull().default(''),
+    metadata: jsonb().$type<Record<string, unknown>>().notNull().default({}), // Type specific payload - ie: unit & status
+    external_id: text(), // ID of the entry in the source system for dedup
+}, (table) => {
+    return {
+        entity_occurred_idx: index('core_entity_timeline_entity_occurred_idx').on(table.entity, table.occurred),
+        external_idx: uniqueIndex('core_entity_timeline_entity_external_id_idx').on(table.entity, table.external_id).where(sql`external_id IS NOT NULL`),
     };
 });
 
@@ -476,6 +498,7 @@ export const Basemap = pgTable('basemaps', {
     scheme: text().$type<Basemap_Scheme>().notNull().default(Basemap_Scheme.XYZ),
     overlay: boolean().notNull().default(false),
     tilejson: text(),
+    args: jsonb().$type<Record<string, string | string[]>>().notNull().default({}),
 }, (table) => {
     return {
         username_idx: index('basemaps_username_idx').on(table.username),
@@ -848,6 +871,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     mode: text().notNull(),
     mode_id: text(), // Used for Data not for Profile
     url: text().notNull(),
+    args: jsonb().$type<Record<string, string | string[]>>().notNull().default({}),
 }, t => ({
     unq: unique().on(t.username, t.url),
 }));

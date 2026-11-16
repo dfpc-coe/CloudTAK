@@ -194,17 +194,21 @@ export default class Subscription {
         const exists = await this.from(guid);
 
         if (exists) {
+            let refreshRole = true;
+
             if (opts.subscribed !== undefined || opts.missiontoken !== undefined) {
                 const update: { subscribed?: boolean, token?: string } = {};
                 if (opts.subscribed !== undefined) update.subscribed = opts.subscribed;
                 if (opts.missiontoken !== undefined) update.token = opts.missiontoken;
 
                 await exists.update(update);
+                refreshRole = false;
             }
 
             if (opts.reload !== false) {
                 await exists.refresh({
-                    refreshMission: true
+                    refreshMission: true,
+                    refreshRole
                 });
             }
 
@@ -283,9 +287,14 @@ export default class Subscription {
             token?: string,
             description?: string,
             keywords?: string[],
-            groups?: string[]
+            groups?: string[],
+            defaultRole?: MissionRoleType,
+            password?: string | null
         }
     ): Promise<void> {
+        const roleChange = body.subscribed !== undefined || body.token !== undefined;
+        const stored = roleChange ? await db.subscription.get(this.guid) : undefined;
+
         if (body.subscribed !== undefined) {
             this.subscribed = body.subscribed;
         }
@@ -306,17 +315,40 @@ export default class Subscription {
 
         // Local state is already persisted, announce it even if the PATCH fails
         try {
-            if (body.subscribed !== undefined || body.token !== undefined) {
-                await this.refreshRole().catch((err) => {
-                    console.warn('Failed to refresh mission role', err);
-                });
+            if (roleChange) {
+                // Another instance that already made this same change fetched the role for it
+                const settled = stored
+                    && (body.subscribed === undefined || stored.subscribed === body.subscribed)
+                    && (body.token === undefined || (stored.token || '') === body.token);
+
+                if (settled) {
+                    this.role = stored.role;
+                } else {
+                    await this.refreshRole().catch((err) => {
+                        console.warn('Failed to refresh mission role', err);
+                    });
+                }
             }
 
-            if (body.description !== undefined || body.keywords !== undefined || body.groups !== undefined) {
-                const patch: { description?: string; keywords?: string[]; groups?: string[] } = {};
+            if (
+                body.description !== undefined
+                || body.keywords !== undefined
+                || body.groups !== undefined
+                || body.defaultRole !== undefined
+                || body.password !== undefined
+            ) {
+                const patch: {
+                    description?: string;
+                    keywords?: string[];
+                    groups?: string[];
+                    defaultRole?: MissionRoleType;
+                    password?: string | null;
+                } = {};
                 if (body.description !== undefined) patch.description = body.description;
                 if (body.keywords !== undefined) patch.keywords = body.keywords;
                 if (body.groups !== undefined) patch.groups = body.groups;
+                if (body.defaultRole !== undefined) patch.defaultRole = body.defaultRole;
+                if (body.password !== undefined) patch.password = body.password;
 
                 const { data, error } = await server.PATCH('/api/marti/missions/{:guid}', {
                     params: {
@@ -567,7 +599,7 @@ export default class Subscription {
             }
         });
 
-        if (error) throw new Error('Failed to invite user to mission');
+        if (error) throw new Error(error.message || 'Failed to invite user to mission');
     }
 
     async changeRole(sub: { clientUid: string, username: string }, role: MissionRoleType): Promise<void> {
@@ -615,13 +647,15 @@ export default class Subscription {
     }
 
     async removeUser(uid: string): Promise<void> {
-        await server.DELETE('/api/marti/missions/{:guid}/user', {
+        const { error } = await server.DELETE('/api/marti/missions/{:guid}/user', {
             params: {
                 path: { ':guid': this.guid },
                 query: { uid }
             },
             headers: Subscription.headers(this.missiontoken)
         });
+
+        if (error) throw new Error('Failed to remove user');
     }
 
     async subscriptions(): Promise<MissionSubscriptions> {
