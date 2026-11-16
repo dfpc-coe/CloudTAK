@@ -17,8 +17,10 @@ export const HISTORY_DEFAULT_COLOR = '#ff0000';
 export const HISTORY_POPUP_CLASS = 'cloudtak-history-popup';
 
 const RENDER_DEBOUNCE_MS = 300;
-/** A 2px dashed trail is too thin to hit exactly, so a click or hover counts within this many px */
+/** A 2px dashed trail and its 5px dots are too small to hit exactly, so a click or hover counts within this many px */
 const TRAIL_HIT_PX = 8;
+/** A fingertip is far less precise than a mouse - 24px each side is a 48px target */
+const TRAIL_HIT_TOUCH_PX = 24;
 const STYLE_ID = 'cloudtak-history-style';
 
 /**
@@ -239,11 +241,10 @@ export default class HistoryLayer {
         this.trailCursor = false;
         this.initialized = false;
 
-        this.onTrailClick = this.onTrailClick.bind(this);
+        this.onMapClick = this.onMapClick.bind(this);
         this.onTrailMove = this.onTrailMove.bind(this);
         this.onHover = this.onHover.bind(this);
         this.onLeave = this.onLeave.bind(this);
-        this.onClick = this.onClick.bind(this);
     }
 
     init(): void {
@@ -296,9 +297,9 @@ export default class HistoryLayer {
 
         map.on('mousemove', HISTORY_POINT_LAYER, this.onHover);
         map.on('mouseleave', HISTORY_POINT_LAYER, this.onLeave);
-        map.on('click', HISTORY_POINT_LAYER, this.onClick);
-        // The trail line is clicked through a tolerance box, which a layer-bound listener cannot do
-        map.on('click', this.onTrailClick);
+        // Dots and the trail line are clicked through a tolerance box, which a layer-bound
+        // listener cannot do: it only hits the exact pixel, too small a target for a fingertip
+        map.on('click', this.onMapClick);
         map.on('mousemove', this.onTrailMove);
 
         this.initialized = true;
@@ -441,8 +442,7 @@ export default class HistoryLayer {
         try {
             map.off('mousemove', HISTORY_POINT_LAYER, this.onHover);
             map.off('mouseleave', HISTORY_POINT_LAYER, this.onLeave);
-            map.off('click', HISTORY_POINT_LAYER, this.onClick);
-            map.off('click', this.onTrailClick);
+            map.off('click', this.onMapClick);
             map.off('mousemove', this.onTrailMove);
 
             if (map.getLayer(HISTORY_POINT_LAYER)) map.removeLayer(HISTORY_POINT_LAYER);
@@ -599,31 +599,6 @@ export default class HistoryLayer {
         if (this.popup) this.popup.remove();
     }
 
-    private onClick(event: MapLayerMouseEvent): void {
-        // Mirror the map click handler: never open a point mid-draw or over an open radial
-        if (this.mapStore.draw.mode !== DrawToolMode.STATIC) return;
-        if (this.mapStore.radial.mode) return;
-
-        const row = this.rowAt(event);
-        if (!row) return;
-
-        // A live marker under the cursor takes precedence - the map click handler opens it
-        const covered = this.mapStore.map.queryRenderedFeatures(event.point).some((feat) => {
-            return !feat.layer.id.startsWith('cloudtak-history') && feat.properties && feat.properties.id !== undefined;
-        });
-        if (covered) return;
-        if (row.geometry.type !== 'Point') return;
-
-        // Hide the hover popup and open the same menu as the trail line, centred on the dot
-        this.onLeave();
-        this.openTrailRadial(
-            row.uid,
-            new mapgl.LngLat(row.geometry.coordinates[0], row.geometry.coordinates[1]),
-            event.point,
-            row.id
-        );
-    }
-
     /** Open the properties the CoT reported at a point of its trail in the feature viewer */
     async open(id: string): Promise<void> {
         const row = this.rows.get(id) ?? await db.feature_history.get(id);
@@ -660,18 +635,56 @@ export default class HistoryLayer {
         return this.mapStore.draw.mode === DrawToolMode.STATIC && !this.mapStore.radial.mode;
     }
 
-    /** The UID of the trail line near a screen point, if any */
-    private trailAt(point: { x: number; y: number }): string | undefined {
+    /** How far from a dot or the trail line a click still counts - wider for a finger than a mouse */
+    private hitPx(): number {
+        const coarse = typeof window !== 'undefined'
+            && typeof window.matchMedia === 'function'
+            && window.matchMedia('(pointer: coarse)').matches;
+
+        return coarse ? TRAIL_HIT_TOUCH_PX : TRAIL_HIT_PX;
+    }
+
+    /** The UID of the trail line within `px` of a screen point, if any */
+    private trailAt(point: { x: number; y: number }, px = TRAIL_HIT_PX): string | undefined {
         const map = this.mapStore._map as mapgl.Map | undefined;
         if (!map || !this.byUid.size || !map.getLayer(HISTORY_LINE_LAYER)) return;
 
         const hits = map.queryRenderedFeatures(
-            [[point.x - TRAIL_HIT_PX, point.y - TRAIL_HIT_PX], [point.x + TRAIL_HIT_PX, point.y + TRAIL_HIT_PX]],
+            [[point.x - px, point.y - px], [point.x + px, point.y + px]],
             { layers: [HISTORY_LINE_LAYER] }
         );
 
         const uid = hits.length ? hits[0].properties.uid : undefined;
         return typeof uid === 'string' ? uid : undefined;
+    }
+
+    /** The history dot nearest to a screen point within `px`, if any */
+    private dotNear(point: { x: number; y: number }, px: number): DBFeatureHistory | undefined {
+        const map = this.mapStore._map as mapgl.Map | undefined;
+        if (!map || !map.getLayer(HISTORY_POINT_LAYER)) return;
+
+        const hits = map.queryRenderedFeatures(
+            [[point.x - px, point.y - px], [point.x + px, point.y + px]],
+            { layers: [HISTORY_POINT_LAYER] }
+        );
+
+        let nearest: DBFeatureHistory | undefined;
+        let nearestDistance = Infinity;
+
+        for (const hit of hits) {
+            const row = this.rows.get(String(hit.properties.id));
+            if (!row || row.geometry.type !== 'Point') continue;
+
+            const at = map.project(row.geometry.coordinates.slice(0, 2) as [number, number]);
+            const distance = Math.hypot(at.x - point.x, at.y - point.y);
+
+            if (distance < nearestDistance) {
+                nearest = row;
+                nearestDistance = distance;
+            }
+        }
+
+        return nearest;
     }
 
     /** A history point sits exactly under the cursor - it has its own hover & click */
@@ -697,21 +710,38 @@ export default class HistoryLayer {
         }
     }
 
-    private onTrailClick(event: mapgl.MapMouseEvent): void {
+    /**
+     * A click or tap on a dot or on the trail line. The nearest dot within reach wins, since
+     * the dots lie on the line, then the line itself.
+     */
+    private onMapClick(event: mapgl.MapMouseEvent): void {
+        // Mirror the map click handler: never open a point mid-draw or over an open radial
         if (!this.interactive()) return;
 
-        const uid = this.trailAt(event.point);
-        if (uid === undefined) return;
-
-        // A history point or a live marker under the cursor opens itself
-        if (this.pointAt(event.point)) return;
+        // A live marker under the pointer opens itself
         const covered = this.mapStore.map.queryRenderedFeatures(event.point).some((feat) => {
             return !feat.layer.id.startsWith('cloudtak-history') && feat.properties && feat.properties.id !== undefined;
         });
         if (covered) return;
 
+        const px = this.hitPx();
+
+        const row = this.dotNear(event.point, px);
+        if (row && row.geometry.type === 'Point') {
+            // Hide the hover popup and open the menu for the trail, centred on the dot
+            this.onLeave();
+            this.openTrailRadial(
+                row.uid,
+                new mapgl.LngLat(row.geometry.coordinates[0], row.geometry.coordinates[1]),
+                event.point,
+                row.id
+            );
+            return;
+        }
+
         // The same radial menu as a CoT, with the actions that make sense for a trail
-        this.openTrailRadial(uid, event.lngLat, event.point);
+        const uid = this.trailAt(event.point, px);
+        if (uid !== undefined) this.openTrailRadial(uid, event.lngLat, event.point);
     }
 }
 

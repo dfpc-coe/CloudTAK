@@ -1102,7 +1102,7 @@ the `ATAK-CloudTAK` platform.
   click outside its menu, so the usual confirmation dialog (teleported to the body) would
   be unmounted before the click is handled.
 - Clicking within 8px of the trail line opens the radial menu in a new `trail` mode
-  (`HistoryLayer.onTrailClick` calls `mapStore.radialClick`) with only the items that make
+  (`HistoryLayer.onMapClick` calls `mapStore.radialClick`) with only the items that make
   sense for a trail: open the CoT, zoom, History and clear (no confirmation, like the
   radial delete of a CoT). Clicking one of the dots opens the same menu centred on the
   dot instead of upstream's jump to the feature viewer, with an extra "Point details" item
@@ -1112,6 +1112,11 @@ the `ATAK-CloudTAK` platform.
   `trail:*` events; the radial's key also includes `properties.radialKey`, so clicking
   another dot of the same trail re-centres it. The viewer shows the trail actions in a
   banner (`TrailPointBanner.vue`). `/menu/history?uid=` lists a single trail.
+- Touch: the dots are 5px circles and a layer-bound MapLibre click only hits the exact
+  pixel, so a fingertip almost never selected a dot or the line. One map-level click
+  (`HistoryLayer.onMapClick`) now looks for the nearest dot, then the line, within 8px
+  with a mouse and 24px when `(pointer: coarse)` matches. The hover popup is still mouse
+  only, since there is no hover on a touch screen.
 - The new UI is in new TAK-NZ-only files (`trail.ts`, `TrailActions.vue`,
   `TrailPointBanner.vue`); the synced files carry small edits so a sync conflicts as
   little as possible.
