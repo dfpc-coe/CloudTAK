@@ -64,7 +64,7 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
 
         const pgres = await this.pool
             .select({
-                device: { ...EntityColumns, ...DeviceColumns },
+                device: { ...EntityColumns, ...DeviceColumns, stale: CoreEntity.stale },
                 external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })
@@ -94,7 +94,7 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
         const pgres = await this.pool
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
-                device: { ...EntityColumns, ...DeviceColumns },
+                device: { ...EntityColumns, ...DeviceColumns, stale: CoreEntity.stale },
                 external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })

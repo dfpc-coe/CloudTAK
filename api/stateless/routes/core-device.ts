@@ -161,6 +161,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: false,
                 description: 'Is the Device a simulated data source',
             }),
+            stale: Type.Optional(Type.Union([Type.Null(), Type.Integer({
+                minimum: 1,
+            })], {
+                description: 'Seconds after its last update the Device stops being broadcast to TAK clients - null never expires',
+            })),
             external_id: Type.Optional(CoreEntityExternalIdInput),
             remarks: Type.String({
                 default: '',
@@ -240,6 +245,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 maximum: 100,
             })])),
             simulated: Type.Optional(Type.Boolean()),
+            stale: Type.Optional(Type.Union([Type.Null(), Type.Integer({
+                minimum: 1,
+            })])),
             external_id: Type.Optional(CoreEntityExternalIdInput),
             remarks: Type.Optional(Type.String()),
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
