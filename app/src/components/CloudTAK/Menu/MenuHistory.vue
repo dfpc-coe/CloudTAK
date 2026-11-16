@@ -1,16 +1,13 @@
 <template>
     <MenuTemplate name='History'>
         <template #buttons>
-            <TablerIconButton
+            <TablerDelete
                 v-if='entries.length'
+                displaytype='icon'
                 title='Clear All Trails'
-                @click='clearAll'
-            >
-                <IconTrash
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+                label='Clear All Trails'
+                @delete='clearAll'
+            />
         </template>
 
         <template #default>
@@ -144,15 +141,13 @@
                                 />
                             </TablerIconButton>
 
-                            <TablerIconButton
+                            <TablerDelete
+                                displaytype='icon'
                                 title='Clear Trail'
-                                @click.stop.prevent='clearTrail(entry)'
-                            >
-                                <IconTrash
-                                    :size='20'
-                                    stroke='1'
-                                />
-                            </TablerIconButton>
+                                label='Clear Trail'
+                                :size='20'
+                                @delete='clearTrail(entry)'
+                            />
                         </div>
                     </StandardItem>
                 </div>
@@ -168,7 +163,6 @@ import {
     IconRoute,
     IconHistory,
     IconListDetails,
-    IconTrash,
 } from '@tabler/icons-vue';
 import {
     TablerBadge,
@@ -179,6 +173,7 @@ import {
     TablerNone,
     TablerToggle,
     TablerIconButton,
+    TablerDelete,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
