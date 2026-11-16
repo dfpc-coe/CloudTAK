@@ -27,6 +27,11 @@
 
 ### Pending Release
 
+### v13.123.1 - 2026-11-16
+
+- :rocket: Consolidate Permissions
+- :bug: Rectify Mission Changes API call body against TAK Server generated schema
+
 ### v13.123.0 - 2026-11-16
 
 - :tada: `API` Core Devices accept a `stale` number of seconds - the Device is no longer broadcast to TAK clients once that long has passed since it was last updated, until its next update. The value is stored on the Core Entity so other kinds can adopt it
