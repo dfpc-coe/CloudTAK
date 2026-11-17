@@ -27,6 +27,8 @@
 
 ### Pending Release
 
+### v13.124.0 - 2026-11-17
+
 - :arrow_up: Migrate to TS7 for blazing build times - `tsc` is TypeScript 7.0 via `@typescript/native`, tools that need the compiler API (ESLint, `vue-tsc`, TypeDoc) stay on the TypeScript 6 API
 - :arrow_up: Migrate the API off ESLint onto OXLint for blazing lint times
 - :bug: Fix numerous small bugs in the codebase surfaced by OXLint
