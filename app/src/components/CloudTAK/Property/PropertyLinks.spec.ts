@@ -16,9 +16,9 @@ function cot(links: Array<Record<string, string>>): COT {
     } as unknown as COT;
 }
 
-async function render(links: Array<Record<string, string>>) {
+async function render(links: Array<Record<string, string>>, edit = false) {
     const wrapper = mount(PropertyLinks, {
-        props: { cot: cot(links) },
+        props: { cot: cot(links), edit },
     });
 
     await flushPromises();
@@ -83,5 +83,41 @@ describe('PropertyLinks', () => {
 
         expect(wrapper.find('img.link-thumb').exists()).toBe(false);
         expect(wrapper.find('a[href="https://example.com/missing.jpg"]').exists()).toBe(true);
+    });
+
+    it('saves new links with the attributes ATAK needs to list them', async () => {
+        const wrapper = await render([], true);
+
+        await wrapper.find('[title="Add External Link"]').trigger('click');
+        const inputs = wrapper.findAll('input');
+        await inputs[0].setValue('Tickets');
+        await inputs[1].setValue('https://example.com/event');
+        await wrapper.find('[title="Save Link"]').trigger('click');
+
+        const update = (wrapper.props('cot') as COT).update as ReturnType<typeof vi.fn>;
+        const [link] = update.mock.calls[0][0].properties.links;
+        expect(link).toMatchObject({
+            relation: 'r-u',
+            mime: 'text/html',
+            remarks: 'Tickets',
+            url: 'https://example.com/event',
+        });
+        expect(link.uid).toMatch(/^[0-9a-f-]{36}$/);
+    });
+
+    it('upgrades a relation-less link when it is edited', async () => {
+        const wrapper = await render([{
+            url: 'https://example.com/old',
+            remarks: 'Old',
+        }], true);
+
+        await wrapper.find('[title="Edit Link"]').trigger('click');
+        await wrapper.find('[title="Save Link"]').trigger('click');
+
+        const update = (wrapper.props('cot') as COT).update as ReturnType<typeof vi.fn>;
+        const [link] = update.mock.calls[0][0].properties.links;
+        expect(link.relation).toBe('r-u');
+        expect(link.uid).toBeTruthy();
+        expect(link.url).toBe('https://example.com/old');
     });
 });
