@@ -16,7 +16,7 @@ profiles of [`cdk/cdk.json`](../cdk/cdk.json).
 | `AWS::RDS::DBCluster` `EngineVersion` | `17.10` | `18.6` |
 | Cluster parameter group family | `aurora-postgresql17` | `aurora-postgresql18` |
 | `log_connections` in the parameter group | `1` | `all` (PG18 made this a list of stages, `1` is not an allowed value) |
-| Instance classes | `db.serverless` (dev-test), `db.t4g.large` x2 (prod) | unchanged |
+| Instance classes | `db.t4g.medium` (dev-test), `db.t4g.large` x2 (prod) | unchanged |
 
 The family change replaces `DatabaseDBParameterGroup...`. The group has no fixed
 physical name, so CloudFormation creates the new group first, points the
@@ -41,7 +41,7 @@ Checked against ap-southeast-2 with `aws rds describe-db-engine-versions` and
 - `18.6` is offered, parameter group family `aurora-postgresql18`.
 - `17.10` lists `18.6` as a valid upgrade target with `IsMajorVersionUpgrade: true`
   (so the direct path exists).
-- `db.t4g.large` and `db.serverless` are both orderable on `18.6`.
+- `db.t4g.medium`, `db.t4g.large` and `db.serverless` are all orderable on `18.6`.
 - `shared_preload_libraries` (`pg_stat_statements` is an allowed value),
   `log_statement`, `log_min_duration_statement`, `log_disconnections` are valid on PG18.
 

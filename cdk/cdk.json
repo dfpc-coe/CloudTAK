@@ -20,7 +20,7 @@
     "dev-test": {
       "stackName": "Dev",
       "database": {
-        "instanceClass": "db.serverless",
+        "instanceClass": "db.t4g.medium",
         "instanceCount": 1,
         "engineVersion": "18.6",
         "allocatedStorage": 20,

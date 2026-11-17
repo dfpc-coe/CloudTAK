@@ -29,7 +29,7 @@ npm run deploy:prod
 
 | Environment | Stack Name | Domain | Features |
 |-------------|------------|--------|----------|
-| **dev-test** | `TAK-Dev-CloudTAK` | `map.dev.tak.nz` | Cost-optimized, Aurora Serverless v2 |
+| **dev-test** | `TAK-Dev-CloudTAK` | `map.dev.tak.nz` | Cost-optimized, Aurora provisioned `db.t4g.medium` |
 | **prod** | `TAK-Prod-CloudTAK` | `map.tak.nz` | Production-ready, Aurora Multi-AZ |
 
 ---

@@ -26,7 +26,7 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
     "dev-test": {
       "stackName": "Dev",
       "database": {
-        "instanceClass": "db.serverless",
+        "instanceClass": "db.t4g.medium",
         "instanceCount": 1,
         "engineVersion": "18.6",
         "allocatedStorage": 20,
@@ -112,7 +112,7 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
 
 | Setting | dev-test | prod | Impact |
 |---------|----------|------|--------|
-| **Database Instance** | `db.serverless` | `db.t4g.large` | Performance and cost |
+| **Database Instance** | `db.t4g.medium` | `db.t4g.large` | Performance and cost |
 | **Database Count** | `1` instance | `2` instances | High availability |
 | **ECS Resources** | `1024 CPU, 4096 MB` | `2048 CPU, 8192 MB` | Performance |
 | **ECS Tasks** | `1` task | `1` task | Resource allocation |
@@ -140,7 +140,7 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 ### **Database Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
-| `instanceClass` | Aurora instance class | `db.serverless` | `db.t4g.large` |
+| `instanceClass` | Aurora instance class. `db.serverless` selects Aurora Serverless v2 (2 to 4 ACU); `db.t4g.*` selects provisioned | `db.t4g.medium` | `db.t4g.large` |
 | `instanceCount` | Number of database instances | `1` | `2` |
 | `engineVersion` | Aurora PostgreSQL engine version. Changing the major version is an in-place major upgrade, see [AURORA-MAJOR-UPGRADE.md](AURORA-MAJOR-UPGRADE.md) | `18.6` | `18.6` |
 | `enablePerformanceInsights` | Enable performance insights | `false` | `true` |

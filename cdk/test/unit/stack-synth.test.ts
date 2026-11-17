@@ -63,7 +63,7 @@ describe('database safety shape', () => {
     });
   });
 
-  it('dev-test cluster is destroyable and serverless', () => {
+  it('dev-test cluster is destroyable and provisioned', () => {
     const t = template('dev-test', true);
 
     // dev-test must NOT carry deletion protection — otherwise teardown of
@@ -71,14 +71,14 @@ describe('database safety shape', () => {
     t.hasResourceProperties('AWS::RDS::DBCluster', {
       Engine: 'aurora-postgresql',
       DeletionProtection: false,
-      ServerlessV2ScalingConfiguration: Match.anyValue(),
+      ServerlessV2ScalingConfiguration: Match.absent(),
     });
 
-    // Serverless v2 still materializes a single writer instance, on the
-    // db.serverless class rather than a provisioned instance type.
+    // dev-test runs one small provisioned writer (cdk.json: db.t4g.medium).
+    // Serverless v2 sat at about 3 ACU all day, which cost about 5x as much.
     t.resourceCountIs('AWS::RDS::DBInstance', 1);
     t.hasResourceProperties('AWS::RDS::DBInstance', {
-      DBInstanceClass: 'db.serverless',
+      DBInstanceClass: 'db.t4g.medium',
     });
   });
 });
@@ -174,14 +174,18 @@ describe('alarm wiring', () => {
   });
 
   // FreeLocalStorage is only published for provisioned Aurora, so the alarm must
-  // follow the database's instance class (serverless in dev-test, provisioned in prod).
-  it('creates the FreeLocalStorage alarm only for the provisioned (prod) cluster', () => {
-    const count = (envType: 'dev-test' | 'prod') => Object.values(
-      template(envType, true).findResources('AWS::CloudWatch::Alarm')
+  // follow the database's instance class. Both profiles are provisioned now, so
+  // the serverless case is covered by forcing `instanceClass=db.serverless`.
+  it('creates the FreeLocalStorage alarm only for provisioned clusters', () => {
+    const count = (t: Template) => Object.values(
+      t.findResources('AWS::CloudWatch::Alarm')
     ).filter((r: any) => r.Properties.MetricName === 'FreeLocalStorage').length;
-
-    expect(count('dev-test')).toBe(0);
-    expect(count('prod')).toBe(1);
+    expect(count(template('dev-test', true))).toBe(1);
+    expect(count(template('prod', true))).toBe(1);
+    expect(count(synthTemplate('dev-test', {
+      ...PREBUILT_CONTEXT,
+      instanceClass: 'db.serverless',
+    }))).toBe(0);
   });
 });
 
