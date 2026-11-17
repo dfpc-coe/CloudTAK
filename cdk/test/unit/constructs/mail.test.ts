@@ -41,6 +41,22 @@ describe('Mail Construct', () => {
     });
   });
 
+  it('omits the ingress point, MX record and ingress exports when disabled', () => {
+    const { template: off } = build({ enableIngressPoint: false });
+    off.resourceCountIs('AWS::SES::MailManagerIngressPoint', 0);
+    off.resourceCountIs('AWS::Route53::RecordSet', 1); // DMARC TXT only
+    off.hasResourceProperties('AWS::Route53::RecordSet', { Type: 'TXT' });
+    const exportNames = Object.values((off.toJSON().Outputs ?? {}) as Record<string, any>)
+      .map((o) => o.Export?.Name);
+    expect(exportNames).not.toContain('TAK-Test-CloudTAK-mail-ingress-point-id');
+    expect(exportNames).not.toContain('TAK-Test-CloudTAK-mail-ingress-point-arecord');
+    // Everything the API and layer stacks depend on is still there
+    expect(exportNames).toContain('TAK-Test-CloudTAK-mail-layer-prefix');
+    expect(exportNames).toContain('TAK-Test-CloudTAK-mail-bucket');
+    expect(exportNames).toContain('TAK-Test-CloudTAK-mail-domain');
+    off.resourceCountIs('AWS::SES::MailManagerRuleSet', 1);
+    off.resourceCountIs('AWS::SES::MailManagerTrafficPolicy', 1);
+  });
   it('traffic policy denies by default, allows only the mail domain, 10 MiB cap', () => {
     template.hasResourceProperties('AWS::SES::MailManagerTrafficPolicy', {
       DefaultAction: 'DENY',

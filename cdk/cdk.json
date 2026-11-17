@@ -53,7 +53,8 @@
         "authentikChannelGroupPrefix": "tak_",
         "localOnlyAccounts": ["ckadmin"],
         "webPlugins": "https://github.com/TAK-NZ/cloudtak-plugin-rubbersheet.git,https://github.com/TAK-NZ/cloudtak-plugin-weather.git,https://github.com/TAK-NZ/cloudtak-plugin-sar.git",
-        "pmtilesProvisionedConcurrency": 2
+        "pmtilesProvisionedConcurrency": 2,
+        "enableInboundMail": false
       },
       "ecr": {
         "imageRetentionCount": 5,
@@ -108,7 +109,8 @@
         "authentikChannelGroupPrefix": "tak_",
         "localOnlyAccounts": ["ckadmin"],
         "webPlugins": "",
-        "pmtilesProvisionedConcurrency": 10
+        "pmtilesProvisionedConcurrency": 10,
+        "enableInboundMail": true
       },
       "ecr": {
         "imageRetentionCount": 20,

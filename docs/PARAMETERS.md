@@ -143,6 +143,12 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 |-----------|-------------|----------|------|
 | `pmtilesProvisionedConcurrency` | Provisioned concurrency on the `pmtiles` Lambda `live` alias. Each unit costs about $6.50 a month. `0` disables it. Defaults to `2` (upstream's default) when unset | `2` | `10` |
 
+### **Inbound Email**
+
+| Parameter | Description | dev-test | prod |
+|-----------|-------------|----------|------|
+| `enableInboundMail` | Create the SES Mail Manager ingress point and MX record that receive email for ETL layers. The ingress point costs about $49 a month flat. When `false`, inbound mail bounces. See [EMAIL.md](EMAIL.md). Defaults to `true` when unset | `false` | `true` |
+
 ### **Database Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|

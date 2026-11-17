@@ -555,7 +555,9 @@ export class CloudTakStack extends cdk.Stack {
     const mail = new Mail(this, 'Mail', {
       envConfig,
       hostedZone,
-      alarmTopic: alarms.highUrgencyTopic
+      alarmTopic: alarms.highUrgencyTopic,
+      // The ingress point is a flat ~$49/month; cdk.json can switch it off
+      enableIngressPoint: envConfig.cloudtak.enableInboundMail ?? true
     });
 
     // Layer functions read delivered raw email from the mail bucket. The ETL role

@@ -42,6 +42,7 @@ export function applyContextOverrides(
       hostname: app.node.tryGetContext('hostname') ?? baseConfig.cloudtak.hostname,
       takAdminEmail: app.node.tryGetContext('takAdminEmail') ?? baseConfig.cloudtak.takAdminEmail,
       useS3CloudTAKConfigFile: app.node.tryGetContext('useS3CloudTAKConfigFile') ? app.node.tryGetContext('useS3CloudTAKConfigFile') === 'true' : baseConfig.cloudtak.useS3CloudTAKConfigFile,
+      enableInboundMail: app.node.tryGetContext('enableInboundMail') !== undefined ? String(app.node.tryGetContext('enableInboundMail')) === 'true' : baseConfig.cloudtak.enableInboundMail,
       pmtilesProvisionedConcurrency: app.node.tryGetContext('pmtilesProvisionedConcurrency') !== undefined ? Number(app.node.tryGetContext('pmtilesProvisionedConcurrency')) : baseConfig.cloudtak.pmtilesProvisionedConcurrency,
     },
     ecr: {

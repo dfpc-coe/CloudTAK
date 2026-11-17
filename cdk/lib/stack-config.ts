@@ -59,6 +59,12 @@ export interface ContextEnvironmentConfig {
      * which is upstream's default.
      */
     pmtilesProvisionedConcurrency?: number;
+    /**
+     * Create the SES Mail Manager ingress point and its MX record, which receive email for
+     * ETL layers. The ingress point costs about $49/month flat. Defaults to true when unset.
+     * When false the rest of the mail stack stays deployed, but inbound mail bounces.
+     */
+    enableInboundMail?: boolean;
   };
   ecr: {
     imageRetentionCount: number;
