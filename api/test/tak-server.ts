@@ -1,5 +1,6 @@
 import CP from 'node:child_process';
 import jwt from 'jsonwebtoken';
+import type net from 'node:net';
 import tls from 'node:tls';
 import https from 'node:https';
 import http from 'node:http';
@@ -240,9 +241,9 @@ export default class MockTAKServer {
     /**
      * Bind a server to an OS-assigned ephemeral port and return that port
      */
-    async listen(server: any, name: string): Promise<number> {
+    async listen(server: net.Server, name: string): Promise<number> {
         await new Promise<void>((resolve, reject) => {
-            const onError = (e: any) => {
+            const onError = (e: Error) => {
                 server.removeListener('listening', onListening);
                 reject(new Error(`Failed to bind ${name} server: ${e.message}`));
             };
@@ -256,7 +257,7 @@ export default class MockTAKServer {
             server.listen(0, '127.0.0.1');
         });
 
-        return server.address().port;
+        return (server.address() as net.AddressInfo).port;
     }
 
     mockWebtakDefaultResponses(): void {
@@ -422,19 +423,19 @@ export default class MockTAKServer {
 
         await Promise.all([
             new Promise<void>((resolve) => {
-                if ('closeAllConnections' in this.streaming) (this.streaming as any).closeAllConnections();
+                if ('closeAllConnections' in this.streaming && typeof this.streaming.closeAllConnections === 'function') this.streaming.closeAllConnections();
                 this.streaming.close(() => {
                     return resolve();
                 });
             }),
             new Promise<void>((resolve) => {
-                if ('closeAllConnections' in this.webtak) (this.webtak as any).closeAllConnections();
+                this.webtak.closeAllConnections();
                 this.webtak.close(() => {
                     return resolve();
                 });
             }),
             new Promise<void>((resolve) => {
-                if ('closeAllConnections' in this.marti) (this.marti as any).closeAllConnections();
+                this.marti.closeAllConnections();
                 this.marti.close(() => {
                     return resolve();
                 });

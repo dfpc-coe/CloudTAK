@@ -13,7 +13,7 @@ export default class ProfileFileModel extends Modeler<typeof ProfileFile> {
         super(pool, ProfileFile);
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof ProfileFileResponse>> {
+    async augmented_from(id: unknown): Promise<Static<typeof ProfileFileResponse>> {
         const SubTable = this.pool
             .select({
                 file: ProfileFileChannel.file,

@@ -202,7 +202,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 console.log('no existing log groups', err);
             }
 
-            const lambda = await Lambda.generate(config, layer);
+            const lambda = Lambda.generate(config, layer);
             await LayerDeploy.apply(config, layer.id, lambda);
 
             res.json(await CF.status(config, layer.id));

@@ -261,7 +261,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         return { ...pgres[0], channels: pgres[0].channels as number[] };
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEventResponse>> {
+    async augmented_from(id: unknown): Promise<Static<typeof CoreEventResponse>> {
         const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool

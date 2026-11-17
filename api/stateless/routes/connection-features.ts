@@ -125,7 +125,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     res.write(output);
                     res.end();
                 } else {
-                    throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
+                    throw new Err(400, null, `Unknown Export Format: ${String(req.query.format)}`);
                 }
             }
         } catch (err) {

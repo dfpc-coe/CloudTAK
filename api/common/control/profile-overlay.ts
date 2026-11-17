@@ -452,7 +452,7 @@ export default class ProfileOverlayControl {
                 await this.config.models.ProfileOverlay.commit(overlay.id, {
                     styles: styles.map(layer => ({
                         ...layer,
-                        id: `${overlay.id}-${layer.id}`,
+                        id: `${overlay.id}-${String(layer.id)}`,
                         source: String(overlay.id),
                     })),
                 });

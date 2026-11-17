@@ -400,9 +400,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (sort) {
-                missions.data.sort((a: any, b: any) => {
-                    const aVal = a[sort];
-                    const bVal = b[sort];
+                missions.data.sort((a, b) => {
+                    const aVal = (a as unknown as Record<string, string | number>)[sort];
+                    const bVal = (b as unknown as Record<string, string | number>)[sort];
 
                     if (aVal < bVal) return order === 'asc' ? -1 : 1;
                     if (aVal > bVal) return order === 'asc' ? 1 : -1;

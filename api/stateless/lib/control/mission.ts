@@ -1,10 +1,9 @@
-import type { Request } from 'express';
 import type { Static } from '@sinclair/typebox';
 import type { TAKAPI } from '@tak-ps/node-tak';
 import type { MissionOptions } from '@tak-ps/node-tak/lib/api/mission';
 import Err from '@openaddresses/batch-error';
 import { sql } from 'drizzle-orm';
-import Auth, { AuthUser } from '../../../common/auth.js';
+import Auth, { AuthUser, type AnyRequest } from '../../../common/auth.js';
 import TAKServerControl, { profileUid } from '../../../common/control/takserver.js';
 import ProfileOverlayControl from '../../../common/control/profile-overlay.js';
 import type ConfigStateless from '../../config.js';
@@ -40,7 +39,7 @@ export default class MissionControl {
      * Mission auth options for a request - an explicit MissionAuthorization
      * header takes precedence over the token stored on the user's subscription
      */
-    async options(req: Request<any, any, any, any>, username: string, guid: string): Promise<Static<typeof MissionOptions>> {
+    async options(req: AnyRequest, username: string, guid: string): Promise<Static<typeof MissionOptions>> {
         if (req.headers['missionauthorization']) {
             return { token: String(req.headers['missionauthorization']) };
         }
@@ -52,7 +51,7 @@ export default class MissionControl {
      * Build a TAK API client with the requesting user's certificate and
      * resolve the Mission auth options for the given Mission
      */
-    async context(req: Request<any, any, any, any>, guid: string): Promise<MissionContext> {
+    async context(req: AnyRequest, guid: string): Promise<MissionContext> {
         const user = await Auth.as_user(this.config, req);
         const api = await this.takserver.asUser(user.email);
         const opts = await this.options(req, user.email, guid);
@@ -65,7 +64,7 @@ export default class MissionControl {
      * a Layer token acts as its Connection, using the token of a Data Sync of
      * that Connection when the Mission is one
      */
-    async scoped(req: Request<any, any, any, any>, guid?: string): Promise<MissionScopedContext> {
+    async scoped(req: AnyRequest, guid?: string): Promise<MissionScopedContext> {
         const authed = await Auth.is_auth(this.config, req);
 
         if (authed instanceof AuthUser) {
@@ -90,7 +89,7 @@ export default class MissionControl {
         };
     }
 
-    private async connectionOptions(req: Request<any, any, any, any>, connection: number, guid: string): Promise<Static<typeof MissionOptions>> {
+    private async connectionOptions(req: AnyRequest, connection: number, guid: string): Promise<Static<typeof MissionOptions>> {
         if (req.headers['missionauthorization']) {
             return { token: String(req.headers['missionauthorization']) };
         }

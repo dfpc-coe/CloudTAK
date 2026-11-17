@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const layerControl = new LayerControl(config);
 
     async function deployLayer(layer: Static<typeof LayerResponse>): Promise<void> {
-        const stack = await Lambda.generate(config, layer);
+        const stack = Lambda.generate(config, layer);
         await LayerDeploy.apply(config, layer.id, stack);
     }
 
@@ -374,7 +374,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.styles) {
-                await Style.validate(req.body.styles);
+                Style.validate(req.body.styles);
             }
 
             if (req.body.cron) {
@@ -492,7 +492,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.styles) {
-                await Style.validate(req.body.styles);
+                Style.validate(req.body.styles);
             }
 
             if (req.body.cron) {
@@ -650,7 +650,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.filters) {
-                await Filter.validate(req.body.filters);
+                Filter.validate(req.body.filters);
             }
 
             const capabilities = await layerControl.capabilities(layer.task);
@@ -720,7 +720,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.filters) {
-                await Filter.validate(req.body.filters);
+                Filter.validate(req.body.filters);
             }
 
             const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);

@@ -158,7 +158,7 @@ export default class LayerModel extends Modeler<typeof Layer> {
         } while (pgres.items.length);
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof AugmentedLayer>> {
+    async augmented_from(id: unknown): Promise<Static<typeof AugmentedLayer>> {
         const pgres = await this.pool
             .select({
                 id: Layer.id,

@@ -392,7 +392,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
             }
 
             if (cots.length) {
-                tak.write(cots);
+                void tak.write(cots);
             }
 
             // A sweep rebuilds the map so Entities that stop broadcasting are dropped

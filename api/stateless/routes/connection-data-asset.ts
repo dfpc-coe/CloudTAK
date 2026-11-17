@@ -45,14 +45,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
-            const assets: Array<Static<typeof AssetResponse>> = list.assets.map((a: any) => {
-                a.sync = false;
-                if (!data.mission_sync) return a;
-                for (const glob of data.assets) {
-                    a.sync = includesWithGlob([a.name], glob);
-                    if (a.sync) break;
+            const assets: Array<Static<typeof AssetResponse>> = list.assets.map((a) => {
+                let sync = false;
+                if (data.mission_sync) {
+                    for (const glob of data.assets) {
+                        sync = includesWithGlob([a.name], glob);
+                        if (sync) break;
+                    }
                 }
-                return a;
+                return { ...a, sync };
             });
 
             res.json({ ...list, assets });

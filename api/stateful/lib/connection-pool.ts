@@ -485,7 +485,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 await connClient.refreshChannels();
             }
 
-            this.cots(connConfig, [cot]);
+            void this.cots(connConfig, [cot]);
         }).on('secureConnect', async () => {
             connClient.secure = true;
 
@@ -527,25 +527,25 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ close`);
             if (this.isTracked(connClient)) {
-                this.retry(connClient);
+                void this.retry(connClient);
             }
         }).on('end', async () => {
             connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
             if (this.isTracked(connClient)) {
-                this.retry(connClient);
+                void this.retry(connClient);
             }
         }).on('timeout', async () => {
             connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ timeout`);
             if (this.isTracked(connClient)) {
-                this.retry(connClient);
+                void this.retry(connClient);
             }
         }).on('error', async (err) => {
             connClient.secure = false;
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ error:${err}`);
             if (this.isTracked(connClient)) {
-                this.retry(connClient);
+                void this.retry(connClient);
             }
         });
 

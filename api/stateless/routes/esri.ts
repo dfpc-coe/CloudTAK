@@ -264,7 +264,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const server = new EsriProxyServer(base);
 
-            const list: any = await server.getList(base.postfix);
+            const list = await server.getList(base.postfix) as { folders?: unknown[]; services?: unknown[] };
             if (!list.folders) list.folders = [];
             if (!list.services) list.services = [];
 

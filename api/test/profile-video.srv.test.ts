@@ -56,7 +56,7 @@ test('POST: api/profile/video - url without media server', async () => {
 });
 
 let agent: MockAgent;
-let originalDispatcher: any;
+let originalDispatcher: ReturnType<typeof getGlobalDispatcher>;
 let leaseId: number;
 let leasePath: string;
 let videoId: string;

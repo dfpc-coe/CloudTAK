@@ -59,7 +59,7 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
         }
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreDeviceResponse>> {
+    async augmented_from(id: unknown): Promise<Static<typeof CoreDeviceResponse>> {
         const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool

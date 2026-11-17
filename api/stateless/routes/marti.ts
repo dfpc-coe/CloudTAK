@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { GenericMartiResponse } from '../../common/types.js';
-import Auth, { AuthResource, AuthResourceAccess } from '../../common/auth.js';
+import Auth, { AuthResource, AuthResourceAccess, type AnyRequest } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { ConnectionAuth } from '../../common/connection-config.js';
 import { Contact } from '@tak-ps/node-tak/lib/api/contacts';
@@ -10,7 +10,6 @@ import { Group } from '@tak-ps/node-tak/lib/api/groups';
 import { ClientEndpoint } from '@tak-ps/node-tak/lib/api/client';
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
-import type { Request } from 'express';
 import { authenticatedProfile } from '../../common/control/profile.js';
 import TAKServerControl from '../../common/control/takserver.js';
 
@@ -33,8 +32,7 @@ async function serverApi(config: ConfigStateless): Promise<TAKAPI> {
 
 async function groupApi(
     config: ConfigStateless,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches Auth.as_user / Auth.is_connection
-    req: Request<any, any, any, any>,
+    req: AnyRequest,
     connection?: number,
     impersonate?: string,
 ): Promise<TAKAPI> {

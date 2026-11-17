@@ -19,11 +19,12 @@
     "devDependencies": {
         "@playwright/test": "^1.61.1",
         "@types/node": "^26.1.1",
+        "@typescript/native": "npm:typescript@^7.0.2",
         "allure-commandline": "^2.43.0",
         "allure-playwright": "^3.12.1",
         "dotenv": "^17.4.2",
         "eslint": "^10.7.0",
-        "typescript": "^5.9.3",
+        "typescript": "npm:@typescript/typescript6@^6.0.2",
         "typescript-eslint": "^8.64.0"
     }
 }

@@ -5,6 +5,7 @@ import ws from 'ws';
 import { sql } from 'drizzle-orm';
 import { ProfileSession } from '../common/schema.js';
 import Flight from './flight.js';
+import { rawDataToString } from '../common/stringify.js';
 
 const flight = new Flight();
 
@@ -293,7 +294,7 @@ test('DELETE: api/user/user@example.com/session/:session - an open WebSocket is 
             conn.on('error', reject);
             conn.on('close', () => resolve());
             conn.on('message', async (data) => {
-                const msg = JSON.parse(String(data));
+                const msg = JSON.parse(rawDataToString(data));
                 if (msg.type === 'status') return;
                 received.push(msg);
 

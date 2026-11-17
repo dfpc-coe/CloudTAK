@@ -214,7 +214,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 archive.pipe(res);
 
-                const xmljson: any = {
+                const xmljson: xmljs.ElementCompact = {
                     _declaration: {
                         _attributes: {
                             version: '1.0',
@@ -265,7 +265,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 archive.append(Buffer.from(xml), { name: 'iconset.xml' });
 
-                archive.finalize();
+                await archive.finalize();
             } else {
                 res.json(iconset);
             }

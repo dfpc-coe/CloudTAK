@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import ws from 'ws';
 import Flight from './flight.js';
+import { rawDataToString } from '../common/stringify.js';
 
 const flight = new Flight();
 
@@ -58,7 +59,7 @@ function firstMessage(url: URL): Promise<unknown> {
 
         conn.on('message', (data) => {
             conn.terminate();
-            resolve(JSON.parse(String(data)));
+            resolve(JSON.parse(rawDataToString(data)));
         });
 
         conn.on('unexpected-response', (req, res) => {

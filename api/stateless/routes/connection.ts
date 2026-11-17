@@ -13,6 +13,7 @@ import { Channel, ChannelAccess } from '../lib/interface-user.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
+import { stringify } from '../../common/stringify.js';
 
 /**
  * Detect a Postgres unique-constraint violation on the connection name across the
@@ -26,7 +27,7 @@ function isDuplicateNameError(err: unknown): boolean {
         if (current instanceof Error) {
             parts.push(current.message);
         } else {
-            parts.push(String(current));
+            parts.push(stringify(current));
         }
         if (typeof current === 'object' && 'safe' in current) {
             parts.push(String((current as { safe?: unknown }).safe));

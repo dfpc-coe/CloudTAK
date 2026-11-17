@@ -8,7 +8,7 @@ import { demTile } from './lib/dem.js';
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
-let app: any;
+let app: typeof import('../index.js')['app'];
 let server: http.Server;
 let upstream: http.Server;
 

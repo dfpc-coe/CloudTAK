@@ -1,10 +1,12 @@
-import { Request } from 'express';
+import type { Request } from 'express';
 import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import type { Profile, Connection, ConnectionToken, Layer } from './schema.js';
 import { authenticatedProfile, type AuthenticatedProfile } from './control/profile.js';
+
+export type AnyRequest = Pick<Request, 'headers' | 'header' | 'socket'> & { query?: unknown };
 
 export enum ResourceCreationScope {
     SERVER = 'server',
@@ -263,7 +265,7 @@ export default class Auth {
      */
     static async authorize(
         config: Config,
-        req: Request<any, any, any, any>,
+        req: AnyRequest,
         kind: SchemeKind,
         source: TokenSource,
         scopes: Array<string>,
@@ -306,7 +308,7 @@ export default class Auth {
         return auth;
     }
 
-    static #granted(req: Request<any, any, any, any>): AuthResource | AuthUser {
+    static #granted(req: AnyRequest): AuthResource | AuthUser {
         const auth = requests.get(req)?.granted;
         if (!auth) throw new Err(401, null, 'No Auth Present');
         return auth;
@@ -346,7 +348,7 @@ export default class Auth {
      * @param req       - Express Request
      * @param opts.resources    - Resource tokens must be one of these, used to bind a token to an ID from the request
      */
-    static async is_auth(config: Config, req: Request<any, any, any, any>, opts: {
+    static async is_auth(config: Config, req: AnyRequest, opts: {
         resources?: Array<AuthResourceAccepted>;
     } = {}): Promise<AuthResource | AuthUser> {
         const auth = this.#granted(req);
@@ -398,7 +400,7 @@ export default class Auth {
         }
     }
 
-    static async is_connection(config: Config, req: Request<any, any, any, any>, opts: {
+    static async is_connection(config: Config, req: AnyRequest, opts: {
         resources?: Array<AuthResourceAccepted>;
     }, connectionid: number): Promise<{
         auth: AuthResource | AuthUser;
@@ -450,7 +452,7 @@ export default class Auth {
         }
     }
 
-    static async as_resource(config: Config, req: Request<any, any, any, any>, opts: {
+    static async as_resource(config: Config, req: AnyRequest, opts: {
         resources?: Array<AuthResourceAccepted>;
     } = {}): Promise<AuthResource> {
         const auth = await this.is_auth(config, req, opts);
@@ -462,7 +464,7 @@ export default class Auth {
 
     static async impersonate(
         config: Config,
-        req: Request<any, any, any, any>,
+        req: AnyRequest,
         impersonate: string,
     ): Promise<AuthUser> {
         const adminUser = await this.as_user(config, req, { admin: true });
@@ -479,7 +481,7 @@ export default class Auth {
      *
      * @param opts.admin    - Require a System Administrator, for routes where only some requests need one
      */
-    static async as_user(config: Config, req: Request<any, any, any, any>, opts: {
+    static async as_user(config: Config, req: AnyRequest, opts: {
         admin?: boolean;
     } = {}): Promise<AuthUser> {
         const auth = this.#granted(req);
@@ -497,7 +499,7 @@ export default class Auth {
      * The authenticated user's Profile - a Profile that has been provisioned (SCIM)
      * but has never logged in has no TAK certificate and is rejected
      */
-    static async as_profile(config: Config, req: Request<any, any, any, any>, opts: {
+    static async as_profile(config: Config, req: AnyRequest, opts: {
         admin?: boolean;
     } = {}): Promise<AuthenticatedProfile> {
         const user = await this.as_user(config, req, opts);
@@ -519,7 +521,7 @@ export function identityOf(req: object): string | undefined {
     return identities.get(req);
 }
 
-function identify<T extends AuthResource | AuthUser>(req: Request<any, any, any, any>, auth: T): T {
+function identify<T extends AuthResource | AuthUser>(req: AnyRequest, auth: T): T {
     const identity = auth instanceof AuthUser
         ? auth.email
         : `${auth.access}:${auth.id ?? 'internal'}`;
@@ -531,10 +533,12 @@ function identify<T extends AuthResource | AuthUser>(req: Request<any, any, any,
 
 async function auth_request(
     config: Config,
-    req: Request<any, any, any, any>,
+    req: AnyRequest,
     source: TokenSource,
 ): Promise<AuthResource | AuthUser> {
     try {
+        const token = req.query && typeof req.query === 'object' && 'token' in req.query ? req.query.token : undefined;
+
         if (source === 'header') {
             if (!req.headers || !req.header('authorization')) throw new Err(401, null, 'No Auth Present');
 
@@ -549,8 +553,8 @@ async function auth_request(
             }
 
             return identify(req, await tokenParser(config, authorization[1], config.SigningSecret));
-        } else if (req.query && req.query.token && typeof req.query.token === 'string') {
-            return identify(req, await tokenParser(config, req.query.token, config.SigningSecret));
+        } else if (token && typeof token === 'string') {
+            return identify(req, await tokenParser(config, token, config.SigningSecret));
         } else {
             throw new Err(401, null, 'No Auth Present');
         }

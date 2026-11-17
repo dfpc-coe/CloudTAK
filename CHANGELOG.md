@@ -27,6 +27,11 @@
 
 ### Pending Release
 
+- :arrow_up: Migrate to TS7 for blazing build times - `tsc` is TypeScript 7.0 via `@typescript/native`, tools that need the compiler API (ESLint, `vue-tsc`, TypeDoc) stay on the TypeScript 6 API
+- :arrow_up: Migrate the API off ESLint onto OXLint for blazing lint times
+- :bug: Fix numerous small bugs in the codebase surfaced by OXLint
+- :bug: Paging verification codes are accepted for one 30 second period either side of the current one - the tolerance was never applied, so a code expired at the end of the period it was sent in
+
 ### v13.123.2 - 2026-11-17
 
 - :bug: Generate Links that are valid in ATAK
