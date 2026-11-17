@@ -52,6 +52,13 @@ export interface ContextEnvironmentConfig {
      * Comma and/or whitespace separated https GitHub URLs. Optional; empty or unset means no plugins.
      */
     webPlugins?: string;
+    /**
+     * Provisioned concurrency for the `pmtiles` Lambda `live` alias. Keeps that many
+     * containers warm so a burst of tile requests on first map load skips cold starts.
+     * Each unit is billed continuously (about $6.50/month). 0 disables it. Defaults to 2,
+     * which is upstream's default.
+     */
+    pmtilesProvisionedConcurrency?: number;
   };
   ecr: {
     imageRetentionCount: number;

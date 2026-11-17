@@ -137,6 +137,12 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 | `enableDetailedLogging` | Enable detailed application logging | `true` | `false` |
 | `enableEcsExec` | Enable ECS exec for debugging | `true` | `false` |
 
+### **PMTiles Lambda**
+
+| Parameter | Description | dev-test | prod |
+|-----------|-------------|----------|------|
+| `pmtilesProvisionedConcurrency` | Provisioned concurrency on the `pmtiles` Lambda `live` alias. Each unit costs about $6.50 a month. `0` disables it. Defaults to `2` (upstream's default) when unset | `2` | `10` |
+
 ### **Database Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
