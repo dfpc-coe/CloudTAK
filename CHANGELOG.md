@@ -27,6 +27,10 @@
 
 ### Pending Release
 
+### v13.123.2 - 2026-11-17
+
+- :bug: Generate Links that are valid in ATAK
+
 ### v13.123.1 - 2026-11-16
 
 - :rocket: Consolidate Permissions
