@@ -226,6 +226,13 @@ export class Database extends Construct {
         defaultDatabaseName: DATABASE_CONSTANTS.DEFAULT_DATABASE_NAME,
         port: DATABASE_CONSTANTS.PORT,
         networkType: rds.NetworkType.DUAL,
+        // The RDS Data API (HTTP endpoint) is not supported on T instance classes, and a
+        // cluster that has it enabled makes CloudFormation fail with "The instance class that
+        // you specified doesn't support the HTTP endpoint" when the writer moves off
+        // db.serverless. Set it to false explicitly so a cluster that had it switched on (for
+        // example through the console query editor) is updated before its instance class
+        // changes. Nothing in CloudTAK uses the Data API; the API connects over pg.
+        enableDataApi: false,
         writer: rds.ClusterInstance.provisioned('writer', {
           instanceType,
           enablePerformanceInsights: dbConfig.enablePerformanceInsights,

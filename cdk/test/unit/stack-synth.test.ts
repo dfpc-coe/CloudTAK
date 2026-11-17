@@ -72,6 +72,9 @@ describe('database safety shape', () => {
       Engine: 'aurora-postgresql',
       DeletionProtection: false,
       ServerlessV2ScalingConfiguration: Match.absent(),
+      // The Data API is unsupported on T classes; the cluster must disable it explicitly so a
+      // cluster that had it enabled can move off db.serverless.
+      EnableHttpEndpoint: false,
     });
 
     // dev-test runs one small provisioned writer (cdk.json: db.t4g.medium).
