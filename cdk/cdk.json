@@ -32,8 +32,8 @@
         "enableCloudWatchLogs": false
       },
       "ecs": {
-        "taskCpu": 2048,
-        "taskMemory": 4096,
+        "taskCpu": 1024,
+        "taskMemory": 2048,
         "desiredCount": 2,
         "targetCpuUtilization": 70,
         "maxCapacity": 10,

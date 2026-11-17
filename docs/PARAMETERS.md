@@ -38,8 +38,8 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
       },
       "ecs": {
         "taskCpu": 1024,
-        "taskMemory": 4096,
-        "desiredCount": 1,
+        "taskMemory": 2048,
+        "desiredCount": 2,
         "enableDetailedLogging": true,
         "enableEcsExec": true
       },
@@ -74,9 +74,9 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
         "deleteProtection": true
       },
       "ecs": {
-        "taskCpu": 2048,
+        "taskCpu": 4096,
         "taskMemory": 8192,
-        "desiredCount": 1,
+        "desiredCount": 2,
         "enableDetailedLogging": false,
         "enableEcsExec": false
       },
@@ -114,7 +114,7 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
 |---------|----------|------|--------|
 | **Database Instance** | `db.t4g.medium` | `db.t4g.large` | Performance and cost |
 | **Database Count** | `1` instance | `2` instances | High availability |
-| **ECS Resources** | `1024 CPU, 4096 MB` | `2048 CPU, 8192 MB` | Performance |
+| **ECS Resources** | `1024 CPU, 2048 MB` | `4096 CPU, 8192 MB` | Performance |
 | **ECS Tasks** | `1` task | `1` task | Resource allocation |
 | **ECS Exec** | `true` (debugging) | `false` (security) | Development access |
 | **Container Insights** | `false` | `true` | ECS monitoring |
@@ -131,9 +131,9 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 ### **ECS Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
-| `taskCpu` | CPU units for ECS tasks | `1024` | `2048` |
-| `taskMemory` | Memory (MB) for ECS tasks | `4096` | `8192` |
-| `desiredCount` | Desired number of running tasks | `1` | `1` |
+| `taskCpu` | CPU units for the API and stateful ECS tasks | `1024` | `4096` |
+| `taskMemory` | Memory (MB) for the API and stateful ECS tasks | `2048` | `8192` |
+| `desiredCount` | Baseline and autoscaling floor for the API service (the stateful service is always 1 task) | `2` | `2` |
 | `enableDetailedLogging` | Enable detailed application logging | `true` | `false` |
 | `enableEcsExec` | Enable ECS exec for debugging | `true` | `false` |
 

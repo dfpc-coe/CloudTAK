@@ -113,7 +113,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 
 #### **dev-test** (Default)
 - **Focus**: Cost optimization and development efficiency
-- **ECS**: Minimal CPU/memory allocation (1024/4096)
+- **ECS**: Minimal CPU/memory allocation (1024/2048)
 - **Tasks**: Single task instance
 - **Container Insights**: Disabled
 - **ECS Exec**: Enabled (debugging access)
@@ -122,7 +122,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 
 #### **prod**
 - **Focus**: Production readiness, security, and enhanced monitoring
-- **ECS**: Higher resource allocation (2048/8192)
+- **ECS**: Higher resource allocation (4096/8192)
 - **Tasks**: Single task instance (desiredCount: 1)
 - **Container Insights**: Enabled (monitoring and observability)
 - **ECS Exec**: Disabled (security)
