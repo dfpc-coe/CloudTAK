@@ -110,7 +110,7 @@ jobs:
             echo "db-context=" >> $GITHUB_OUTPUT
           else
             echo "🔄 Using dev-test database settings for faster deployment"
-            echo "db-context=--context instanceClass=db.serverless --context instanceCount=1 --context enablePerformanceInsights=false --context monitoringInterval=0 --context backupRetentionDays=7 --context deleteProtection=false" >> $GITHUB_OUTPUT
+            echo "db-context=--context instanceClass=db.t4g.medium --context instanceCount=1 --context enablePerformanceInsights=false --context monitoringInterval=0 --context backupRetentionDays=7 --context deleteProtection=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Deploy Demo with Prod Profile

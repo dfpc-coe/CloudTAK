@@ -6,7 +6,7 @@ ETL layers with **Email Delivery** enabled receive messages sent to
 `cloudformation/mail.template.js` (v13.102.4) and lives in
 `cdk/lib/constructs/mail.ts`.
 
-There is no feature flag: like Webhooks, it is deployed with every stack.
+Everything except the ingress point is deployed with every stack. The ingress point and MX record can be switched off with `cloudtak.enableInboundMail` (see [Turning inbound mail off](#turning-inbound-mail-off-cost)).
 
 ## Flow
 
@@ -49,13 +49,31 @@ another MX at that name.
 | `AWS::SES::MailManagerTrafficPolicy` | DENY by default, ALLOW recipient `ENDS_WITH @<mail domain>`, 10 MiB max |
 | `AWS::SES::MailManagerArchive` | 6 month retention, `Retain` on stack deletion |
 | `AWS::SES::MailManagerRuleSet` | `ArchiveAll`, then `DeliverLayers` (WriteToS3 + InvokeLambda EVENT) |
-| `AWS::SES::MailManagerIngressPoint` | `OPEN`, TLS `OPTIONAL` |
+| `AWS::SES::MailManagerIngressPoint` | `OPEN`, TLS `OPTIONAL`. Only created when `cloudtak.enableInboundMail` is true (see below) |
 | S3 bucket | `tak-<env>-cloudtak-mail-<account>-<region>`, SSE-S3, all public access blocked, objects expire after 7 days, incomplete multipart uploads abort after 1 day |
 | Router Lambda | Node.js 24, 128 MB, 30 s, logs kept 7 days. Code is `cdk/lib/lambda/mail-router.cjs`, a verbatim copy of upstream `cloudformation/lib/mail-lambda.cjs` |
 | Router alarms | Errors > 0, Throttles > 0, Duration p99 > 25 s, to the high-urgency topic |
 
 The 7 day expiry, archive retention and size limit are props on the `Mail`
 construct (`mailExpirationDays`, `archiveRetentionPeriod`, `maxMessageSizeBytes`).
+
+## Turning inbound mail off (cost)
+
+The ingress point is a flat charge of about $49 a month whether or not any mail
+arrives. `cloudtak.enableInboundMail` in `cdk/cdk.json` (context override of the
+same name, defaults to `true` when unset) controls it:
+
+| Profile | `enableInboundMail` |
+|---------|---------------------|
+| `dev-test` | `false` |
+| `prod` | `true` |
+
+When it is `false`, only the ingress point, the MX record and the two
+`mail-ingress-point-*` exports are removed. The bucket, router Lambda, rule set,
+traffic policy, archive, DMARC record, alarms and the other exports stay, so the
+API, the ETL role and layer stacks keep deploying. Mail sent to a layer's
+address bounces, so ETL layers that rely on inbound email stop receiving it.
+Set it back to `true` and redeploy to restore mail.
 
 ## CloudFormation exports
 
@@ -64,8 +82,8 @@ construct (`mailExpirationDays`, `archiveRetentionPeriod`, `maxMessageSizeBytes`
 | `TAK-{Env}-CloudTAK-mail-layer-prefix` | `/TAK-{Env}-CloudTAK/mail/layer/` (imported by layer stacks) |
 | `TAK-{Env}-CloudTAK-mail-bucket` | Mail bucket name |
 | `TAK-{Env}-CloudTAK-mail-domain` | Mail domain |
-| `TAK-{Env}-CloudTAK-mail-ingress-point-id` | Ingress point ID |
-| `TAK-{Env}-CloudTAK-mail-ingress-point-arecord` | Ingress point A record (MX target) |
+| `TAK-{Env}-CloudTAK-mail-ingress-point-id` | Ingress point ID (only when inbound mail is enabled) |
+| `TAK-{Env}-CloudTAK-mail-ingress-point-arecord` | Ingress point A record, the MX target (only when inbound mail is enabled) |
 | `TAK-{Env}-CloudTAK-mail-archive-id` | Archive ID |
 
 The API finds the layer prefix through a small fork patch,

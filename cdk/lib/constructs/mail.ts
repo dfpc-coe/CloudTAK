@@ -37,8 +37,13 @@
  * place that derivation lives on the CDK side, and cloudtak-api.ts sets
  * MAIL_DOMAIN explicitly from the same rule.
  *
- * No feature flag: like Webhooks, this is always deployed. (Webhooks has no
- * toggle in cdk.json either, so there is no pattern to follow.)
+ * Cost switch: the ingress point is a flat ~$49/month whether or not mail
+ * arrives. `cloudtak.enableInboundMail` (cdk.json, default true when unset)
+ * turns off just the ingress point, its MX record and its two exports. Everything
+ * else (bucket, router, rule set, traffic policy, archive, DMARC, alarms) is
+ * still created so the API, the ETL role and the layer stacks keep working, and
+ * so turning mail back on is a one-line change. With the ingress point off, mail
+ * sent to a layer address bounces.
  */
 
 import * as fs from 'fs';
@@ -84,6 +89,11 @@ export interface MailProps {
   maxMessageSizeBytes?: number;
   /** Mail Manager archive retention (SES enum). Default SIX_MONTHS. */
   archiveRetentionPeriod?: string;
+  /**
+   * Create the Mail Manager ingress point and its MX record. The ingress point
+   * costs about $49/month flat. Default true. When false no mail can arrive.
+   */
+  enableIngressPoint?: boolean;
 }
 
 export class Mail extends Construct {
@@ -95,7 +105,8 @@ export class Mail extends Construct {
   public readonly archive: ses.CfnMailManagerArchive;
   public readonly ruleSet: ses.CfnMailManagerRuleSet;
   public readonly trafficPolicy: ses.CfnMailManagerTrafficPolicy;
-  public readonly ingressPoint: ses.CfnMailManagerIngressPoint;
+  /** Undefined when `enableIngressPoint` is false. */
+  public readonly ingressPoint?: ses.CfnMailManagerIngressPoint;
 
   constructor(scope: Construct, id: string, props: MailProps) {
     super(scope, id);
@@ -106,7 +117,8 @@ export class Mail extends Construct {
       alarmTopic,
       mailExpirationDays = 7,
       maxMessageSizeBytes = 10485760,
-      archiveRetentionPeriod = 'SIX_MONTHS'
+      archiveRetentionPeriod = 'SIX_MONTHS',
+      enableIngressPoint = true
     } = props;
     const stack = cdk.Stack.of(this);
     const stackName = stack.stackName;
@@ -272,23 +284,25 @@ export class Mail extends Construct {
       }]
     });
 
-    // Ingress point: OPEN public SMTP endpoint (see security notes above)
-    this.ingressPoint = new ses.CfnMailManagerIngressPoint(this, 'IngressPoint', {
-      ingressPointName: resourceName,
-      type: 'OPEN',
-      tlsPolicy: 'OPTIONAL',
-      ruleSetId: this.ruleSet.attrRuleSetId,
-      trafficPolicyId: this.trafficPolicy.attrTrafficPolicyId
-    });
+    if (enableIngressPoint) {
+      // Ingress point: OPEN public SMTP endpoint (see security notes above)
+      this.ingressPoint = new ses.CfnMailManagerIngressPoint(this, 'IngressPoint', {
+        ingressPointName: resourceName,
+        type: 'OPEN',
+        tlsPolicy: 'OPTIONAL',
+        ruleSetId: this.ruleSet.attrRuleSetId,
+        trafficPolicyId: this.trafficPolicy.attrTrafficPolicyId
+      });
 
-    // MX: direct inbound SMTP for the mail domain to the ingress endpoint
-    new route53.MxRecord(this, 'MxRecord', {
-      zone: hostedZone,
-      recordName: relativeMailName,
-      values: [{ priority: 10, hostName: this.ingressPoint.attrARecord }],
-      ttl: cdk.Duration.minutes(5),
-      comment: `${resourceName} Mail Manager MX Record`
-    });
+      // MX: direct inbound SMTP for the mail domain to the ingress endpoint
+      new route53.MxRecord(this, 'MxRecord', {
+        zone: hostedZone,
+        recordName: relativeMailName,
+        values: [{ priority: 10, hostName: this.ingressPoint.attrARecord }],
+        ttl: cdk.Duration.minutes(5),
+        comment: `${resourceName} Mail Manager MX Record`
+      });
+    }
 
     // DMARC: monitor-only policy for the inbound mail subdomain
     new route53.TxtRecord(this, 'DmarcRecord', {
@@ -344,16 +358,18 @@ export class Mail extends Construct {
       description: 'Fully-qualified domain name that receives inbound mail',
       exportName: `${stackName}-mail-domain`
     });
-    new cdk.CfnOutput(this, 'MailIngressPointId', {
-      value: this.ingressPoint.attrIngressPointId,
-      description: 'Mail Manager Ingress Point ID',
-      exportName: `${stackName}-mail-ingress-point-id`
-    });
-    new cdk.CfnOutput(this, 'MailIngressPointARecord', {
-      value: this.ingressPoint.attrARecord,
-      description: 'A-record hostname used by the MX entry',
-      exportName: `${stackName}-mail-ingress-point-arecord`
-    });
+    if (this.ingressPoint) {
+      new cdk.CfnOutput(this, 'MailIngressPointId', {
+        value: this.ingressPoint.attrIngressPointId,
+        description: 'Mail Manager Ingress Point ID',
+        exportName: `${stackName}-mail-ingress-point-id`
+      });
+      new cdk.CfnOutput(this, 'MailIngressPointARecord', {
+        value: this.ingressPoint.attrARecord,
+        description: 'A-record hostname used by the MX entry',
+        exportName: `${stackName}-mail-ingress-point-arecord`
+      });
+    }
     new cdk.CfnOutput(this, 'MailArchiveId', {
       value: this.archive.attrArchiveId,
       description: 'Mail Manager Archive ID',

@@ -129,13 +129,21 @@ export class LambdaFunctions extends Construct {
       environmentEncryption: kmsKey,
     });
 
-    // Provisioned concurrency — keeps 10 containers warm to eliminate cold starts
-    // on concurrent tile bursts when a user first loads the map.
+    // Provisioned concurrency keeps containers warm to avoid cold starts on concurrent
+    // tile bursts when a user first loads the map. Each one is billed continuously
+    // (about $6.50/month), and concurrency peaks well above any sensible value anyway,
+    // so the default is upstream's 2. 0 disables it; the alias is kept either way.
+    const requestedConcurrency = envConfig.cloudtak.pmtilesProvisionedConcurrency ?? 2;
+    if (!Number.isInteger(requestedConcurrency) || requestedConcurrency < 0) {
+      throw new Error(
+        `cloudtak.pmtilesProvisionedConcurrency must be an integer >= 0, got ${requestedConcurrency}`
+      );
+    }
     const version = this.tilesLambda.currentVersion;
     new lambda.Alias(this, 'PMTilesLambdaLive', {
       aliasName: 'live',
       version,
-      provisionedConcurrentExecutions: 10,
+      provisionedConcurrentExecutions: requestedConcurrency > 0 ? requestedConcurrency : undefined,
     });
 
     // -------------------------------------------------------------------------

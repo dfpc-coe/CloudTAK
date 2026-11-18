@@ -52,6 +52,19 @@ export interface ContextEnvironmentConfig {
      * Comma and/or whitespace separated https GitHub URLs. Optional; empty or unset means no plugins.
      */
     webPlugins?: string;
+    /**
+     * Provisioned concurrency for the `pmtiles` Lambda `live` alias. Keeps that many
+     * containers warm so a burst of tile requests on first map load skips cold starts.
+     * Each unit is billed continuously (about $6.50/month). 0 disables it. Defaults to 2,
+     * which is upstream's default.
+     */
+    pmtilesProvisionedConcurrency?: number;
+    /**
+     * Create the SES Mail Manager ingress point and its MX record, which receive email for
+     * ETL layers. The ingress point costs about $49/month flat. Defaults to true when unset.
+     * When false the rest of the mail stack stays deployed, but inbound mail bounces.
+     */
+    enableInboundMail?: boolean;
   };
   ecr: {
     imageRetentionCount: number;

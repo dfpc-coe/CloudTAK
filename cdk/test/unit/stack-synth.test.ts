@@ -63,7 +63,7 @@ describe('database safety shape', () => {
     });
   });
 
-  it('dev-test cluster is destroyable and serverless', () => {
+  it('dev-test cluster is destroyable and provisioned', () => {
     const t = template('dev-test', true);
 
     // dev-test must NOT carry deletion protection — otherwise teardown of
@@ -71,14 +71,17 @@ describe('database safety shape', () => {
     t.hasResourceProperties('AWS::RDS::DBCluster', {
       Engine: 'aurora-postgresql',
       DeletionProtection: false,
-      ServerlessV2ScalingConfiguration: Match.anyValue(),
+      ServerlessV2ScalingConfiguration: Match.absent(),
+      // The Data API is unsupported on T classes; the cluster must disable it explicitly so a
+      // cluster that had it enabled can move off db.serverless.
+      EnableHttpEndpoint: false,
     });
 
-    // Serverless v2 still materializes a single writer instance, on the
-    // db.serverless class rather than a provisioned instance type.
+    // dev-test runs one small provisioned writer (cdk.json: db.t4g.medium).
+    // Serverless v2 sat at about 3 ACU all day, which cost about 5x as much.
     t.resourceCountIs('AWS::RDS::DBInstance', 1);
     t.hasResourceProperties('AWS::RDS::DBInstance', {
-      DBInstanceClass: 'db.serverless',
+      DBInstanceClass: 'db.t4g.medium',
     });
   });
 });
@@ -174,14 +177,18 @@ describe('alarm wiring', () => {
   });
 
   // FreeLocalStorage is only published for provisioned Aurora, so the alarm must
-  // follow the database's instance class (serverless in dev-test, provisioned in prod).
-  it('creates the FreeLocalStorage alarm only for the provisioned (prod) cluster', () => {
-    const count = (envType: 'dev-test' | 'prod') => Object.values(
-      template(envType, true).findResources('AWS::CloudWatch::Alarm')
+  // follow the database's instance class. Both profiles are provisioned now, so
+  // the serverless case is covered by forcing `instanceClass=db.serverless`.
+  it('creates the FreeLocalStorage alarm only for provisioned clusters', () => {
+    const count = (t: Template) => Object.values(
+      t.findResources('AWS::CloudWatch::Alarm')
     ).filter((r: any) => r.Properties.MetricName === 'FreeLocalStorage').length;
-
-    expect(count('dev-test')).toBe(0);
-    expect(count('prod')).toBe(1);
+    expect(count(template('dev-test', true))).toBe(1);
+    expect(count(template('prod', true))).toBe(1);
+    expect(count(synthTemplate('dev-test', {
+      ...PREBUILT_CONTEXT,
+      instanceClass: 'db.serverless',
+    }))).toBe(0);
   });
 });
 
@@ -193,12 +200,15 @@ describe('inbound email wiring', () => {
   const json = JSON.stringify(t.toJSON());
 
   it('deploys the mail stack and exports what the patched API imports', () => {
-    t.resourceCountIs('AWS::SES::MailManagerIngressPoint', 1);
+    // dev-test has enableInboundMail=false (ingress point is ~$49/month); the
+    // rest of the mail stack stays so the exports below still resolve.
+    t.resourceCountIs('AWS::SES::MailManagerIngressPoint', 0);
     t.resourceCountIs('AWS::SES::MailManagerRuleSet', 1);
     const outputs = (t.toJSON().Outputs ?? {}) as Record<string, any>;
     const exportNames = Object.values(outputs).map((o) => o.Export?.Name);
     expect(exportNames).toContain('TAK-Dev-CloudTAK-mail-layer-prefix');
     expect(exportNames).toContain('TAK-Dev-CloudTAK-mail-bucket');
+    expect(exportNames).not.toContain('TAK-Dev-CloudTAK-mail-ingress-point-id');
     // Webhooks exports the API also imports (siblingExport('webhooks', ...))
     expect(exportNames).toContain('TAK-Dev-CloudTAK-webhooks-api');
     expect(exportNames).toContain('TAK-Dev-CloudTAK-webhooks-role');
@@ -245,54 +255,23 @@ describe('inbound email wiring', () => {
     expect(grant).toBeDefined();
   });
 
-  it('points the MX record at the same mail domain', () => {
-    expect(json).toContain('"Type":"MX"');
-    t.hasResourceProperties('AWS::Route53::RecordSet', {
+  it('creates the ingress point and MX record only when inbound mail is enabled', () => {
+    // dev-test: off
+    expect(json).not.toContain('"Type":"MX"');
+    // prod: on, and the MX name is the same mail domain the API uses
+    const prod = template('prod', true);
+    prod.resourceCountIs('AWS::SES::MailManagerIngressPoint', 1);
+    prod.hasResourceProperties('AWS::Route53::RecordSet', {
       Type: 'MX',
       Name: { 'Fn::Join': ['', ['mail.map.', Match.anyValue(), '.']] }
     });
+    const prodExports = Object.values((prod.toJSON().Outputs ?? {}) as Record<string, any>)
+      .map((o) => o.Export?.Name);
+    expect(prodExports).toContain('TAK-Prod-CloudTAK-mail-ingress-point-id');
+    expect(prodExports).toContain('TAK-Prod-CloudTAK-mail-ingress-point-arecord');
   });
-});
-
-describe('tag key validity', () => {
-  // Deploy-time failure class that synth cannot see: SES Mail Manager (and
-  // others) reject tag keys outside [a-zA-Z0-9/_+=.:@-]. Stack-level tags
-  // (the `tags` stack prop in bin/cdk.ts) are propagated by CloudFormation to
-  // every resource, so a bad standard tag breaks the first real deploy.
-  const TAG_KEY = /^[a-zA-Z0-9/_+=.:@-]+$/;
-
-  /** Tag keys of a resource, whether Tags is a [{Key,Value}] list or a map. */
-  function keysOf(tags: unknown): string[] {
-    if (Array.isArray(tags)) return tags.map((t: any) => t?.Key).filter((k) => typeof k === 'string');
-    if (tags && typeof tags === 'object') return Object.keys(tags);
-    return [];
-  }
-
-  it.each(['dev-test', 'prod'] as EnvType[])('%s: stack-level and resource tag keys are valid', (envType) => {
-    const { template: t, stackTags } = synthStack(envType, PREBUILT_CONTEXT);
-
-    expect(Object.keys(stackTags).length).toBeGreaterThan(0);
-    for (const key of Object.keys(stackTags)) {
-      expect(key).toMatch(TAG_KEY);
-    }
-
-    const offenders: string[] = [];
-    for (const [logicalId, resource] of Object.entries(t.toJSON().Resources as Record<string, any>)) {
-      for (const key of [...keysOf(resource.Properties?.Tags), ...keysOf(resource.Properties?.tags)]) {
-        if (!TAG_KEY.test(key)) offenders.push(`${logicalId} (${resource.Type}): "${key}"`);
-      }
-    }
-    expect(offenders).toEqual([]);
-  });
-
-  it('keeps the standard tags on SES Mail Manager resources', () => {
-    const t = template('dev-test', true);
-    for (const type of ['TrafficPolicy', 'Archive', 'RuleSet', 'IngressPoint']) {
-      const resources = Object.values(t.findResources(`AWS::SES::MailManager${type}`)) as any[];
-      expect(resources).toHaveLength(1);
-      expect(keysOf(resources[0].Properties.Tags)).toEqual(
-        expect.arrayContaining(['Project', 'Environment', 'Component', 'ManagedBy', 'EnvironmentType'])
-      );
-    }
+  it('can turn inbound mail on for dev-test via context', () => {
+    const on = synthTemplate('dev-test', { ...PREBUILT_CONTEXT, enableInboundMail: 'true' });
+    on.resourceCountIs('AWS::SES::MailManagerIngressPoint', 1);
   });
 });

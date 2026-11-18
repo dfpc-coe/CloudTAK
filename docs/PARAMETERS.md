@@ -26,7 +26,7 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
     "dev-test": {
       "stackName": "Dev",
       "database": {
-        "instanceClass": "db.serverless",
+        "instanceClass": "db.t4g.medium",
         "instanceCount": 1,
         "engineVersion": "18.6",
         "allocatedStorage": 20,
@@ -38,8 +38,8 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
       },
       "ecs": {
         "taskCpu": 1024,
-        "taskMemory": 4096,
-        "desiredCount": 1,
+        "taskMemory": 2048,
+        "desiredCount": 2,
         "enableDetailedLogging": true,
         "enableEcsExec": true
       },
@@ -74,9 +74,9 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
         "deleteProtection": true
       },
       "ecs": {
-        "taskCpu": 2048,
+        "taskCpu": 4096,
         "taskMemory": 8192,
-        "desiredCount": 1,
+        "desiredCount": 2,
         "enableDetailedLogging": false,
         "enableEcsExec": false
       },
@@ -112,9 +112,9 @@ All configurations are stored in [`cdk/cdk.json`](../cdk/cdk.json) under the `co
 
 | Setting | dev-test | prod | Impact |
 |---------|----------|------|--------|
-| **Database Instance** | `db.serverless` | `db.t4g.large` | Performance and cost |
+| **Database Instance** | `db.t4g.medium` | `db.t4g.large` | Performance and cost |
 | **Database Count** | `1` instance | `2` instances | High availability |
-| **ECS Resources** | `1024 CPU, 4096 MB` | `2048 CPU, 8192 MB` | Performance |
+| **ECS Resources** | `1024 CPU, 2048 MB` | `4096 CPU, 8192 MB` | Performance |
 | **ECS Tasks** | `1` task | `1` task | Resource allocation |
 | **ECS Exec** | `true` (debugging) | `false` (security) | Development access |
 | **Container Insights** | `false` | `true` | ECS monitoring |
@@ -131,16 +131,28 @@ Use CDK's built-in `--context` flag with **flat parameter names** to override an
 ### **ECS Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
-| `taskCpu` | CPU units for ECS tasks | `1024` | `2048` |
-| `taskMemory` | Memory (MB) for ECS tasks | `4096` | `8192` |
-| `desiredCount` | Desired number of running tasks | `1` | `1` |
+| `taskCpu` | CPU units for the API and stateful ECS tasks | `1024` | `4096` |
+| `taskMemory` | Memory (MB) for the API and stateful ECS tasks | `2048` | `8192` |
+| `desiredCount` | Baseline and autoscaling floor for the API service (the stateful service is always 1 task) | `2` | `2` |
 | `enableDetailedLogging` | Enable detailed application logging | `true` | `false` |
 | `enableEcsExec` | Enable ECS exec for debugging | `true` | `false` |
+
+### **PMTiles Lambda**
+
+| Parameter | Description | dev-test | prod |
+|-----------|-------------|----------|------|
+| `pmtilesProvisionedConcurrency` | Provisioned concurrency on the `pmtiles` Lambda `live` alias. Each unit costs about $6.50 a month. `0` disables it. Defaults to `2` (upstream's default) when unset | `2` | `10` |
+
+### **Inbound Email**
+
+| Parameter | Description | dev-test | prod |
+|-----------|-------------|----------|------|
+| `enableInboundMail` | Create the SES Mail Manager ingress point and MX record that receive email for ETL layers. The ingress point costs about $49 a month flat. When `false`, inbound mail bounces. See [EMAIL.md](EMAIL.md). Defaults to `true` when unset | `false` | `true` |
 
 ### **Database Configuration**
 | Parameter | Description | dev-test | prod |
 |-----------|-------------|----------|------|
-| `instanceClass` | Aurora instance class | `db.serverless` | `db.t4g.large` |
+| `instanceClass` | Aurora instance class. `db.serverless` selects Aurora Serverless v2 (2 to 4 ACU); `db.t4g.*` selects provisioned | `db.t4g.medium` | `db.t4g.large` |
 | `instanceCount` | Number of database instances | `1` | `2` |
 | `engineVersion` | Aurora PostgreSQL engine version. Changing the major version is an in-place major upgrade, see [AURORA-MAJOR-UPGRADE.md](AURORA-MAJOR-UPGRADE.md) | `18.6` | `18.6` |
 | `enablePerformanceInsights` | Enable performance insights | `false` | `true` |

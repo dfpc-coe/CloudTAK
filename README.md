@@ -58,7 +58,7 @@ npm run deploy:prod
 - **API Gateway** - PMTiles API endpoint with custom domain
 
 ### Database & Storage
-- **Aurora PostgreSQL** - Serverless v2 (dev) or provisioned instances (prod) with encryption
+- **Aurora PostgreSQL** - Provisioned `t4g` instances (`db.t4g.medium` dev-test, `db.t4g.large` prod) with encryption
 - **S3 Buckets** - Asset storage and ALB access logs (imported from BaseInfra)
 - **ECR Repository** - Container image storage (imported from BaseInfra)
 

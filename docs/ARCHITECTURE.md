@@ -59,7 +59,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 
 #### 1. Aurora PostgreSQL Database
 - **Purpose**: Primary data store for CloudTAK application data
-- **Configuration**: Serverless v2 (dev-test) or provisioned instances (prod)
+- **Configuration**: Provisioned `t4g` instances (`db.t4g.medium` dev-test, `db.t4g.large` prod)
 - **Backup**: Automated backups with configurable retention
 - **Encryption**: Encrypted at rest using AWS KMS
 
@@ -113,7 +113,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 
 #### **dev-test** (Default)
 - **Focus**: Cost optimization and development efficiency
-- **ECS**: Minimal CPU/memory allocation (1024/4096)
+- **ECS**: Minimal CPU/memory allocation (1024/2048)
 - **Tasks**: Single task instance
 - **Container Insights**: Disabled
 - **ECS Exec**: Enabled (debugging access)
@@ -122,7 +122,7 @@ The CloudTAK Infrastructure provides web-based TAK services with ETL capabilitie
 
 #### **prod**
 - **Focus**: Production readiness, security, and enhanced monitoring
-- **ECS**: Higher resource allocation (2048/8192)
+- **ECS**: Higher resource allocation (4096/8192)
 - **Tasks**: Single task instance (desiredCount: 1)
 - **Container Insights**: Enabled (monitoring and observability)
 - **ECS Exec**: Disabled (security)
@@ -214,7 +214,7 @@ The infrastructure implements a layered security model with dedicated security g
 ### 1. Resource Allocation
 - **Development**: 2 vCPU, 4 GB RAM per task, 2 tasks
 - **Production**: 4 vCPU, 8 GB RAM per task, 2 tasks
-- **Database**: Aurora Serverless v2 (dev) or provisioned instances (prod)
+- **Database**: Aurora provisioned `t4g` instances (`db.t4g.medium` dev-test, `db.t4g.large` prod)
 - **Data Processing**: ECS Fargate tasks (`events`, `pmtiles`, `retention`)
 
 ### 2. Performance Considerations
