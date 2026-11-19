@@ -20,6 +20,12 @@
         </div>
 
         <div class='main-menu-footer flex-shrink-0'>
+            <div
+                v-if='isNativePlatform()'
+                class='d-flex justify-content-center mb-2'
+            >
+                <SharingToggle />
+            </div>
             <div class='d-flex justify-content-center mb-1'>
                 <ServerStatus
                     :version='true'
@@ -163,7 +169,7 @@
                     class='row g-0 align-items-center'
                 >
                     <div
-                        style='width: calc(100% - 40px)'
+                        :style='{ width: isNativePlatform() ? "calc(100% - 84px)" : "calc(100% - 40px)" }'
                         class='py-2 d-flex align-items-center overflow-hidden'
                     >
                         <div class='d-flex align-items-center overflow-hidden w-100'>
@@ -184,14 +190,27 @@
                                     style='font-size: 11px; line-height: 1.2;'
                                     v-text='`v${version}`'
                                 />
+                                <div
+                                    v-if='isNativePlatform()'
+                                    style='font-size: 11px; line-height: 1.2;'
+                                    :class='sharing.paused ? "text-warning fw-bold" : "text-green"'
+                                    v-text='sharing.paused ? "Paused" : "Live"'
+                                />
                             </div>
                         </div>
                     </div>
 
                     <div
+                        v-if='isNativePlatform()'
+                        style='width: 44px;'
+                        class='py-2 px-2 ms-auto d-flex'
+                    >
+                        <SharingToggle />
+                    </div>
+                    <div
                         role='button'
                         style='width: 40px;'
-                        class='py-2 px-2 ms-auto d-flex cloudtak-hover cursor-pointer'
+                        :class='isNativePlatform() ? "py-2 px-2 d-flex cloudtak-hover cursor-pointer" : "py-2 px-2 ms-auto d-flex cloudtak-hover cursor-pointer"'
                         title='Logout'
                         @click.stop.prevent='logout'
                         @keyup.enter='logout'
@@ -232,17 +251,20 @@ import { openSecondaryView, isNativePlatform } from '../../utils/capacitor.ts';
 import { version } from '../../../package.json';
 import { useMapStore } from '../../stores/map.ts';
 import { useAppStore } from '../../stores/app.ts';
+import { useSharingStore } from '../../stores/sharing.ts';
 import type { MenuItemConfig } from '../../stores/modules/menu.ts';
 import { useRouter } from 'vue-router';
 import MenuItemCard from './Menu/MenuItemCard.vue';
 import MenuTemplate from './util/MenuTemplate.vue';
 import ServerStatus from './ServerStatus.vue';
+import SharingToggle from './SharingToggle.vue';
 import ProfileConfig from '../../base/profile.ts';
 
 const router = useRouter();
 
 const mapStore = useMapStore();
 const appStore = useAppStore();
+const sharing = useSharingStore();
 
 const searchAutofocus = computed(() => !isNativePlatform() && !appStore.isMobileDetected);
 

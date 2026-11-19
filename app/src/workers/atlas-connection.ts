@@ -138,6 +138,10 @@ export default class AtlasConnection {
 
     // COTs are submitted to pending and picked up by the partial update code every .5s
     connect(connection: string) {
+        // Remembered even when paused, so resumeSharing() can reconnect
+        this.connection = connection;
+        // TAK.NZ: a paused user stays disconnected, whoever asks to connect
+        if (this.atlas.sharingPaused) return;
         this.isDestroyed = false;
         this.authFailure = false;
         this.connection = connection;
@@ -557,6 +561,20 @@ export default class AtlasConnection {
             clearTimeout(this.reconnectTimer);
             this.reconnectTimer = undefined;
         }
+    }
+
+    /** Close the socket and stay closed: destroy() already stops reconnecting */
+    pauseSharing(): void {
+        this.destroy();
+    }
+
+    resumeSharing(): void {
+        // Never connected yet (the app started paused): init() will connect
+        if (!this.connection) return;
+        // Events broadcast while paused are lost and not replayed, so treat this
+        // like any other reconnect and resync everything once the socket opens
+        this.hasConnected = true;
+        this.connect(this.connection);
     }
 
     destroy() {

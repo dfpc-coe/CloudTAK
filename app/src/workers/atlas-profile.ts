@@ -247,7 +247,10 @@ export default class AtlasProfile {
     setupTimer() {
         if (this.timerSelf) {
             clearInterval(this.timerSelf);
+            this.timerSelf = undefined;
         }
+        // TAK.NZ: nothing is broadcast while the user has paused sharing
+        if (this.atlas.sharingPaused) return;
 
         this.timerSelf = setInterval(async () => {
             // Always send CoT - use GPS coordinates if available, manual location if set, otherwise default to 0,0

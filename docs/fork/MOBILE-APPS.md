@@ -312,6 +312,35 @@ match the Android `custom_url_scheme` string and the iOS `CFBundleURLSchemes`.
 Logout in the app opens `/api/logout` in the browser (to end the IdP session) and
 returns to `/login?signed_out=1`, which stops forced SSO from signing straight back in.
 
+### Pause / Resume sharing
+
+Native app only (the web app is unchanged). "Paused" means the user chose to be
+offline: nothing about them leaves the device and nothing reaches them until they
+tap Resume. There is deliberately no timer and no auto-resume.
+
+While paused the app:
+
+- closes the TAK server connection and stops broadcasting the self position
+  (`Atlas.pauseSharing()` in `workers/atlas.ts`; a paused `AtlasConnection.connect()`
+  is a no-op, so no code path can reconnect it)
+- stops the location watch, which also removes the Android "location is being used"
+  notification
+- releases the screen wake lock
+- removes this device's push registration, so the server stops sending alerts to it
+  (other devices, such as the web app, are unaffected)
+
+The pause is stored on the device (`sharingPausedBy` in Preferences) and survives
+restarts and reboots: the app starts paused, without opening a connection, until the
+user resumes. It belongs to the user who paused; a different user signing in on the
+same device starts live. If a step of pausing fails, the app still counts as paused
+and shows the error; it never falls back to live.
+
+Where it shows: a broadcast icon button left of Logout in the main menu footer
+(Pause asks for confirmation, Resume does not), a "Live" / "Paused" label under the
+username, a grey ring (instead of the green or red dot) on the Home logo, and a
+"Paused - Tap to resume" pill above the logo on the map. State lives in
+`stores/sharing.ts`.
+
 ### Notification icon
 
 Android draws the status-bar icon from its alpha channel only, so the full-colour

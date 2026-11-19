@@ -19,6 +19,7 @@ import BottomBarManager from './modules/bottombar.ts';
 import HistoryLayer from './modules/history.ts';
 import { useDeviceStore, type BatteryInfo, type NativeDeliveryOptions } from './device.ts';
 import { useAppStore } from './app.ts';
+import { useSharingStore } from './sharing.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -343,6 +344,11 @@ export const useMapStore = defineStore('cloudtak', {
 
         startLocationWatch: async function() {
             const deviceStore = useDeviceStore();
+            // TAK.NZ: a user who paused sharing is not located
+            if (useSharingStore().paused) {
+                this.location = LocationState.Disabled;
+                return;
+            }
 
             // Location is only ever prompted for from the permissions UI. Without
             // a grant there is nothing to acquire, so don't leave the panel on
@@ -1248,6 +1254,12 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (superseded()) return abandon();
 
+            // TAK.NZ: a user who paused sharing stays paused across restarts. The
+            // worker must hear that before init() so it never opens the connection
+            const pausedUser = await useAppStore().getUsername();
+            if (pausedUser && await useSharingStore().load(pausedUser)) {
+                await withTimeout(this.worker.pauseSharing(), WORKER_INIT_TIMEOUT_MS, 'Pause sharing');
+            }
             await withTimeout(this.worker.init(token || ''), WORKER_INIT_TIMEOUT_MS, 'Atlas worker init');
 
             try {
@@ -1388,9 +1400,11 @@ export const useMapStore = defineStore('cloudtak', {
             // Store the unsubscribe handle so destroy() can remove the listener.
             if (this._removePushTokenListener) this._removePushTokenListener();
             this._removePushTokenListener = deviceStore.onMessagingToken((token) => {
+                // A paused device must not re-register for push
+                if (useSharingStore().paused) return;
                 void syncPushToken(token);
             });
-            void syncPushToken(deviceStore.getMessagingToken());
+            if (!useSharingStore().paused) void syncPushToken(deviceStore.getMessagingToken());
 
             await this.startLocationWatch();
 
@@ -1640,7 +1654,7 @@ export const useMapStore = defineStore('cloudtak', {
                 if (superseded()) return abandon(map);
 
             const wakeLockMode = (await ProfileConfig.get('display_wakelock'))?.value;
-            await deviceStore.wakeLock.applyPreference(wakeLockMode);
+            if (!useSharingStore().paused) await deviceStore.wakeLock.applyPreference(wakeLockMode);
 
             this.isOpen = await this.worker.conn.isOpen;
 
