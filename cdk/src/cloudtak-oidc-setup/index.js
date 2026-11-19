@@ -190,39 +190,64 @@ async function assignGroupToApplication(api, appSlug, groupName) {
   }
 }
 
+// Stable media name the bundled logo is stored under in Authentik, and that `meta_icon` points at.
+const APPLICATION_ICON_MEDIA_NAME = 'application-icons/CloudTAKLogo.png';
+
+// Upload the bundled logo into Authentik's media storage and point the application's `meta_icon` at it.
+//
+// Authentik 2026.8 behaviour (checked against its source, and against the TAK Team Manager Lambda, which
+// verified the same calls live):
+//   - POST /api/v3/admin/file/ (multipart `file` + `name`) returns an EMPTY body on success, so there is no
+//     `url` to read back. The earlier code PATCHed `meta_icon: undefined`, which sent nothing, logged
+//     "Icon uploaded successfully" and left the application without an icon.
+//   - The upload is not idempotent: an existing name gives `400 {"name":["A file with this name already
+//     exists."]}`, which is fine because the file we need is already there.
+//   - `meta_icon` is a plain writable string; setting it to the media NAME makes `meta_icon_url` resolve.
+// An icon that is already set (for example one an admin chose in the UI) is left alone.
 async function uploadApplicationIcon(api, appSlug) {
   try {
     const appResponse = await api.get(`/api/v3/core/applications/${appSlug}/`);
     if (appResponse.data.meta_icon) {
-      console.log('Application already has icon');
+      console.log(`Application ${appSlug} already has an icon: ${appResponse.data.meta_icon}`);
       return;
     }
-    
+
     const iconPath = path.join(__dirname, 'CloudTAKLogo.png');
     if (!fs.existsSync(iconPath)) {
       console.warn('Icon file not found');
       return;
     }
-    
-    // Step 1: Upload file to Authentik media storage
+
+    // Step 1: make sure the file is in media storage under the stable name
     const form = new FormData();
     form.append('file', fs.createReadStream(iconPath), 'CloudTAKLogo.png');
-    
-    const uploadResponse = await axios.post(`${api.defaults.baseURL}/api/v3/admin/file/`, form, {
-      headers: {
-        'Authorization': api.defaults.headers['Authorization'],
-        ...form.getHeaders(),
-      },
-    });
-    
-    // Step 2: Update application with uploaded file path
+    form.append('name', APPLICATION_ICON_MEDIA_NAME);
+    try {
+      await axios.post(`${api.defaults.baseURL}/api/v3/admin/file/`, form, {
+        headers: {
+          'Authorization': api.defaults.headers['Authorization'],
+          ...form.getHeaders(),
+        },
+      });
+      console.log(`Icon uploaded to media storage as ${APPLICATION_ICON_MEDIA_NAME}`);
+    } catch (uploadError) {
+      const status = uploadError.response && uploadError.response.status;
+      const detail = JSON.stringify((uploadError.response && uploadError.response.data) || '');
+      if (status === 400 && detail.includes('already exists')) {
+        console.log(`Icon ${APPLICATION_ICON_MEDIA_NAME} is already in media storage; reusing it`);
+      } else {
+        throw uploadError;
+      }
+    }
+
+    // Step 2: point the application at that media path
     await api.patch(`/api/v3/core/applications/${appSlug}/`, {
-      meta_icon: uploadResponse.data.url
+      meta_icon: APPLICATION_ICON_MEDIA_NAME
     });
-    
-    console.log('Icon uploaded successfully');
+    console.log(`Icon assigned to application ${appSlug}: ${APPLICATION_ICON_MEDIA_NAME}`);
   } catch (error) {
-    console.warn('Failed to upload icon:', error.message);
+    // Not fatal: a missing icon must not fail the whole OIDC provisioning
+    console.warn('Failed to upload icon:', error.response ? JSON.stringify(error.response.data) : error.message);
   }
 }
 
