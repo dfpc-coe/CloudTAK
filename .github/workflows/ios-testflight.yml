@@ -1,0 +1,180 @@
+name: iOS TestFlight
+
+# Builds the iOS app, signs it with Apple's cloud-managed certificates and uploads it to
+# TestFlight. Run it by hand from the Actions tab. It needs your approval (the
+# ios-testflight environment) and only runs from main.
+#
+# Secrets (repository or the ios-testflight environment): ASC_KEY_ID, ASC_ISSUER_ID,
+# ASC_KEY_P8_BASE64 (the App Store Connect API key, base64) and APPLE_TEAM_ID. For push, later:
+# GOOGLE_SERVICE_INFO_PLIST_B64 (the Firebase GoogleService-Info.plist, base64).
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: 'Upload to TestFlight (untick to build and sign only)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    runs-on: macos-26
+    timeout-minutes: 60
+    environment: ios-testflight
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the secrets are set
+        run: |
+          missing=0
+          for name in ASC_KEY_ID ASC_ISSUER_ID APPLE_TEAM_ID; do
+            if [ -z "${!name}" ]; then echo "::error::Secret $name is not set"; missing=1; fi
+          done
+          if [ -z "${{ secrets.ASC_KEY_P8_BASE64 }}" ]; then echo "::error::Secret ASC_KEY_P8_BASE64 is not set"; missing=1; fi
+          exit $missing
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # The web plugins are baked into the app's bundled web files, the same way the Docker
+      # image does it (api/bin/plugin.ts), so the phone app has the plugins production has.
+      - name: Install the web plugins
+        run: |
+          PLUGINS=$(jq -r '.context.prod.cloudtak.webPlugins // ""' cdk/cdk.json)
+          echo "Plugins: $PLUGINS"
+          cd api
+          WEB_PLUGINS="$PLUGINS" node bin/plugin.ts
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Build the web app
+        working-directory: app
+        run: npm run build
+
+      - name: Sync Capacitor into the iOS project
+        working-directory: app
+        run: npx cap sync ios
+
+      # The Xcode project bundles GoogleService-Info.plist (the Firebase push config). It holds credentials,
+      # so it is not in git. With the GOOGLE_SERVICE_INFO_PLIST_B64 secret set it is written to both
+      # paths the project uses and push can work. Without it the two entries are dropped from the
+      # project and the build has no Firebase config, so push stays off (the Firebase plugin logs a
+      # message and carries on).
+      - name: Firebase config for push
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_B64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_B64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICE_INFO_PLIST_B64" ]; then
+            echo "$GOOGLE_SERVICE_INFO_PLIST_B64" | base64 --decode > app/ios/App/App/GoogleService-Info.plist
+            cp app/ios/App/App/GoogleService-Info.plist app/ios/App/GoogleService-Info.plist
+            echo "Using the Firebase config from the secret."
+          else
+            perl -ni -e 'print unless /GoogleService-Info\.plist in Resources/' app/ios/App/App.xcodeproj/project.pbxproj
+            echo "No Firebase config set: building without it, push stays off."
+          fi
+
+      - name: Work out the version and build number
+        id: version
+        run: |
+          version=$(node -p "require('./app/package.json').version")
+          # TestFlight needs a build number that goes up with every upload
+          build=${{ github.run_number }}
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "Version $version, build $build"
+
+      - name: Write the App Store Connect API key
+        run: |
+          echo "${{ secrets.ASC_KEY_P8_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          chmod 600 "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+
+      - name: Archive
+        run: |
+          set -o pipefail
+          xcodebuild -version
+          xcodebuild -list -project app/ios/App/App.xcodeproj
+          xcodebuild archive \
+            -project app/ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_ENTITLEMENTS=App/App-TestFlight.entitlements \
+            MARKETING_VERSION="${{ steps.version.outputs.version }}" \
+            CURRENT_PROJECT_VERSION="${{ steps.version.outputs.build }}" \
+            2>&1 | tee "$RUNNER_TEMP/archive.log" | xcbeautify --renderer github-actions
+
+      - name: Export${{ inputs.upload && ' and upload to TestFlight' || '' }}
+        run: |
+          set -o pipefail
+          destination=${{ inputs.upload && 'upload' || 'export' }}
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>$destination</string>
+            <key>teamID</key><string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            2>&1 | tee "$RUNNER_TEMP/export.log" | xcbeautify --renderer github-actions
+
+      - name: Summary
+        if: success()
+        run: |
+          {
+            echo "### iOS build ${{ steps.version.outputs.version }} (${{ steps.version.outputs.build }})"
+            if [ "${{ inputs.upload }}" = "true" ]; then
+              echo "Uploaded to TestFlight. It shows under TestFlight in App Store Connect once Apple has processed it (usually 5 to 30 minutes)."
+            else
+              echo "Built and signed, not uploaded."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the API key
+        if: always()
+        run: rm -f "$RUNNER_TEMP"/AuthKey_*.p8
+
+      - name: Keep the build logs if it failed
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: ios-testflight-logs
+          path: |
+            ${{ runner.temp }}/archive.log
+            ${{ runner.temp }}/export.log
+          retention-days: 7
