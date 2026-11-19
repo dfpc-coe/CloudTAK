@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+		Entitlements for TestFlight builds from CI (see .github/workflows/ios-testflight.yml).
+		Deliberately empty: push, associated domains, location push and the carrier-constrained
+		and network-slicing entitlements in App.entitlements need capabilities on the App ID,
+		and some need Apple's approval, so none of them is requested for the first builds.
+		Add them back here, one at a time, as each is set up in the Apple Developer account.
+	-->
+</dict>
+</plist>

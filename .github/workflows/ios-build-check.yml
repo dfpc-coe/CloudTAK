@@ -1,0 +1,70 @@
+name: iOS build check
+
+# Compiles the iOS app for the simulator without signing, so a change that breaks the
+# iOS project is caught on the pull request. It needs no Apple account or secrets.
+on:
+  pull_request:
+    paths:
+      - 'app/ios/**'
+      - 'app/capacitor.config.json'
+      - 'app/package.json'
+      - 'app/package-lock.json'
+      - '.github/workflows/ios-build-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Build the web app
+        working-directory: app
+        run: npm run build
+
+      - name: Sync Capacitor into the iOS project
+        working-directory: app
+        run: npx cap sync ios
+
+      - name: Show the Xcode version and the project's schemes
+        run: |
+          xcodebuild -version
+          xcodebuild -list -project app/ios/App/App.xcodeproj
+
+      - name: Build for the iOS simulator (no signing)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project app/ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee "$RUNNER_TEMP/xcodebuild.log" | xcbeautify --renderer github-actions
+
+      - name: Keep the build log if it failed
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: ios-build-check-log
+          path: ${{ runner.temp }}/xcodebuild.log
+          retention-days: 7

@@ -479,6 +479,43 @@ or manual dispatch only.
 
 ---
 
+### iOS builds and TestFlight, without a Mac
+
+iOS needs Xcode, so it is built on a GitHub-hosted macOS runner (`macos-26`, Xcode 26.6 at the
+time of writing). Nothing needs a Mac of your own.
+
+| Workflow | When | What it does |
+|---|---|---|
+| `.github/workflows/ios-build-check.yml` | on pull requests that touch `app/ios/**`, and by hand | Builds the app for the iOS simulator without signing. It needs no secrets and shows whether the iOS project still compiles. |
+| `.github/workflows/ios-testflight.yml` | by hand, from `main` only, after you approve it | Builds the web app (with the production web plugins, as the Docker image does), archives the iOS app, signs it with Apple's cloud-managed certificates and uploads it to TestFlight. |
+
+**One-time setup (Apple, in the browser):** register the App ID `nz.tak.app`, create the app in App Store
+Connect, create an App Store Connect API key with the Admin role (Apple's cloud-managed signing
+certificates need an Account Holder or Admin), and store four GitHub secrets: `ASC_KEY_ID`,
+`ASC_ISSUER_ID`, `ASC_KEY_P8_BASE64` (the `.p8` file, base64) and `APPLE_TEAM_ID`. The TestFlight job runs in
+the `ios-testflight` environment, which requires an approval and only allows `main`.
+
+**Running it:** Actions → iOS TestFlight → Run workflow. The version is the app's `package.json` version and
+the build number is the run number, which goes up with every run, as TestFlight requires. Apple processes
+the upload for 5 to 30 minutes, then the build shows under TestFlight in App Store Connect. Internal testers
+(App Store Connect users, up to 100) get it without Apple review. Untick "Upload" to build and sign only.
+
+**First builds have no entitlements.** The workflow signs with `App-TestFlight.entitlements`, which is empty. The
+full `App.entitlements` (push, associated domains, location push, carrier-constrained and network slicing)
+needs capabilities on the App ID, and some need Apple's approval. Add them to the TestFlight file one at a time
+as each is set up. Push also needs an APNs key in Firebase and `GoogleService-Info.plist`; without the plist the
+Firebase plugin logs a message and push stays off.
+
+**Limits of working without a Mac.** There is no simulator, debugger or Safari Web Inspector (it needs a Mac).
+A bug that only shows on iOS has to be diagnosed from logs and the code. The first runs of a new signing setup
+often need a retry. A short EC2 Mac session is the fallback for something hard, but those hosts bill a
+minimum of 24 hours.
+
+**If the Apple account changes.** Keep the Team ID and key in GitHub secrets. If an individual account is
+converted to an organization (Apple Developer Support does this), the Team ID stays and nothing here changes.
+Moving an app to a different account (App Transfer) needs a version already released on the App Store, and
+TestFlight switched off first, so convert before the first public release.
+
 ## 11. Store submission
 
 Both stores need:
