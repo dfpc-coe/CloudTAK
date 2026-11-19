@@ -35,23 +35,31 @@ test('GET: api/openapi - operation level security', async () => {
         assert.ok(res.body.components.securitySchemes.layerAuth);
         assert.ok(res.body.components.securitySchemes.connectionAuth);
         assert.deepEqual(res.body.paths['/api/core/device'].get.security, [
-            { bearerAuth: [] },
             { layerAuth: ['device:read'] },
-            { connectionAuth: [] },
+            { connectionAuth: ['device:read'] },
+            { bearerAuth: [] },
         ]);
 
         assert.deepEqual(res.body.paths['/api/search/forward'].get.security, [
-            { bearerAuth: [] },
             { layerAuth: ['search:read'] },
+            { bearerAuth: [] },
         ]);
         assert.deepEqual(res.body.paths['/api/search/reverse/{:longitude}/{:latitude}'].get.security, [
-            { bearerAuth: [] },
             { layerAuth: ['search:read'] },
+            { bearerAuth: [] },
         ]);
         assert.deepEqual(res.body.paths['/api/search/suggest'].get.security, [
-            { bearerAuth: [] },
             { layerAuth: ['search:read'] },
+            { bearerAuth: [] },
         ]);
+
+        assert.deepEqual(res.body.paths['/api/config'].put.security, [{ bearerAuth: ['admin'] }]);
+        assert.deepEqual(res.body.paths['/api/login'].post.security, []);
+        assert.deepEqual(res.body.paths['/api/iconset/{:iconset}'].get.security, [
+            { bearerAuth: [] },
+            { bearerQueryAuth: [] },
+        ]);
+        assert.deepEqual(res.body.paths['/api/layer/{:layerid}/cot'].post.security, [{ layerAuth: [] }]);
     } catch (err) {
         assert.ifError(err);
     }

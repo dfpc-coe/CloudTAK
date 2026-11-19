@@ -128,7 +128,7 @@ export default class LocalHub implements HubClient {
         }
 
         if (req.write !== false) {
-            client.tak.write(req.cots, { stripFlow: true });
+            void client.tak.write(req.cots, { stripFlow: true });
         }
 
         if (req.broadcast) {

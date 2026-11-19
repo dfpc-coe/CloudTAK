@@ -47,7 +47,7 @@ export default class Bulldozer {
                         lookup.set(path.parse(icon).base, icon);
                     }
 
-                    const iconset = await IconsetParser.parse(await dp.getFileBuffer('iconset.xml'));
+                    const iconset = IconsetParser.parse(await dp.getFileBuffer('iconset.xml'));
                     await this.config.models.Iconset.generate(iconset.to_json());
 
                     for (const icon of iconset.icons()) {
@@ -69,7 +69,7 @@ export default class Bulldozer {
                         const name = parsed.dir ? `${parsed.dir}/${parsed.name}` : parsed.name;
                         const format = parsed.ext.toLowerCase();
 
-                        this.config.models.Icon.generate({
+                        await this.config.models.Icon.generate({
                             iconset: iconset.uid,
                             name,
                             format,
@@ -97,7 +97,7 @@ export default class Bulldozer {
 
                 for (const file of await fs.readdir(new URL('../../data/basemaps/', import.meta.url))) {
                     console.error(`ok - loading basemap ${file}`);
-                    const b = (await BasemapParser.parse(String(await fs.readFile(new URL(`../../data/basemaps/${file}`, import.meta.url))))).to_json();
+                    const b = BasemapParser.parse(String(await fs.readFile(new URL(`../../data/basemaps/${file}`, import.meta.url)))).to_json();
 
                     await this.config.models.Basemap.generate({
                         name: b.name || 'Unknown',

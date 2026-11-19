@@ -170,7 +170,7 @@ export default class ProfileControl {
         };
 
         for (const key of Object.keys(full_config)) {
-            (profile as any)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
+            (profile as Record<string, unknown>)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
         }
 
         // Surface the IdP field locks the frontend uses to disable the callsign

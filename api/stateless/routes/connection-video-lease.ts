@@ -43,7 +43,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await Auth.as_user(config, req, { admin: true });
             } else {
                 const { connection, layer } = await Auth.is_connection(config, req, {
-                    scope: 'video:read',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -87,7 +86,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { profile, connection, layer } = await Auth.is_connection(config, req, {
-                    scope: 'video:delete',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -142,7 +140,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { profile, connection, layer } = await Auth.is_connection(config, req, {
-                    scope: 'video:read',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -228,7 +225,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { connection, layer: connLayer, profile } = await Auth.is_connection(config, req, {
-                    scope: 'video:create',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -326,7 +322,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { connection, layer, profile } = await Auth.is_connection(config, req, {
-                    scope: 'video:update',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },
@@ -406,7 +401,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 isAdmin = true;
             } else {
                 const { connection, layer, profile } = await Auth.is_connection(config, req, {
-                    scope: 'video:delete',
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                         { access: AuthResourceAccess.LAYER, id: undefined },

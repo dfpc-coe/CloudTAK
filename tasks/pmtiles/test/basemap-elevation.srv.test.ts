@@ -3,13 +3,12 @@ import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import http from 'http';
 import type { AddressInfo } from 'net';
-import type { Express } from 'express';
 import { demTile } from './lib/dem.js';
 
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
-let app: Express;
+let app: typeof import('../index.js')['app'];
 let server: http.Server;
 let upstream: http.Server;
 

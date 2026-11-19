@@ -184,6 +184,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             use_precip_type: Type.Optional(Type.String()),
             token: Type.Optional(Type.String()),
         }),
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         const started = Date.now();
         let username = '';
@@ -194,7 +195,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         let audit: Partial<TileRequest> = {};
 
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
             username = user.email;
 
             const cfg = getRelayConfig();

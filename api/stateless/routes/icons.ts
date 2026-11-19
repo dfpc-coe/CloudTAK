@@ -192,9 +192,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
         }),
         res: IconsetResponse,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const iconset = await config.models.Iconset.from(req.params.iconset);
 
@@ -213,7 +214,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 archive.pipe(res);
 
-                const xmljson: any = {
+                const xmljson: xmljs.ElementCompact = {
                     _declaration: {
                         _attributes: {
                             version: '1.0',
@@ -264,7 +265,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 archive.append(Buffer.from(xml), { name: 'iconset.xml' });
 
-                archive.finalize();
+                await archive.finalize();
             } else {
                 res.json(iconset);
             }
@@ -651,9 +652,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
         }),
         res: Type.Unknown(),
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             if (req.params.iconset === 'default') {
                 res.json(DefaultSprite.json);
@@ -688,9 +690,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         query: Type.Object({
             token: Type.Optional(Type.String()),
         }),
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             res.type('png');
 

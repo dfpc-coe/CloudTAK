@@ -30,11 +30,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 expires: Type.Integer(),
             })),
         }),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             let url;
             try {
@@ -82,11 +81,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             expires: Type.Optional(Type.Integer()),
         }),
         res: Type.Any(),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.portal);
@@ -123,11 +121,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             title: Type.Optional(Type.String()),
         }),
         res: Type.Any(),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.portal);
@@ -168,11 +165,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             name: Type.String(),
         }),
         res: Type.Any(),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.portal);
@@ -209,11 +205,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: Type.Object({
             servers: Type.Array(Type.Any()),
         }),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.portal);
@@ -248,11 +243,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             expires: Type.Optional(Type.Integer()),
         }),
         res: Type.Any(),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.server);
@@ -270,7 +264,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const server = new EsriProxyServer(base);
 
-            const list: any = await server.getList(base.postfix);
+            const list = await server.getList(base.postfix) as { folders?: unknown[]; services?: unknown[] };
             if (!list.folders) list.folders = [];
             if (!list.services) list.services = [];
 
@@ -291,11 +285,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             expires: Type.Integer(),
         }),
         res: Type.Any(),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.server);
@@ -328,11 +321,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             expires: Type.Integer(),
         }),
         res: Type.Any(),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.server);
@@ -371,11 +363,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             expires: Type.Optional(Type.Integer()),
         }),
         res: Type.Any(),
+        security: Auth.security({ anyResources: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                anyResources: true,
-            });
+            await Auth.is_auth(config, req);
 
             if (process.env.StackName !== 'test') {
                 const { safe, reason } = await isSafeUrl(req.query.layer);

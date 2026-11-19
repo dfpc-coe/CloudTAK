@@ -20,9 +20,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         description: 'Helper API to delete files by file hash',
         res: StandardResponse,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
             const profile = await authenticatedProfile(config, user.email);
             const api = await takserver.withAuth(profile.auth);
             await api.Files.delete(req.params.hash);
@@ -47,9 +48,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
         }),
         description: 'Helper API to download files by file hash',
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
             const profile = await authenticatedProfile(config, user.email);
             const api = await takserver.withAuth(profile.auth);
 

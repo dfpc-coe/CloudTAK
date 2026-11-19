@@ -3,7 +3,7 @@ import { StandardResponse, CoreDeviceResponse, CoreEntityLink, CoreEntityStyle, 
 import { sql, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
+import Auth, { AuthUser, AuthResource } from '../../common/auth.js';
 import { CoreEntity } from '../../common/schema.js';
 import { sharedWith, setChannels, setExternalId, toExternalId } from '../../common/models/CoreEntity.js';
 import { LayerMapping_Destination } from '../../common/enums.js';
@@ -44,13 +44,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'device:read',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const filterChannels = req.query.channel === undefined
                 ? []
@@ -110,13 +104,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreDeviceResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'device:read',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
 
@@ -173,6 +161,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 default: false,
                 description: 'Is the Device a simulated data source',
             }),
+            stale: Type.Optional(Type.Union([Type.Null(), Type.Integer({
+                minimum: 1,
+            })], {
+                description: 'Seconds after its last update the Device stops being broadcast to TAK clients - null never expires',
+            })),
             external_id: Type.Optional(CoreEntityExternalIdInput),
             remarks: Type.String({
                 default: '',
@@ -198,13 +191,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreDeviceResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'device:create',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { channels: requested, external_id, ...body } = req.body;
 
@@ -258,6 +245,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 maximum: 100,
             })])),
             simulated: Type.Optional(Type.Boolean()),
+            stale: Type.Optional(Type.Union([Type.Null(), Type.Integer({
+                minimum: 1,
+            })])),
             external_id: Type.Optional(CoreEntityExternalIdInput),
             remarks: Type.Optional(Type.String()),
             metadata: Type.Optional(Type.Record(Type.String(), Type.Unknown(), {
@@ -278,13 +268,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreDeviceResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'device:update',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
 
@@ -325,15 +309,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         res: StandardResponse,
+        security: Auth.security('device:delete', { connection: true }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'device:delete',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await deviceControl.resourceConnection(auth) : null;
 

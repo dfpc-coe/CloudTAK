@@ -27,9 +27,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             action: Type.String(),
         }),
         res: RetentionTaskResult,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             res.json(await retention.run({
                 name: req.body.action,

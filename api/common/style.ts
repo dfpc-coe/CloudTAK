@@ -154,7 +154,7 @@ export interface StyleInterface {
  */
 export default class Style {
     style: StyleInterface;
-    templates: Map<string, HandlebarsTemplateDelegate<any>>;
+    templates: Map<string, HandlebarsTemplateDelegate<unknown>>;
 
     constructor(style: StyleInterface) {
         this.style = style;

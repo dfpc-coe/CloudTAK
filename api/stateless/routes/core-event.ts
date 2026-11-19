@@ -3,7 +3,7 @@ import { StandardResponse, CoreEventResponse, CoreEntityLink, CoreEntityStyle, C
 import { sql, getTableColumns } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthUser, AuthResource, AuthResourceAccess } from '../../common/auth.js';
+import Auth, { AuthUser, AuthResource } from '../../common/auth.js';
 import { CoreEntity, CoreEntityEvent } from '../../common/schema.js';
 import { sharedWith, setChannels, setExternalId, toExternalId } from '../../common/models/CoreEntity.js';
 import { CoreEvent_Priority, LayerMapping_Destination } from '../../common/enums.js';
@@ -49,13 +49,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'event:read',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const filterChannels = req.query.channel === undefined
                 ? []
@@ -115,13 +109,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'event:read',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
@@ -194,13 +182,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'event:create',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const { channels: requested, external_id, ...body } = req.body;
 
@@ -282,13 +264,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'event:update',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 
@@ -363,15 +339,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         res: StandardResponse,
+        security: Auth.security('event:delete', { connection: true }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'event:delete',
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION },
-                    { access: AuthResourceAccess.LAYER },
-                ],
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await resourceConnection(auth) : null;
 

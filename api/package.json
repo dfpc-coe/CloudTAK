@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/CloudTAK.api",
     "type": "module",
-    "version": "13.122.8",
+    "version": "13.124.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
@@ -10,7 +10,7 @@
         "coverage": "StackName='test' c8 --reporter=lcov --reporter html node --test --test-concurrency=8 --test-force-exit --test-timeout=60000 dist/test/*.test.js",
         "build": "tsc && (cp .env* dist/ || true) && cp ./icons dist/icons -r && cp ./fonts dist/fonts -r && cp ./branding dist/branding -r && cp package.json dist/ && cp migrations/ dist/ -r",
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output derived-types.d.ts",
-        "lint": "eslint index.ts common/ stateful/ stateless/ test/",
+        "lint": "oxlint --type-aware index.ts common/ stateful/ stateless/ test/",
         "emptydb": "psql -v ON_ERROR_STOP=1 -c 'DROP DATABASE IF EXISTS tak_ps_etl' -c 'CREATE DATABASE tak_ps_etl'",
         "loaddb": "npm run emptydb && psql -v ON_ERROR_STOP=1 tak_ps_etl < ",
         "migratedb": "tsx ./node_modules/.bin/drizzle-kit generate && npm run migratedb-commit",
@@ -54,7 +54,7 @@
         "@photostructure/tz-lookup": "^11.6.1",
         "@simplewebauthn/server": "^14.0.1",
         "@sinclair/typebox": "^0.34.52",
-        "@tak-ps/etl": "^11.1.0",
+        "@tak-ps/etl": "^11.3.0",
         "@tak-ps/node-cot": "^14.59.0",
         "@tak-ps/node-safeurl": "^1.5.0",
         "@tak-ps/node-tak": "^12.36.1",
@@ -103,8 +103,6 @@
         "xml-js": "^1.6.11"
     },
     "devDependencies": {
-        "@eslint/js": "^10.0.1",
-        "@stylistic/eslint-plugin": "^5.10.0",
         "@types/connect-history-api-fallback": "^1.3.5",
         "@types/cors": "^2.8.13",
         "@types/express": "^5.0.0",
@@ -125,17 +123,22 @@
         "@types/tz-lookup": "^6.1.2",
         "@types/ua-parser-js": "^0.7.39",
         "@types/ws": "^8.5.4",
+        "@typescript/native": "npm:typescript@^7.0.2",
         "c8": "^12.0.0",
-        "eslint": "^10.0.0",
-        "globals": "^17.3.0",
         "openapi-typescript": "^7.13.0",
+        "oxlint": "^1.94.0",
+        "oxlint-tsgolint": "^7.0.2007",
         "path-to-regexp": "^8.0.0",
         "sinon": "^22.0.0",
-        "typescript": "^5.0.0",
-        "typescript-eslint": "^8.0.0"
+        "typescript": "npm:@typescript/typescript6@^6.0.2"
     },
     "optionalDependencies": {
         "@img/sharp-libvips-linuxmusl-x64": "1.3.2",
         "@img/sharp-linuxmusl-x64": "0.35.3"
+    },
+    "overrides": {
+        "openapi-typescript": {
+            "typescript": "$typescript"
+        }
     }
 }

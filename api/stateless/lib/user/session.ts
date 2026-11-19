@@ -3,10 +3,9 @@ import { createHash, randomBytes } from 'node:crypto';
 import Err from '@openaddresses/batch-error';
 import { Type } from '@sinclair/typebox';
 import { eq, inArray, sql } from 'drizzle-orm';
-import type { Request } from 'express';
 import type { InferSelectModel } from 'drizzle-orm';
 import { UAParser } from 'ua-parser-js';
-import { AuthUserAccess, accessFor } from '../../../common/auth.js';
+import { AuthUserAccess, accessFor, type AnyRequest } from '../../../common/auth.js';
 import { Profile, ProfileSession } from '../../../common/schema.js';
 import type ConfigStateless from '../../config.js';
 import type Config from '../../../common/config.js';
@@ -87,7 +86,7 @@ function signToken(config: ConfigStateless, profile: InferSelectModel<typeof Pro
  */
 export async function issueSession(
     config: ConfigStateless,
-    req: Request<any, any, any, any>,
+    req: AnyRequest,
     profile: InferSelectModel<typeof Profile>,
 ): Promise<LoginResponseType> {
     const hours = await expiries(config);

@@ -1,17 +1,8 @@
 import Err from '@openaddresses/batch-error';
 import type { StaticCapabilitiesDocument } from '@tak-ps/etl';
-import { PERMISSIONS as ETL_PERMISSIONS, StaticCapabilities } from '@tak-ps/etl';
+import { PERMISSIONS, StaticCapabilities } from '@tak-ps/etl';
 
-/**
- * Permissions grantable to Layer & Connection tokens - the upstream ETL
- * catalogue plus permissions for resources only CloudTAK manages
- */
-export const PERMISSIONS: Record<string, Array<string>> = {
-    ...ETL_PERMISSIONS,
-    assignment: ['create', 'read', 'update', 'delete'],
-    effect: ['create', 'read', 'update', 'delete'],
-    attachment: ['create', 'read'],
-};
+export { PERMISSIONS };
 
 export default class LayerControl {
     /**
@@ -30,14 +21,7 @@ export default class LayerControl {
      * permission
      */
     static isValidPermission(resource: string): boolean {
-        const separator = resource.indexOf(':');
-        if (separator === -1) return false;
-
-        const levels = PERMISSIONS[resource.slice(0, separator)];
-        if (!levels) return false;
-
-        const level = resource.slice(separator + 1);
-        return level === '*' || levels.includes(level);
+        return StaticCapabilities.isValidPermission(resource);
     }
 
     static validatePermissions(permissions?: Array<string>): void {

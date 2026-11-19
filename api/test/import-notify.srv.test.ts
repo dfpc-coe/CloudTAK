@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import ws from 'ws';
 import Flight from './flight.js';
+import { rawDataToString } from '../common/stringify.js';
 
 const flight = new Flight();
 
@@ -62,7 +63,7 @@ test(`PATCH: api/import/<id> - Success`, async () => {
             reject(err);
         }).on('message', async (data) => {
             try {
-                const res = JSON.parse(String(data));
+                const res = JSON.parse(rawDataToString(data));
 
                 if (res.type === 'connected') {
                     await flight.fetch(`/api/import/${id}`, {

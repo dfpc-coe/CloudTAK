@@ -16,6 +16,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: Type.Record(Type.String(), Type.Any()),
         res: Type.Record(Type.String(), Type.Any()),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -56,6 +57,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: Type.Record(Type.String(), Type.Any()),
         res: Type.Record(Type.String(), Type.Any()),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {

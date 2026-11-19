@@ -154,19 +154,19 @@ test('GET: /api/icon', async () => {
         assert.equal(res.body.total, 4);
         assert.equal(res.body.items.length, 4);
 
-        const cameraPng = res.body.items.find((i: any) => i.name === 'google/camera' && i.format === '.png');
+        const cameraPng = res.body.items.find((i: { name: string; format: string }) => i.name === 'google/camera' && i.format === '.png');
         assert.ok(cameraPng);
         assert.equal(cameraPng.path, 'test-iconset/google/camera');
 
-        const carPng = res.body.items.find((i: any) => i.name === 'car' && i.format === '.png');
+        const carPng = res.body.items.find((i: { name: string; format: string }) => i.name === 'car' && i.format === '.png');
         assert.ok(carPng);
         assert.equal(carPng.path, 'test-iconset/car');
 
-        const cameraSvg = res.body.items.find((i: any) => i.name === 'google/marker' && i.format === '.svg');
+        const cameraSvg = res.body.items.find((i: { name: string; format: string }) => i.name === 'google/marker' && i.format === '.svg');
         assert.ok(cameraSvg);
         assert.equal(cameraSvg.path, 'test-iconset/google/marker');
 
-        const truckSvg = res.body.items.find((i: any) => i.name === 'truck' && i.format === '.svg');
+        const truckSvg = res.body.items.find((i: { name: string; format: string }) => i.name === 'truck' && i.format === '.svg');
         assert.ok(truckSvg);
         assert.equal(truckSvg.path, 'test-iconset/truck');
     } catch (err) {

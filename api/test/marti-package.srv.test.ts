@@ -843,7 +843,7 @@ test('PATCH api/marti/package/:uid - closes downloaded content when channel uplo
     const uploadError = new Error('mission upload exploded');
 
     try {
-        Sinon.stub(FileCommands.prototype, 'download').resolves(content as any);
+        Sinon.stub(FileCommands.prototype, 'download').resolves(content as never);
         Sinon.stub(FileCommands.prototype, 'uploadPackage').rejects(uploadError);
 
         flight.tak.mockMarti.unshift(async (request: IncomingMessage, response: ServerResponse) => {

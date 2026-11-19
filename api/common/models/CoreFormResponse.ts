@@ -13,7 +13,7 @@ export default class CoreFormResponseModel extends Modeler<typeof CoreFormRespon
         super(pool, CoreFormResponse);
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreFormResponseResponse>> {
+    async augmented_from(id: unknown): Promise<Static<typeof CoreFormResponseResponse>> {
         const SubTable = this.pool
             .select({
                 response: CoreEventResponse.response,

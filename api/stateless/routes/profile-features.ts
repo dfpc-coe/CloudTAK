@@ -50,10 +50,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(FeatureResponse),
         }),
-
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const list = await config.models.ProfileFeature.list({
                 limit: req.query.limit,
@@ -122,7 +122,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     res.write(output);
                     res.end();
                 } else {
-                    throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
+                    throw new Err(400, null, `Unknown Export Format: ${String(req.query.format)}`);
                 }
             }
         } catch (err) {

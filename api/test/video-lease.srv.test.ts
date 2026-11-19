@@ -30,7 +30,7 @@ test('GET: api/video/lease - MediaServer Query', async () => {
 });
 
 let agent: MockAgent;
-let originalDispatcher: any;
+let originalDispatcher: ReturnType<typeof getGlobalDispatcher>;
 let leaseId: number;
 let leasePath: string;
 

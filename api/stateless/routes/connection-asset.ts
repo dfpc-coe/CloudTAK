@@ -21,6 +21,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(AssetOutput),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {
@@ -55,6 +56,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             'multipart/form-data': true,
         },
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {
@@ -123,6 +125,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             ext: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {
@@ -168,13 +171,13 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
             download: Type.Boolean(),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION], token: true }),
     }, async (req, res) => {
         try {
             if (req.params.connectionid === 0) {
-                await Auth.as_user(config, req, { admin: true, token: true });
+                await Auth.as_user(config, req, { admin: true });
             } else {
                 const { connection } = await Auth.is_connection(config, req, {
-                    token: true,
                     resources: [
                         { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
                     ],

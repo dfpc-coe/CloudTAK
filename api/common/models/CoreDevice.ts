@@ -59,12 +59,12 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
         }
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreDeviceResponse>> {
+    async augmented_from(id: unknown): Promise<Static<typeof CoreDeviceResponse>> {
         const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool
             .select({
-                device: { ...EntityColumns, ...DeviceColumns },
+                device: { ...EntityColumns, ...DeviceColumns, stale: CoreEntity.stale },
                 external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })
@@ -94,7 +94,7 @@ export default class CoreDeviceModel extends Modeler<typeof CoreEntity> {
         const pgres = await this.pool
             .select({
                 count: sql<string>`count(*) OVER()`.as('count'),
-                device: { ...EntityColumns, ...DeviceColumns },
+                device: { ...EntityColumns, ...DeviceColumns, stale: CoreEntity.stale },
                 external_ids: EXTERNAL_IDS.as('external_ids'),
                 channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
             })
