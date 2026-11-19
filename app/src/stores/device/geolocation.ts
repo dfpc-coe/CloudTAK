@@ -296,8 +296,10 @@ export class GeolocationPermission {
         native?: NativeDeliveryOptions
     ): Promise<void> {
         await BackgroundGeolocation.start({
-            backgroundTitle: 'CloudTAK GPS active',
-            backgroundMessage: 'CloudTAK is sharing your location.',
+            // Android shows the app name (TAK.NZ) above these two lines, so neither repeats it.
+            // They say plainly what is happening and how to stop it (the Pause button).
+            backgroundTitle: 'Sharing your location',
+            backgroundMessage: 'Your team can see you. Tap to open TAK.NZ and pause.',
             requestPermissions: false,
             // Reject fixes cached from before the watcher started - stale
             // positions are seeded explicitly by seedImmediateFix() instead,

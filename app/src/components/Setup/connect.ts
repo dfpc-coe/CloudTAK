@@ -56,7 +56,7 @@ export async function validateServer(url: string, timeoutMs: number = REQUEST_TI
     try {
         version = (await response.json())?.version
     } catch (err) {
-        throw new Error('Server did not return a valid response. Is this a CloudTAK server?', { cause: err })
+        throw new Error('Server did not return a valid response. Is this a TAK.NZ server?', { cause: err })
     }
 
     if (!version) throw new Error('Server did not return a version')

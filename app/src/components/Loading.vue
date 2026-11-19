@@ -17,7 +17,7 @@
                                         style='height: 150px;'
                                     >
                                 </div>
-                                <TablerLoading desc='Loading CloudTAK' />
+                                <TablerLoading desc='Loading TAK.NZ' />
                                 <Transition
                                     name='stage-fade'
                                     mode='out-in'

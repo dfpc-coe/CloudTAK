@@ -89,7 +89,7 @@ describe('validateServer', () => {
             json: async () => { throw new SyntaxError('Unexpected token <') }
         } as unknown as Response)
 
-        await expect(validateServer('https://example.com')).rejects.toThrow(/Is this a CloudTAK server/)
+        await expect(validateServer('https://example.com')).rejects.toThrow(/Is this a TAK.NZ server/)
     })
 
     it('maps network failures to a friendly message', async () => {

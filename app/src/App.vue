@@ -17,7 +17,7 @@
                 class='text-success flex-shrink-0'
             />
             <span class='text-white small'>
-                A new version of CloudTAK is ready
+                A new version of TAK.NZ is ready
             </span>
             <button
                 class='btn btn-sm btn-success py-0'
