@@ -1,10 +1,11 @@
 <template>
     <div class='d-flex flex-column align-items-center'>
         <div
-            title='Return Home'
+            :title='statusTitle'
             class='position-relative cursor-pointer cloudtak-hover'
             role='button'
             tabindex='0'
+            :aria-label='statusLabel'
             @click='handleHomeClick'
             @keyup.enter='handleHomeClick'
         >
@@ -16,10 +17,7 @@
             >
             <div
                 class='server-status-dot position-absolute'
-                :class='{
-                    "status-green": mapStore.isOpen,
-                    "status-red": !mapStore.isOpen
-                }'
+                :class='`status-${status}`'
             />
         </div>
         <div
@@ -31,11 +29,13 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMapStore } from '../../stores/map.ts';
+import { useSharingStore } from '../../stores/sharing.ts';
 import { supportsServiceWorker } from '../../utils/capacitor.ts';
 import Config from '../../base/config.ts';
+import { connectionState } from '../../utils/connection-state.ts';
 
 const props = defineProps<{
     version?: boolean;
@@ -44,13 +44,50 @@ const props = defineProps<{
 
 const router = useRouter();
 const mapStore = useMapStore();
+const sharing = useSharingStore();
+
+// Ticks while the connection is down, so "reconnecting" turns into "disconnected"
+// once it has gone on too long without anything else changing
+const now = ref(Date.now());
+const mountedAt = Date.now();
+let ticker: ReturnType<typeof setInterval> | undefined;
+
+const status = computed(() => connectionState({
+    paused: sharing.paused,
+    isOpen: mapStore.isOpen,
+    isOnline: mapStore.isOnline,
+    closedAt: mapStore.connectionClosedAt ?? (mapStore.isOpen ? null : mountedAt),
+    now: now.value
+}));
+
+const statusText = computed(() => ({
+    paused: 'sharing paused',
+    connected: 'connected',
+    reconnecting: 'reconnecting',
+    disconnected: 'disconnected'
+}[status.value]));
+const statusTitle = computed(() => `Return Home (${statusText.value})`);
+const statusLabel = computed(() => `Return Home. Server ${statusText.value}`);
+
+watch(status, (value) => {
+    if (value === 'reconnecting' && !ticker) {
+        ticker = setInterval(() => { now.value = Date.now(); }, 5000);
+    } else if (value !== 'reconnecting' && ticker) {
+        clearInterval(ticker);
+        ticker = undefined;
+    }
+    now.value = Date.now();
+}, { immediate: true });
 
 const logo = ref('/CloudTAKLogo.svg');
 const serverVersion = ref('');
 
 let alive = false;
 onMounted(() => { alive = true; });
-onUnmounted(() => { alive = false; });
+onUnmounted(() => {
+    alive = false;
+    if (ticker) clearInterval(ticker);
+});
 
 onMounted(async () => {
     const loginConfig = await Config.list(['login::logo']);
@@ -84,18 +121,37 @@ function handleHomeClick() {
 
 <style scoped>
 .server-status-dot {
-    height: 10px;
-    width: 10px;
+    height: 12px;
+    width: 12px;
     bottom: 2px;
     right: 2px;
     border-radius: 50%;
 }
 
-.status-green {
+.status-connected {
     background-color: #2fb344;
 }
-
-.status-red {
+.status-disconnected {
     background-color: #d63939;
+}
+/* Closed, but the app is reconnecting by itself: pulsing orange instead of a red alarm */
+.status-reconnecting {
+    background-color: #f59f00;
+    animation: status-pulse 1.1s ease-in-out infinite;
+}
+@keyframes status-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.75); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .status-reconnecting {
+        animation: none;
+    }
+}
+/* Paused by the user: a ring, not a solid dot, so it is not told apart by colour alone */
+.status-paused {
+    background-color: #fff;
+    border: 3px solid #6c757d;
+    box-sizing: border-box;
 }
 </style>

@@ -29,9 +29,9 @@ exists), all iOS work, and CI.
 
 - Node, a JDK and the Android SDK. Set `ANDROID_HOME`, or add `sdk.dir` to
   `app/android/local.properties`.
-- The server URL at first run. The setup screen has a manual URL entry, so
-  `PROVIDER_REGISTRY_URL` doesn't have to change. The provider list it shows is
-  upstream's.
+- The server URL at first run. Pick one from the list (see section 5) or use the manual
+  URL entry.
+
 
 **Build (one command):** `scripts/build-android-debug.sh` does everything below, including
 the plugin-copy workaround, and prints the APK path. The manual steps are:
@@ -188,26 +188,26 @@ location. Prepare one for the review notes.
 
 ## 5. Server selection (provider registry)
 
-`app/src/components/Setup/App.vue` hard-codes:
+The first-run screen lists the servers a user can connect to, with manual URL entry
+as the alternative. The list comes from <https://app.tak.nz/v1/servers.json>
+(repository [TAK-NZ/app.tak.nz](https://github.com/TAK-NZ/app.tak.nz), published with
+GitHub Pages), which replaces upstream's `api.cloudtak.io`. To add or change a server,
+edit `servers.json` in that repository.
 
-```ts
-const PROVIDER_REGISTRY_URL = 'https://api.cloudtak.io/'
-```
+`app/src/components/Setup/providers.ts` resolves the list so that the screen is never
+left without choices:
 
-The app's first-run screen lists servers from upstream's registry, with a manual
-URL entry as the alternative. As shipped, our app would show upstream's
-providers. Pick one:
+1. the registry, if it answers with at least one valid server (and the answer is saved)
+2. the last list that was saved on the device
+3. the servers built into the app (`BUNDLED_PROVIDERS`; keep it in step with `servers.json`)
 
-1. **Fixed server.** Skip the list and connect to our TAK-NZ server directly.
-   Simplest and most predictable for users.
-2. **Own registry.** Host a JSON endpoint with the same shape (a `servers` array)
-   and point `PROVIDER_REGISTRY_URL` at it. Better if several TAK-NZ
-   deployments exist.
-3. **Manual only.** Hide the registry list.
+When it falls back, the screen says so and offers "Try again". Registry entries are
+untrusted: whoever can edit the registry decides where users sign in, so only plain
+`https` hosts are accepted (no `http://`, paths or userinfo), and logos must be small
+PNG, JPEG or WebP images.
 
-This file is an upstream file, so keep the change small to limit merge
-conflicts. A config value or a build-time environment variable is better than
-restructuring the component.
+The old plan of hosting this on `tak.nz` or hiding the list is not needed: manual entry
+still works for any server.
 
 ---
 
@@ -311,6 +311,52 @@ scheme comes from `MOBILE_APP_SCHEME` on the server (default `nz.tak.app`) and m
 match the Android `custom_url_scheme` string and the iOS `CFBundleURLSchemes`.
 Logout in the app opens `/api/logout` in the browser (to end the IdP session) and
 returns to `/login?signed_out=1`, which stops forced SSO from signing straight back in.
+
+### Pause / Resume sharing
+
+Native app only (the web app is unchanged). "Paused" means the user chose to be
+offline: nothing about them leaves the device and nothing reaches them until they
+tap Resume. There is deliberately no timer and no auto-resume.
+
+While paused the app:
+
+- closes the TAK server connection and stops broadcasting the self position
+  (`Atlas.pauseSharing()` in `workers/atlas.ts`; a paused `AtlasConnection.connect()`
+  is a no-op, so no code path can reconnect it)
+- stops the location watch, which also removes the Android "location is being used"
+  notification
+- releases the screen wake lock
+- removes this device's push registration, so the server stops sending alerts to it
+  (other devices, such as the web app, are unaffected)
+
+The pause is stored on the device (`sharingPausedBy` in Preferences) and survives
+restarts and reboots: the app starts paused, without opening a connection, until the
+user resumes. It belongs to the user who paused; a different user signing in on the
+same device starts live. If a step of pausing fails, the app still counts as paused
+and shows the error; it never falls back to live.
+
+The Home logo's dot shows the connection (`utils/connection-state.ts`):
+
+| Dot | Meaning |
+|---|---|
+| Solid green | Connected |
+| Pulsing orange | The connection is closed and the app is reconnecting by itself (after the phone wakes, or on resuming). It turns red after 60 seconds without success |
+| Solid red | Not connected: the device has no network, or reconnecting has failed for over a minute |
+| Grey ring | Sharing paused by the user (wins over the others) |
+
+### Permissions
+
+Settings > Permissions can ask for camera and notifications directly. Location keeps
+its disclosure first. A permission the user has already refused is re-granted from
+the system settings, because Android stops showing the prompt once it has been
+refused: the button reads "Open Settings", and the list refreshes when the app comes
+back to the foreground.
+
+Where it shows: a broadcast icon button left of Logout in the main menu footer
+(Pause asks for confirmation, Resume does not), a "Live" / "Paused" label under the
+username, a grey ring (instead of the green or red dot) on the Home logo, and a
+"Paused - Tap to resume" pill above the logo on the map. State lives in
+`stores/sharing.ts`.
 
 ### Notification icon
 

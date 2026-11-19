@@ -136,6 +136,9 @@ export const useDeviceStore = defineStore('device', () => {
         requestCameraPermission: () => camera.request(),
         requestWakeLockPermission: () => wakeLock.request(),
         requestFileSystemPermission: () => fileSystem.request(),
-        releaseWakeLockSentinel: () => wakeLock.releaseSentinel()
+        releaseWakeLockSentinel: () => wakeLock.releaseSentinel(),
+        // Native only: the app's page in the system settings, where a permission the
+        // system will no longer prompt for can be switched back on
+        openAppSettings: () => geolocation.openNativeSettings()
     };
 });

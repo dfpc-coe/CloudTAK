@@ -25,6 +25,9 @@ export default class Atlas {
     username: string;
     initialized: boolean;
     suspended: boolean;
+    // TAK.NZ: the user paused sharing. No TAK connection and no self-position
+    // broadcast until resumeSharing(). Set before init() when the app starts paused
+    sharingPaused: boolean;
 
     db = Comlink.proxy(new AtlasDatabase(this));
     conn = Comlink.proxy(new AtlasConnection(this));
@@ -38,6 +41,7 @@ export default class Atlas {
         this.username = '';
         this.initialized = false;
         this.suspended = false;
+        this.sharingPaused = false;
 
         this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
             const msg = event.data;
@@ -164,6 +168,24 @@ export default class Atlas {
         }
 
         this.profile.setupTimer();
+    }
+
+    /**
+     * The user chose to pause: drop the TAK connection and stop broadcasting
+     * the self position. Safe to call before init(), which then skips connecting
+     */
+    pauseSharing(): void {
+        this.sharingPaused = true;
+        this.conn.pauseSharing();
+        this.profile.pauseTimer();
+    }
+
+    resumeSharing(): void {
+        this.sharingPaused = false;
+        // Before init() completes there is nothing to reconnect - init() connects
+        if (!this.initialized) return;
+        this.conn.resumeSharing();
+        if (!this.suspended) this.profile.setupTimer();
     }
 
     destroy() {
