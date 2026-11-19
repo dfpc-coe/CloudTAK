@@ -98,10 +98,40 @@ jobs:
           echo "build=$build" >> "$GITHUB_OUTPUT"
           echo "Version $version, build $build"
 
+      # The secret may hold the .p8 file as base64 (what the docs say) or as the raw text of the file
+      # (-----BEGIN PRIVATE KEY-----, as pasted from a text editor). Both work. The key is checked
+      # before Xcode uses it, so a bad one is reported here and not as an obscure signing error.
       - name: Write the App Store Connect API key
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
         run: |
-          echo "${{ secrets.ASC_KEY_P8_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
-          chmod 600 "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          # A stray space or newline at the end of an ID would break the file name and the request
+          ASC_KEY_ID=$(printf '%s' "$ASC_KEY_ID" | tr -d '[:space:]')
+          ASC_ISSUER_ID=$(printf '%s' "$ASC_ISSUER_ID" | tr -d '[:space:]')
+          APPLE_TEAM_ID=$(printf '%s' "$APPLE_TEAM_ID" | tr -d '[:space:]')
+          { echo "ASC_KEY_ID=$ASC_KEY_ID"; echo "ASC_ISSUER_ID=$ASC_ISSUER_ID"; echo "APPLE_TEAM_ID=$APPLE_TEAM_ID"; } >> "$GITHUB_ENV"
+
+          key="$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8"
+          if printf '%s' "$ASC_KEY_P8_BASE64" | grep -q "BEGIN PRIVATE KEY"; then
+            echo "The secret holds the raw key text."
+            printf '%s\n' "$ASC_KEY_P8_BASE64" | tr -d '\r' > "$key"
+          else
+            echo "The secret holds base64."
+            printf '%s' "$ASC_KEY_P8_BASE64" | tr -d '[:space:]' | base64 --decode | tr -d '\r' > "$key" || true
+          fi
+          chmod 600 "$key"
+
+          # Describe the file without printing any of it
+          echo "Key file: $(wc -c < "$key" | tr -d ' ') bytes, $(wc -l < "$key" | tr -d ' ') lines, first line: $(head -1 "$key" | cut -c1-40)"
+          if ! head -1 "$key" | grep -q -- "-----BEGIN PRIVATE KEY-----"; then
+            echo "::error::ASC_KEY_P8_BASE64 is not an App Store Connect API key (.p8). Store either the file's text or its base64."
+            exit 1
+          fi
+          if ! openssl pkey -in "$key" -noout 2>/dev/null; then
+            echo "::error::The API key file is damaged: it has the right header but cannot be read as a private key."
+            exit 1
+          fi
+          echo "The API key file looks valid."
 
       - name: Archive
         run: |
