@@ -489,7 +489,7 @@ time of writing). Nothing needs a Mac of your own.
 | `.github/workflows/ios-build-check.yml` | on pull requests that touch `app/ios/**`, and by hand | Builds the app for the iOS simulator without signing. It needs no secrets and shows whether the iOS project still compiles. |
 | `.github/workflows/ios-testflight.yml` | by hand, from `main` only, after you approve it | Builds the web app (with the production web plugins, as the Docker image does), archives the iOS app, signs it with Apple's cloud-managed certificates and uploads it to TestFlight. |
 
-**One-time setup (Apple, in the browser):** register the App ID `nz.tak.app`, create the app in App Store
+**One-time setup (Apple, in the browser), step by step in [APPLE-DEVELOPER-SETUP.md](APPLE-DEVELOPER-SETUP.md):** register the App ID `nz.tak.app`, create the app in App Store
 Connect, create an App Store Connect API key with the Admin role (Apple's cloud-managed signing
 certificates need an Account Holder or Admin), and store four GitHub secrets: `ASC_KEY_ID`,
 `ASC_ISSUER_ID`, `ASC_KEY_P8_BASE64` (the `.p8` file, base64) and `APPLE_TEAM_ID`. The TestFlight job runs in
