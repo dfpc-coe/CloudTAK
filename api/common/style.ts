@@ -349,7 +349,7 @@ export default class Style {
      */
     #compileId(template: string, props: { [x: string]: unknown }, originalId: unknown): string {
         const compiled = this.compile(template, props);
-        const suffix = String(originalId ?? '').match(/(-\d+|-gc-\d+)$/);
+        const suffix = (typeof originalId === 'string' || typeof originalId === 'number' ? String(originalId) : '').match(/(-\d+|-gc-\d+)$/);
         return suffix ? `${compiled}${suffix[0]}` : compiled;
     }
 

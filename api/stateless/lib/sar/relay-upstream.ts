@@ -51,7 +51,7 @@ export interface EngineResult {
     /** HTTP status of the engine answer; null when there was no usable answer */
     status: number | null;
     /** Parsed JSON body (only read for 200 and 422); null when absent or not JSON */
-    json: unknown | null;
+    json: unknown;
     /** Set when the call failed before a usable answer arrived */
     failure: FailureKind | null;
 }

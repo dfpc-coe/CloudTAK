@@ -135,7 +135,7 @@ interface Answer {
     text: string;
 }
 
-async function post(body: unknown, auth: 'user' | 'admin' | 'none' | string = 'user', url = '/api/sar/travel-time'): Promise<Answer> {
+async function post(body: unknown, auth: string = 'user', url = '/api/sar/travel-time'): Promise<Answer> {
     const req: { method: string; headers: Record<string, string>; body: unknown; auth?: { bearer: string } } = {
         method: 'POST',
         headers: {},
@@ -150,7 +150,7 @@ async function post(body: unknown, auth: 'user' | 'admin' | 'none' | string = 'u
     return await send(url, req);
 }
 
-async function postTarr(body: unknown, auth: 'user' | 'admin' | 'none' | string = 'user'): Promise<Answer> {
+async function postTarr(body: unknown, auth: string = 'user'): Promise<Answer> {
     return await post(body, auth, '/api/sar/tarr');
 }
 
@@ -158,7 +158,7 @@ function tarrBody(over: Record<string, unknown> = {}): Record<string, unknown> {
     return { ipp: { lat: LAT, lng: LNG }, profile: 'Hiker', ...over };
 }
 
-async function status(auth: 'user' | 'none' | string = 'user'): Promise<Answer> {
+async function status(auth: string = 'user'): Promise<Answer> {
     const req: { method: string; headers: Record<string, string>; auth?: { bearer: string } } = { method: 'GET', headers: {} };
     if (auth === 'user') {
         req.auth = { bearer: flight.token.user };

@@ -55,7 +55,7 @@ export default class Lambda {
         sibling: 'webhooks' | 'mail',
         suffix: string,
     ): string {
-        if (/^tak-cloudtak-/.test(stackName)) {
+        if (stackName.startsWith('tak-cloudtak-')) {
             return stackName.replace(/^tak-cloudtak-/, `tak-cloudtak-${sibling}-`) + `-${suffix}`;
         }
 
