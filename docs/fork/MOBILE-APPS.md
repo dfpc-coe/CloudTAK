@@ -29,9 +29,9 @@ exists), all iOS work, and CI.
 
 - Node, a JDK and the Android SDK. Set `ANDROID_HOME`, or add `sdk.dir` to
   `app/android/local.properties`.
-- The server URL at first run. The setup screen has a manual URL entry, so
-  `PROVIDER_REGISTRY_URL` doesn't have to change. The provider list it shows is
-  upstream's.
+- The server URL at first run. Pick one from the list (see section 5) or use the manual
+  URL entry.
+
 
 **Build (one command):** `scripts/build-android-debug.sh` does everything below, including
 the plugin-copy workaround, and prints the APK path. The manual steps are:
