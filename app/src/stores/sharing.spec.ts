@@ -6,6 +6,7 @@ const calls: string[] = [];
 
 const map = {
     location: 'live',
+    connectionClosedAt: null as number | null,
     worker: {
         pauseSharing: vi.fn(async () => { calls.push('worker.pause'); }),
         resumeSharing: vi.fn(async () => { calls.push('worker.resume'); }),
@@ -14,7 +15,10 @@ const map = {
     startLocationWatch: vi.fn(async () => { calls.push('location.start'); }),
 };
 const device = {
-    geolocation: { stopWatch: vi.fn(async () => { calls.push('location.stop'); }) },
+    geolocation: {
+        stopWatch: vi.fn(async () => { calls.push('location.stop'); }),
+        refreshStatus: vi.fn(async () => { calls.push('location.refresh'); }),
+    },
     wakeLock: { applyPreference: vi.fn(async () => { calls.push('wakelock.apply'); }) },
     releaseWakeLockSentinel: vi.fn(async () => { calls.push('wakelock.release'); }),
     getMessagingToken: vi.fn(() => 'fcm-token'),
@@ -48,6 +52,7 @@ describe('sharing store', () => {
         calls.length = 0;
         native = true;
         map.location = 'live';
+        map.connectionClosedAt = null;
         vi.clearAllMocks();
     });
 
@@ -112,6 +117,19 @@ describe('sharing store', () => {
         expect(calls).toEqual(expect.arrayContaining([
             'worker.resume', 'location.start', 'wakelock.apply', 'push.sync',
         ]));
+    });
+
+    it('resume refreshes permissions before restarting location, and restarts the reconnecting clock', async () => {
+        prefs.set(PAUSED_BY_KEY, 'alice@example.com');
+        map.connectionClosedAt = 1;
+        const sharing = useSharingStore();
+        await sharing.load('alice@example.com');
+        const before = Date.now();
+        await sharing.resume();
+        expect(calls.indexOf('location.refresh')).toBeGreaterThanOrEqual(0);
+        expect(calls.indexOf('location.refresh')).toBeLessThan(calls.indexOf('location.start'));
+        // Otherwise the dot would be red from the moment of resuming, as the pause closed the connection long ago
+        expect(map.connectionClosedAt).toBeGreaterThanOrEqual(before);
     });
 
     it('does nothing when pausing twice or resuming while live', async () => {

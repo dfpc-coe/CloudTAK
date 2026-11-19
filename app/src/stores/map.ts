@@ -211,6 +211,8 @@ export const useMapStore = defineStore('cloudtak', {
         // Human-readable description of the current map loading step
         loadingStage: string;
         isOpen: boolean;
+        // When the server connection closed. Null while it is open, or before it has closed once
+        connectionClosedAt: number | null;
         // Device network status as reported by the device store
         isOnline: boolean;
         // Last connectivity restoration - watch it to retry deferred work
@@ -276,6 +278,7 @@ export const useMapStore = defineStore('cloudtak', {
             offlineTiles: new Set<string>(),
             channelChange: false,
             isOpen: false,
+            connectionClosedAt: null,
             isOnline: typeof navigator === 'undefined' || navigator.onLine !== false,
             syncTrigger: null,
             isMapLoaded: false,
@@ -1332,8 +1335,10 @@ export const useMapStore = defineStore('cloudtak', {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
                     this.isOpen = true;
+                    this.connectionClosedAt = null;
                 } else if (msg.type === WorkerMessageType.Connection_Close) {
                     this.isOpen = false;
+                    if (this.connectionClosedAt === null) this.connectionClosedAt = Date.now();
                 } else if (msg.type === WorkerMessageType.Connection_AuthFailure) {
                     this.isOpen = false;
                     await useAppStore().sessionExpired();

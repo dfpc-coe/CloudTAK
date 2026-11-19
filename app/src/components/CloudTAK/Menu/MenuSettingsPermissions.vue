@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
 import type { Component } from 'vue';
 import {
     IconBell,
@@ -110,7 +110,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import LocationDisclosure from '../util/LocationDisclosure.vue';
 import type { LocationDisclosureStage } from '../util/LocationDisclosure.vue';
-import { isNativePlatform } from '../../../utils/capacitor.ts';
+import { isNativePlatform, addAppLifecycleListeners } from '../../../utils/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
 import type { BrowserPermissionState } from '../../../stores/device.ts';
@@ -231,10 +231,14 @@ const permissionItems = computed(() => {
         });
 });
 
+// Coming back from the system settings: pick up whatever the user changed there
+let removeResumeListener: (() => void) | undefined;
 onMounted(async () => {
+    removeResumeListener = await addAppLifecycleListeners({ resume: () => { void refreshStatuses(); } });
     await refreshStatuses();
     loading.value = false;
 });
+onBeforeUnmount(() => removeResumeListener?.());
 
 function badgeLabel(status: BrowserPermissionState): string {
     switch (status) {
@@ -301,6 +305,10 @@ function offersNativeRequest(type: PermissionKey, status: BrowserPermissionState
         return deviceStore.permissions.location === 'granted'
             && ['prompt', 'when_in_use', 'denied'].includes(status);
     }
+    // Camera and notifications are asked for directly. Android stops showing the
+    // prompt once it has been refused, so a denied one opens the system settings
+    // instead (see runRequest), as location does
+    if (type === 'camera' || type === 'notification') return status === 'prompt' || status === 'denied';
     return false;
 }
 
@@ -353,7 +361,8 @@ async function requestPermission(type: PermissionKey): Promise<void> {
         return;
     }
 
-    if (isNativePlatform()) return;
+    // On the native app only the permissions that can be asked for from here do anything
+    if (isNativePlatform() && !offersNativeRequest(type, deviceStore.permissions[type])) return;
 
     await runRequest(type);
 }
@@ -387,6 +396,10 @@ async function runRequest(type: PermissionKey): Promise<void> {
                 await deviceStore.geolocation.requestBackground();
                 break;
             case 'camera':
+                if (isNativePlatform() && deviceStore.permissions.camera === 'denied') {
+                    await deviceStore.openAppSettings();
+                    break;
+                }
                 await deviceStore.camera.request();
                 break;
             case 'orientation':
@@ -402,6 +415,10 @@ async function runRequest(type: PermissionKey): Promise<void> {
                 await deviceStore.wakeLock.request();
                 break;
             case 'notification':
+                if (isNativePlatform() && deviceStore.permissions.notification === 'denied') {
+                    await deviceStore.openAppSettings();
+                    break;
+                }
                 await deviceStore.notification.request();
                 break;
         }
