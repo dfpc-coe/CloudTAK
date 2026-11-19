@@ -111,6 +111,7 @@ import StandardItem from '../util/StandardItem.vue';
 import LocationDisclosure from '../util/LocationDisclosure.vue';
 import type { LocationDisclosureStage } from '../util/LocationDisclosure.vue';
 import { isNativePlatform, addAppLifecycleListeners } from '../../../utils/capacitor.ts';
+import { isPermissionListed } from '../../../utils/permission-list.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
 import type { BrowserPermissionState } from '../../../stores/device.ts';
@@ -219,7 +220,8 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
 
 const permissionItems = computed(() => {
     return permissionDescriptors
-        .filter((permission) => permission.key !== 'backgroundLocation' || isNativePlatform())
+        // Browser-only rows are hidden in the phone app, and background location in the browser
+        .filter((permission) => isPermissionListed(permission.key, isNativePlatform()))
         .map((permission) => {
             const status = deviceStore.permissions[permission.key];
 
@@ -240,14 +242,15 @@ onMounted(async () => {
 });
 onBeforeUnmount(() => removeResumeListener?.());
 
+// A status, not an action: this badge is not a button. The button is below the description.
 function badgeLabel(status: BrowserPermissionState): string {
     switch (status) {
         case 'granted': return 'Allowed';
         case 'when_in_use': return 'While Using';
-        case 'denied': return 'Re-request';
-        case 'prompt': return 'Request';
+        case 'denied': return 'Denied';
+        case 'prompt': return 'Not asked yet';
         case 'unsupported': return 'Unsupported';
-        default: return 'Request';
+        default: return 'Unknown';
     }
 }
 
