@@ -152,7 +152,7 @@ export default class LayerControl {
         const layer = await this.config.models.Layer.augmented_from(base.id);
 
         try {
-            const stack = await Lambda.generate(this.config, layer);
+            const stack = Lambda.generate(this.config, layer);
             await CloudFormation.create(this.config, layer.id, stack);
         } catch (err) {
             console.error(err);

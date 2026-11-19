@@ -7,7 +7,7 @@ const WEB_MERCATOR_Z0_SCALE = 559082264.0287178;
 const WEB_MERCATOR_ORIGIN = 20037508.342789244;
 const WEB_MERCATOR_CRS = /(3857|900913|3785|102100|102113|WebMercator|GoogleMapsCompatible)/i;
 
-type XmlNode = Record<string, any>;
+type XmlNode = Record<string, unknown>;
 
 export interface WMTSImport {
     type: Basemap_Type;
@@ -41,7 +41,7 @@ function children(node: XmlNode | undefined, local: string): XmlNode[] {
     for (const key of Object.keys(node)) {
         if (key === local || key.endsWith(`:${local}`)) {
             const value = node[key];
-            return Array.isArray(value) ? value : [value];
+            return (Array.isArray(value) ? value : [value]) as XmlNode[];
         }
     }
     return [];
@@ -54,12 +54,12 @@ function child(node: XmlNode | undefined, local: string): XmlNode | undefined {
 function text(node: XmlNode | undefined, local?: string): string | undefined {
     const target = local ? child(node, local) : node;
     if (!target) return undefined;
-    const value = target._text ?? target._cdata;
+    const value = (target._text ?? target._cdata) as string | number | boolean | undefined;
     return value === undefined ? undefined : String(value).trim();
 }
 
 function attr(node: XmlNode | undefined, name: string): string | undefined {
-    const value = node?._attributes?.[name];
+    const value = (node?._attributes as Record<string, string | number | undefined> | undefined)?.[name];
     return value === undefined ? undefined : String(value);
 }
 

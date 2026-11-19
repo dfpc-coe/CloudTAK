@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { GenericMartiResponse } from '../../common/types.js';
-import Auth, { AuthResource, AuthResourceAccess } from '../../common/auth.js';
+import Auth, { AuthResource, AuthResourceAccess, type AnyRequest } from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { ConnectionAuth } from '../../common/connection-config.js';
 import { Contact } from '@tak-ps/node-tak/lib/api/contacts';
@@ -10,7 +10,6 @@ import { Group } from '@tak-ps/node-tak/lib/api/groups';
 import { ClientEndpoint } from '@tak-ps/node-tak/lib/api/client';
 import { TAKList } from '@tak-ps/node-tak/lib/api/types';
 import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
-import type { Request } from 'express';
 import { authenticatedProfile } from '../../common/control/profile.js';
 import TAKServerControl from '../../common/control/takserver.js';
 
@@ -18,10 +17,10 @@ import TAKServerControl from '../../common/control/takserver.js';
  * Resolve the TAK API client a Marti helper should act as.
  *
  * Connection & Layer resource tokens are scoped to a single Connection, so the
- * Connection is inferred from the token and the token must hold the given
- * `group:<level>` permission. User tokens act as the user's own
+ * Connection is inferred from the token. User tokens act as the user's own
  * certificate unless `connection` is given - 0 selects the server certificate
  * (System Admin only), any other value a Connection the user administers.
+ * `impersonate` acts as another user's certificate (System Admin only).
  */
 async function serverApi(config: ConfigStateless): Promise<TAKAPI> {
     if (!config.server.auth.cert || !config.server.auth.key) {
@@ -33,26 +32,25 @@ async function serverApi(config: ConfigStateless): Promise<TAKAPI> {
 
 async function groupApi(
     config: ConfigStateless,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- matches Auth.as_user / Auth.is_connection
-    req: Request<any, any, any, any>,
+    req: AnyRequest,
     connection?: number,
-    scope?: string,
+    impersonate?: string,
 ): Promise<TAKAPI> {
-    const auth = await Auth.is_auth(config, req, {
-        scope,
-        resources: [
-            { access: AuthResourceAccess.CONNECTION },
-            { access: AuthResourceAccess.LAYER },
-        ],
-    });
+    if (impersonate !== undefined) {
+        if (connection !== undefined) throw new Err(400, null, 'connection and impersonate cannot be combined');
+
+        const user = await Auth.impersonate(config, req, impersonate);
+        return await new TAKServerControl(config).asUser(user.email);
+    }
+
+    const auth = await Auth.is_auth(config, req);
 
     if (auth instanceof AuthResource) {
         let inferred: number;
 
         if (auth.access === AuthResourceAccess.LAYER) {
-            if (auth.id === undefined) throw new Err(401, null, 'Layer Resource Token must contain a Layer ID');
             // Server-level Layers have no Connection and use the server certificate
-            inferred = (await config.models.Layer.from(auth.id)).connection ?? 0;
+            inferred = (await Auth.layer(config, auth)).connection ?? 0;
         } else {
             if (auth.id === undefined) throw new Err(401, null, 'Connection Resource Token must contain a Connection ID');
             inferred = Number(auth.id);
@@ -84,15 +82,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',
-        description: 'Helper API to list groups that the client is part of. Pass connection to list the groups a Connection is part of, or connection=0 for the server certificate. Resource tokens require the `group:read` permission',
+        description: 'Helper API to list groups that the client is part of. Pass connection to list the groups a Connection is part of, connection=0 for the server certificate, or impersonate for another user (System Admin only). Resource tokens require the `group:read` permission',
         query: Type.Object({
             connection: Type.Optional(Type.Integer({ minimum: 0, description: 'User tokens only - act as this Connection, or 0 for the server certificate (System Admin only). Connection & Layer tokens infer the Connection from the token' })),
+            impersonate: Type.Optional(Type.String({ description: 'System Admin only - act as the given username' })),
             useCache: Type.Optional(Type.Boolean({ description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.' })),
         }),
         res: TAKList(Group),
+        security: Auth.security('group:read', { connection: true }),
     }, async (req, res) => {
         try {
-            const api = await groupApi(config, req, req.query.connection, 'group:read');
+            const api = await groupApi(config, req, req.query.connection, req.query.impersonate);
 
             const groups = await api.Group.list({
                 useCache: req.query.useCache,
@@ -111,6 +111,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         query: Type.Object({
             clientUid: Type.Optional(Type.String()),
             connection: Type.Optional(Type.Integer({ minimum: 0, description: 'User tokens only - act as this Connection, or 0 for the server certificate (System Admin only). Connection & Layer tokens infer the Connection from the token' })),
+            impersonate: Type.Optional(Type.String({ description: 'System Admin only - act as the given username' })),
         }),
         body: Type.Array(Type.Object({
             name: Type.String(),
@@ -122,9 +123,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             description: Type.Optional(Type.String()),
         })),
         res: GenericMartiResponse,
+        security: Auth.security('group:update', { connection: true }),
     }, async (req, res) => {
         try {
-            const api = await groupApi(config, req, req.query.connection, 'group:update');
+            const api = await groupApi(config, req, req.query.connection, req.query.impersonate);
 
             await api.Group.update(req.body, {});
 
@@ -149,6 +151,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             groups: Type.Optional(Type.String()),
         }),
         res: TAKList(ClientEndpoint),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const api = await groupApi(config, req, req.query.connection);

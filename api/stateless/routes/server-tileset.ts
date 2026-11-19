@@ -22,9 +22,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             name: Type.String(),
             path: Type.String(),
         }),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
             const contentType = req.headers['content-type'];
 
             if (

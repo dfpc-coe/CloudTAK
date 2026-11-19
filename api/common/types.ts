@@ -312,6 +312,7 @@ export const CoreDeviceResponse = Type.Composite([
         connection: Type.Union([Type.Null(), Type.Integer()], { description: 'Connection that created the Device if created by a Connection or Layer token' }),
         editable: Type.Boolean({ description: 'Can users other than the creator edit the Device' }),
         battery: Type.Union([Type.Null(), withoutHints(CoreDeviceSchema).properties.battery]),
+        stale: Type.Union([Type.Null(), Type.Integer()], { description: 'Seconds after its last update the Device stops being broadcast to TAK clients - null never expires' }),
         metadata: Type.Record(Type.String(), Type.Unknown(), { description: 'User defined key/value Device metadata' }),
         links: Type.Array(CoreEntityLink, { description: 'Named URLs associated with the Device' }),
         style: Type.Object(CoreEntityStyle.properties, { description: 'Point styling for the Device' }),

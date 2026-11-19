@@ -17,9 +17,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(Injector),
         }),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const auth = config.serverCert();
             const api = await takserver.withAuth(auth);
@@ -44,9 +45,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(Injector),
         }),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const auth = config.serverCert();
             const api = await takserver.withAuth(auth);
@@ -68,9 +70,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: 'Delete COT Injector',
         query: Injector,
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const auth = config.serverCert();
             const api = await takserver.withAuth(auth);

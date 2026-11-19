@@ -112,7 +112,7 @@ export default class ETLEvents {
                     group: `${listener.layer}-${cot.uid()}`,
                     body: {
                         type: OutgoingMessageType.Feature,
-                        xml: await CoTParser.to_xml(cot),
+                        xml: CoTParser.to_xml(cot),
                         geojson: await CoTParser.to_geojson(cot),
                     },
                 });

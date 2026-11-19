@@ -46,7 +46,7 @@ export default class MissionTemplateLogModel extends Modeler<typeof MissionTempl
         };
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof MissionTemplateLogResponse>> {
+    async augmented_from(id: unknown): Promise<Static<typeof MissionTemplateLogResponse>> {
         const pgres = await this.pool
             .select()
             .from(MissionTemplateLog)

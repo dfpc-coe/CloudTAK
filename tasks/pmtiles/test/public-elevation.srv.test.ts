@@ -8,9 +8,9 @@ import { demTile } from './lib/dem.js';
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
-let app: any;
+let app: typeof import('../index.js')['app'];
 let server: http.Server;
-let FileTiles: any;
+let FileTiles: typeof import('../lib/tiles.js')['FileTiles'];
 
 test('Setup', async () => {
     const mod = await import('../index.js');

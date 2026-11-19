@@ -13,6 +13,7 @@ import { Channel, ChannelAccess } from '../lib/interface-user.js';
 import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
+import { stringify } from '../../common/stringify.js';
 
 /**
  * Detect a Postgres unique-constraint violation on the connection name across the
@@ -26,7 +27,7 @@ function isDuplicateNameError(err: unknown): boolean {
         if (current instanceof Error) {
             parts.push(current.message);
         } else {
-            parts.push(String(current));
+            parts.push(stringify(current));
         }
         if (typeof current === 'object' && 'safe' in current) {
             parts.push(String((current as { safe?: unknown }).safe));
@@ -243,15 +244,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             auth: Type.Optional(ConnectionAuth),
         }),
         res: ConnectionResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
             }, req.params.connectionid);
 
-            if (req.body.agency !== undefined && req.body.agency !== connection.agency && await Auth.is_user(config, req)) {
-                const user = await Auth.as_user(config, req, { admin: true });
-                if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
+            if (req.body.agency !== undefined && req.body.agency !== connection.agency) {
+                await Auth.as_user(config, req, { admin: true });
             }
 
             if (req.body.auth) {
@@ -298,9 +299,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'Connection',
         description: 'Get the admin connection (server-level connection using the server certificate)',
         res: ConnectionResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             if (!config.server.auth.cert || !config.server.auth.key) {
                 throw new Err(400, null, 'Server certificate is not configured');
@@ -332,6 +334,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             connectionid: Type.Integer({ minimum: 1 }),
         }),
         res: ConnectionResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -362,6 +365,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(Channel),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
@@ -424,6 +428,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(Channel),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -479,10 +484,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 enum: ['client', 'truststore'],
             }),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION], token: true }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                token: true,
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
             }, req.params.connectionid);
 
@@ -534,6 +539,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             connectionid: Type.Integer({ minimum: 1 }),
         }),
         res: ConnectionResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {

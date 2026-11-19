@@ -159,6 +159,13 @@ const CONTENT_TYPES: Partial<Record<pmtiles.TileType, string>> = {
     [pmtiles.TileType.Avif]: 'image/avif',
 };
 
+type TileFeature = {
+    type: 'Feature';
+    id?: string | number;
+    properties: Record<string, unknown>;
+    geometry: { type: string; coordinates: unknown[] };
+};
+
 export class FileTiles {
     path: string;
 
@@ -233,7 +240,7 @@ export class FileTiles {
     ): Promise<Static<typeof TileJSON>> {
         const p = new pmtiles.PMTiles(new S3Source(this.path), CACHE, nativeDecompress);
         const header = await p.getHeader();
-        const metadata = await p.getMetadata() as any;
+        const metadata = await p.getMetadata() as { vector_layers?: Static<typeof TileJSON>['vector_layers'] };
         const source = await this.rasterTileSource(token);
 
         return {
@@ -309,24 +316,18 @@ export class FileTiles {
                 features: [],
             };
         } else {
-            const fc: any = await new Promise((resolve, reject) => {
+            const fc = await new Promise<Pick<Static<typeof QueryResponse>, 'type' | 'features'>>((resolve, reject) => {
                 vtquery([
                     { buffer: tile.data, z, x, y },
                 ], query.lnglat, {
                     limit: query.limit,
-                }, (err: Error, fc: {
-                    type: string;
-                    features: object[];
-                }) => {
+                }, (err: Error, fc: Pick<Static<typeof QueryResponse>, 'type' | 'features'>) => {
                     if (err) return reject(err);
                     return resolve(fc);
                 });
             });
 
-            fc.query = query;
-            fc.meta = meta;
-
-            return fc;
+            return { ...fc, query, meta };
         }
     }
 
@@ -373,7 +374,7 @@ export class FileTiles {
             };
         }
 
-        const features: any[] = [];
+        const features: TileFeature[] = [];
 
         if (header.tileType === pmtiles.TileType.Mvt) {
             const tile = new VectorTile(new Pbf(tile_result.data));
@@ -390,12 +391,12 @@ export class FileTiles {
 
                     if (opts.multi === false && geojson.geometry.type.startsWith('Multi')) {
                         const type = geojson.geometry.type.replace('Multi', '');
-                        const coordinates = (geojson.geometry as any).coordinates;
+                        const coordinates = (geojson.geometry as { coordinates: unknown[][] }).coordinates;
 
                         for (const coord of coordinates) {
-                            const feat: any = {
+                            const feat: TileFeature = {
                                 type: 'Feature',
-                                properties: geojson.properties,
+                                properties: geojson.properties as Record<string, unknown>,
                                 geometry: {
                                     type: type,
                                     coordinates: coord,
@@ -408,7 +409,7 @@ export class FileTiles {
                         }
                     } else {
                         if (opts.type && geojson.geometry.type !== opts.type) continue;
-                        features.push(geojson);
+                        features.push(geojson as TileFeature);
                     }
                 }
             }
@@ -473,7 +474,7 @@ export class FileTiles {
                 const tile_result = await p.getZxy(z, x, y);
                 if (!tile_result) return [];
 
-                const features: any[] = [];
+                const features: TileFeature[] = [];
 
                 const tile = new VectorTile(new Pbf(tile_result.data));
 
@@ -489,12 +490,12 @@ export class FileTiles {
 
                         if (opts.multi === false && geojson.geometry.type.startsWith('Multi')) {
                             const type = geojson.geometry.type.replace('Multi', '');
-                            const coordinates = (geojson.geometry as any).coordinates;
+                            const coordinates = (geojson.geometry as { coordinates: unknown[][] }).coordinates;
 
                             for (const coord of coordinates) {
-                                const feat: any = {
+                                const feat: TileFeature = {
                                     type: 'Feature',
-                                    properties: geojson.properties,
+                                    properties: geojson.properties as Record<string, unknown>,
                                     geometry: {
                                         type: type,
                                         coordinates: coord,
@@ -507,7 +508,7 @@ export class FileTiles {
                             }
                         } else {
                             if (opts.type && geojson.geometry.type !== opts.type) continue;
-                            features.push(geojson);
+                            features.push(geojson as TileFeature);
                         }
                     }
                 }
@@ -515,7 +516,7 @@ export class FileTiles {
                 return features;
             });
 
-        const features: any[] = [];
+        const features: TileFeature[] = [];
         for (const result of results) {
             features.push(...result);
         }

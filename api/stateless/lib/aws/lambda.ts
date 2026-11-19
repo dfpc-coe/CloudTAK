@@ -142,7 +142,7 @@ export default class Lambda {
     ): Static<typeof StackFrame> {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
-        const stack: any = {
+        const stack: Static<typeof StackFrame> = {
             Description: `${layer.name}`,
             Parameters: {
                 Task: {
@@ -186,8 +186,9 @@ export default class Lambda {
             },
         };
 
-        if (layer.vpc) {
-            stack.Resources.ETLFunction.Properties.VpcConfig = vpcConfig();
+        const fn = stack.Resources.ETLFunction.Properties;
+        if (layer.vpc && fn) {
+            fn.VpcConfig = vpcConfig();
         }
 
         if (layer.outgoing) {
@@ -394,25 +395,25 @@ export default class Lambda {
 
         if (layer.priority !== 'off') {
             if (stack.Resources.LambdaAlarm) {
-                stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
+                stack.Resources.LambdaAlarm.Properties?.AlarmActions.push(
                     cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`]),
                 );
             }
 
             if (stack.Resources.OutgoingDeadQueueBacklogAlarm) {
-                stack.Resources.OutgoingDeadQueueBacklogAlarm.Properties.AlarmActions.push(
+                stack.Resources.OutgoingDeadQueueBacklogAlarm.Properties?.AlarmActions.push(
                     cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`]),
                 );
             }
 
             if (stack.Resources.OutgoingQueueBacklogAlarm) {
-                stack.Resources.OutgoingQueueBacklogAlarm.Properties.AlarmActions.push(
+                stack.Resources.OutgoingQueueBacklogAlarm.Properties?.AlarmActions.push(
                     cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`]),
                 );
             }
 
             if (stack.Resources.LambdaNoInvocationAlarm) {
-                stack.Resources.LambdaNoInvocationAlarm.Properties.AlarmActions.push(
+                stack.Resources.LambdaNoInvocationAlarm.Properties?.AlarmActions.push(
                     cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`]),
                 );
             }

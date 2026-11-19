@@ -340,5 +340,5 @@ test('OSM - upstream failure', async () => {
 
 test('OSM - teardown', async () => {
     await new Promise<void>(resolve => server.close(() => resolve()));
-    await config.pg.end();
+    config.pg.end();
 });

@@ -13,7 +13,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     const submit = async (
-        req: Request<unknown, Static<typeof StandardResponse>, Static<typeof ProfileLocationBody>>,
+        req: Request<unknown, Static<typeof StandardResponse>, Static<typeof ProfileLocationBody>, unknown>,
         res: Response<Static<typeof StandardResponse>>,
     ) => {
         try {

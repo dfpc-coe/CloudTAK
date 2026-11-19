@@ -1,7 +1,7 @@
 {
     "name": "@tak-ps/cloudtak",
     "type": "module",
-    "version": "13.122.8",
+    "version": "13.124.0",
     "types": "dist/types/plugin.d.ts",
     "files": [
         "dist/types"
@@ -119,6 +119,7 @@
         "@testing-library/vue": "^8.1.0",
         "@types/mapbox__tile-cover": "^3.0.4",
         "@types/sortablejs": "^1.15.8",
+        "@typescript/native": "npm:typescript@^7.0.2",
         "@vitejs/plugin-vue": "^6.0.0",
         "@vitest/coverage-v8": "^5.0.0",
         "@vitest/ui": "^5.0.0",
@@ -134,7 +135,7 @@
         "patch-package": "^8.0.1",
         "sass-embedded": "^1.86.0",
         "typedoc": "^0.28.1",
-        "typescript": "^6.0.0",
+        "typescript": "npm:@typescript/typescript6@^6.0.2",
         "typescript-eslint": "^8.20.0",
         "vite": "^8.0.0",
         "vitest": "^5.0.0",

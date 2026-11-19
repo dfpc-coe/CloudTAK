@@ -3,6 +3,7 @@ import assert from 'node:assert';
 import ws from 'ws';
 import Flight from './flight.js';
 import { DirectChat } from '@tak-ps/node-cot';
+import { rawDataToString } from '../common/stringify.js';
 
 const flight = new Flight();
 
@@ -41,7 +42,7 @@ test('Streaming: TAK Chat Message', async () => {
             reject(err);
         }).on('message', async (data) => {
             try {
-                const res = JSON.parse(String(data));
+                const res = JSON.parse(rawDataToString(data));
 
                 if (res.type === 'connected') {
                     const chat = new DirectChat({

@@ -1,0 +1,1 @@
+ALTER TABLE "core_entity" ADD COLUMN "stale" integer;

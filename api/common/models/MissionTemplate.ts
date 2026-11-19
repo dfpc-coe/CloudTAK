@@ -5,7 +5,7 @@ import type { Static } from '@sinclair/typebox';
 import { MissionTemplateResponse, MissionTemplateLogResponse } from '../types.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { MissionTemplate, MissionTemplateLog } from '../schema.js';
-import { SQL, is, sql, eq, desc, asc } from 'drizzle-orm';
+import { SQL, is, sql, eq, desc, asc, type InferSelectModel } from 'drizzle-orm';
 
 export const MissionTemplateSingleResponse = Type.Composite([
     MissionTemplateResponse,
@@ -54,7 +54,7 @@ export default class MissionTemplateModel extends Modeler<typeof MissionTemplate
         };
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof MissionTemplateSingleResponse>> {
+    async augmented_from(id: unknown): Promise<Static<typeof MissionTemplateSingleResponse>> {
         const SubTable = this.pool
             .select({
                 id: MissionTemplateLog.template,
@@ -79,7 +79,7 @@ export default class MissionTemplateModel extends Modeler<typeof MissionTemplate
         return {
             ...pgres[0].template,
             keywords: pgres[0].template.keywords ? pgres[0].template.keywords.split(',') : [],
-            logs: (pgres[0].logs as any[]).map((log: any) => {
+            logs: (pgres[0].logs as Array<InferSelectModel<typeof MissionTemplateLog>>).map((log) => {
                 return {
                     ...log,
                     keywords: log.keywords ? log.keywords.split(',') : [],

@@ -11,6 +11,7 @@ import type { ImportResponse } from '../types.js';
 export type HubConfig = Config & { hub: HubClient };
 import crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
+import type { Json } from '@openaddresses/batch-generic';
 import { Import_Status } from '../enums.js';
 import { sendPush, PagingPriority } from '../paging.js';
 import TAKServerControl from './takserver.js';
@@ -48,7 +49,7 @@ export default class ImportControl {
         name: string;
         source?: ImportSourceEnum;
         source_id?: string;
-        config?: any;
+        config?: Json;
     }): Promise<Static<typeof ImportResponse>> {
         const imp = await this.config.models.Import.generate({
             id: crypto.randomUUID(),

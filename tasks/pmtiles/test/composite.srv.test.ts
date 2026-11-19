@@ -13,7 +13,7 @@ process.env.StackName = 'test';
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
-let app: any;
+let app: typeof import('../index.js')['app'];
 let server: http.Server;
 let api: http.Server;
 let Basemap: typeof import('../lib/basemap.js').default;

@@ -17,3 +17,10 @@ const configuration = {
     },
 };
 </script>
+
+<style>
+body {
+    margin: 0;
+    background-color: var(--scalar-background-1);
+}
+</style>

@@ -17,7 +17,7 @@ import { validateTemplate, renderTemplate } from '../../common/style.js';
 import { Geometry, BBox } from 'geojson';
 import { Static, Type } from '@sinclair/typebox';
 import { StandardResponse, BasemapResponse, BasemapArgs, TileJSON, MultiGeoJSONFeature, MultiGeoJSONFeatureCollection } from '../../common/types.js';
-import { BasemapCollection } from '../../common/models/Basemap.js';
+import { BasemapCollection, type BasemapListRow } from '../../common/models/Basemap.js';
 import { Basemap as BasemapParser, Feature } from '@tak-ps/node-cot';
 import { Basemap } from '../../common/schema.js';
 import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast, BasemapTerrain_Encoding } from '../../common/enums.js';
@@ -60,7 +60,7 @@ const BasemapImportRequest = Type.Object({
     auth: Type.Optional(BasemapImportAuth),
 });
 
-function augmentBasemap(basemap: any): any {
+function augmentBasemap<T extends BasemapListRow>(basemap: T) {
     return {
         ...basemap,
         bounds: basemap.bounds ? bbox(basemap.bounds) : undefined,
@@ -73,7 +73,7 @@ async function listChildren(
     config: ConfigStateless,
     parent: number,
     user?: { email: string; access: AuthUserAccess },
-): Promise<Array<any>> {
+): Promise<Array<ReturnType<typeof augmentBasemap>>> {
     const where = !user || user.access === AuthUserAccess.ADMIN
         ? sql`parent = ${Param(parent)}::INT`
         : sql`parent = ${Param(parent)}::INT AND (username IS NULL OR username = ${Param(user.email)}::TEXT)`;
@@ -194,7 +194,17 @@ async function importBasemapURL(
         throw new Err(400, null, 'URL returned XML instead of TileJSON - only TileJSON and WMTS capabilities documents are supported');
     }
 
-    let tjbody: Record<string, any>;
+    let tjbody: {
+        name?: string;
+        attribution?: string;
+        maxzoom?: number;
+        minzoom?: number;
+        tileSize?: number;
+        vector_layers?: unknown;
+        tiles?: unknown;
+        encoding?: string;
+        [key: string]: unknown;
+    };
     try {
         tjbody = JSON.parse(tjtext);
     } catch (err) {
@@ -295,7 +305,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         }
 
                         const buffer = await filePromise;
-                        const b = await BasemapParser.parse(buffer.toString('utf8'));
+                        const b = BasemapParser.parse(buffer.toString('utf8'));
 
                         if (!b.raw.customMapSource) {
                             res.json(imported);
@@ -807,10 +817,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
         }),
         res: Type.Union([AugmentedBasemapWithChildrenResponse, Type.String()]),
+        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
                 ],
@@ -862,10 +872,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             token: Type.Optional(Type.String()),
         }),
         res: AugmentedTileJSON,
+        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
                 ],
@@ -902,10 +912,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         query: Type.Object({
             token: Type.Optional(Type.String()),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
                 ],
@@ -944,9 +954,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             polygon: Feature.Polygon,
         }),
         res: MultiGeoJSONFeatureCollection,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const basemap = await config.models.Basemap.from(req.params.basemapid);
 
@@ -988,9 +999,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             featureid: Type.String(),
         }),
         res: MultiGeoJSONFeature,
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const basemap = await config.models.Basemap.from(req.params.basemapid);
 

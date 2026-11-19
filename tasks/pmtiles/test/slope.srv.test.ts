@@ -21,7 +21,7 @@ const CENTRE = SIZE / 2;
 // z14/8193/4098 sits inside the DEM tile, two zooms below its maxzoom
 const OVERZOOMED = '14/8193/4098';
 
-let app: any;
+let app: typeof import('../index.js')['app'];
 let server: http.Server;
 let upstream: http.Server;
 

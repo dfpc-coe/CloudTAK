@@ -34,7 +34,7 @@ flight.connection();
 process.env.ECR_TASKS_REPOSITORY_NAME = 'example-ecr';
 
 let layerId: number;
-const templates: Array<any> = [];
+const templates: Array<{ Resources: Record<string, { Properties: { Value: Record<string, unknown[][]> } }> }> = [];
 
 function stub(): void {
     Sinon.stub(CloudFormationClient.prototype, 'send').callsFake((command) => {

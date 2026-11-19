@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AnyRequest } from '../../../common/auth.js';
 import { Type, Static } from '@sinclair/typebox';
 import type { TSchema } from '@sinclair/typebox';
 import { eq, count } from 'drizzle-orm';
@@ -8,6 +9,7 @@ import Err from '@openaddresses/batch-error';
 import type Config from '../../../common/config.js';
 import { Profile } from '../../../common/schema.js';
 import UserControl from './user.js';
+import { stringify } from '../../../common/stringify.js';
 
 export const SCIM_USER_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:User';
 export const SCIM_GROUP_SCHEMA = 'urn:ietf:params:scim:schemas:core:2.0:Group';
@@ -202,7 +204,7 @@ export default class ScimControl {
     /**
      * Ensure SCIM is enabled and the request carries the configured bearer token
      */
-    async auth(req: Request<any, any, any, any>): Promise<void> {
+    async auth(req: AnyRequest): Promise<void> {
         const settings = await this.config.models.Setting.typedMany({
             'scim::enabled': false,
             'scim::token': '',
@@ -385,7 +387,7 @@ export default class ScimControl {
             } else if (key === 'name.formatted' || key === 'name.givenname' || key === 'name.familyname') {
                 input.name = input.name || {};
                 const field = key.split('.')[1] === 'formatted' ? 'formatted' : key.split('.')[1] === 'givenname' ? 'givenName' : 'familyName';
-                input.name[field] = value === null || value === undefined ? '' : String(value);
+                input.name[field] = value === null || value === undefined ? '' : stringify(value);
             } else if (key === 'name' && value && typeof value === 'object') {
                 input.name = { ...(input.name || {}), ...(value as Static<typeof ScimName>) };
             } else if (key === 'username') {
@@ -566,9 +568,9 @@ export default class ScimControl {
 
             if (lower === 'displayname') {
                 if (op === 'remove') throw new ScimErr(400, 'displayName cannot be removed', 'mutability');
-                input.displayName = String(value ?? '');
+                input.displayName = stringify(value ?? '');
             } else if (lower === 'externalid') {
-                input.externalId = op === 'remove' || value === null || value === undefined ? null : String(value);
+                input.externalId = op === 'remove' || value === null || value === undefined ? null : stringify(value);
             } else if (lower === 'members') {
                 if (op === 'replace') {
                     input.members = memberValues(value ?? []);

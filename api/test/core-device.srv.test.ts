@@ -84,6 +84,7 @@ test('POST: api/core/device', async () => {
             status: 'Full',
             battery: 87.5,
             simulated: false,
+            stale: null,
             external_id: '',
             external_ids: {},
             remarks: 'Assigned to Engine 4',
@@ -232,6 +233,48 @@ test('PATCH: api/core/device/:device', async () => {
         assert.deepEqual(res.body.external_ids, { asset: 'ASSET-1234' });
         assert.equal(res.body.remarks, 'Returned for maintenance');
         assert.deepEqual(res.body.channels, [1]);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/core/device/:device - stale', async () => {
+    try {
+        const set = await flight.fetch(`/api/core/device/${deviceId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                stale: 300,
+            },
+        }, true);
+
+        assert.equal(set.body.stale, 300);
+
+        const invalid = await flight.fetch(`/api/core/device/${deviceId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                stale: -1,
+            },
+        }, false);
+
+        assert.equal(invalid.status, 400);
+
+        const cleared = await flight.fetch(`/api/core/device/${deviceId}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                stale: null,
+            },
+        }, true);
+
+        assert.equal(cleared.body.stale, null);
     } catch (err) {
         assert.ifError(err);
     }
