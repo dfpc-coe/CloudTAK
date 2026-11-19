@@ -9,6 +9,7 @@ import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
 import { isNativePlatform, isAndroidPlatform } from '../utils/capacitor.ts';
+import { ssoLogoutRedirect } from '../utils/native-sso.ts';
 import { unregisterPushToken } from '../base/push.ts';
 import { GeolocationPermission } from './device.ts';
 import { server, setSessionRefresher } from '../std.ts';
@@ -331,7 +332,7 @@ export const useAppStore = defineStore('cloudtak-app', {
             // for it before being sent to the IdP.
             await this.clearSession();
             void this.destroySession().catch(() => { /* best-effort */ });
-            window.location.href = '/api/logout';
+            await ssoLogoutRedirect();
         },
 
         async bootstrap(): Promise<boolean> {

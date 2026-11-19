@@ -18,6 +18,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     // Public endpoint — returns env-var based OIDC status so the login page
     // can decide whether to show the SSO button before the user has a session
     await schema.get('/server/oidc', {
+        security: [],
         name: 'Get OIDC Status',
         group: 'Server',
         description: 'Public endpoint returning in-app OIDC configuration status',

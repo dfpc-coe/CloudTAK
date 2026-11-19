@@ -1,6 +1,6 @@
 {
-    "appId": "io.cloudtak.app",
-    "appName": "CloudTAK",
+    "appId": "nz.tak.app",
+    "appName": "TAK.NZ",
     "webDir": "dist",
     "ios": {
         "includePlugins": [
@@ -38,7 +38,7 @@
             ]
         },
         "CapacitorUpdater": {
-            "appId": "io.cloudtak.app",
+            "appId": "nz.tak.app",
             "version": "13.124.0",
             "autoUpdate": "atBackground"
         }

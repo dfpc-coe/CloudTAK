@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import http from 'node:http';
+import { createHash, randomBytes } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
 import Sinon from 'sinon';
 import Flight from './flight.js';
@@ -171,6 +172,87 @@ test('GET: api/login/oidc/callback - invalid state is rejected', async () => {
     assert.ok(location.searchParams.get('sso_error'));
 });
 
+/**
+ * Mobile app flow: the app holds a verifier, the browser only sees its hash,
+ * and the callback hands back a one-time code through the app's URL scheme
+ */
+function appPkce(): { verifier: string; challenge: string } {
+    const verifier = randomBytes(32).toString('base64url');
+    return { verifier, challenge: createHash('sha256').update(verifier).digest('base64url') };
+}
+async function appSsoCallback(challenge: string): Promise<Response> {
+    const start = await fetch(`${flight.base}/api/login/oidc?app_challenge=${challenge}`, { redirect: 'manual' });
+    assert.equal(start.status, 302);
+    const state = new URL(String(start.headers.get('location'))).searchParams.get('state');
+    assert.ok(state);
+    return await fetch(
+        `${flight.base}/api/login/oidc/callback?code=test-code&state=${encodeURIComponent(String(state))}`,
+        { redirect: 'manual' },
+    );
+}
+async function appCode(challenge: string): Promise<string> {
+    const cb = await appSsoCallback(challenge);
+    assert.equal(cb.status, 200, String(cb.headers.get('location')));
+    const html = await cb.text();
+    const match = html.match(/nz\.tak\.app:\/\/login\?code=([^"&]+)/);
+    assert.ok(match, `Expected an app link with a code, got: ${html}`);
+    return decodeURIComponent(match[1]);
+}
+test('GET: api/login/oidc - malformed app_challenge is rejected', async () => {
+    const res = await fetch(`${flight.base}/api/login/oidc?app_challenge=short`, { redirect: 'manual' });
+    assert.equal(res.status, 400);
+});
+test('POST: api/login/oidc/exchange - app SSO login returns a session for the matching verifier', async () => {
+    userinfoEmail = 'appuser@example.com';
+    userinfoGroups = [];
+    const { verifier, challenge } = appPkce();
+    const code = await appCode(challenge);
+    const res = await fetch(`${flight.base}/api/login/oidc/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, verifier }),
+    });
+    assert.equal(res.status, 200);
+    const login = await res.json() as { email: string; access: string; token: string; refresh: string; session: string };
+    assert.equal(login.email, 'appuser@example.com');
+    assert.equal(login.access, 'user');
+    assert.ok(login.token);
+    assert.ok(login.refresh);
+    assert.ok(login.session);
+});
+test('POST: api/login/oidc/exchange - the code is useless without the original verifier', async () => {
+    userinfoEmail = 'appuser@example.com';
+    userinfoGroups = [];
+    const { challenge } = appPkce();
+    const code = await appCode(challenge);
+    const res = await fetch(`${flight.base}/api/login/oidc/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, verifier: appPkce().verifier }),
+    });
+    assert.equal(res.status, 401);
+});
+test('POST: api/login/oidc/exchange - rejects a code that was not issued by the callback', async () => {
+    const { verifier } = appPkce();
+    const res = await fetch(`${flight.base}/api/login/oidc/exchange`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: 'not-a-real-code', verifier }),
+    });
+    assert.equal(res.status, 401);
+});
+test('GET: api/login/oidc/callback - app login failures return to the app, not the web page', async () => {
+    process.env.LOCAL_ONLY_ACCOUNTS = 'localonly@example.com';
+    userinfoEmail = 'localonly@example.com';
+    userinfoGroups = [];
+    try {
+        const cb = await appSsoCallback(appPkce().challenge);
+        assert.equal(cb.status, 200);
+        assert.match(await cb.text(), /nz\.tak\.app:\/\/login\?sso_error=/);
+    } finally {
+        delete process.env.LOCAL_ONLY_ACCOUNTS;
+    }
+});
 test('PUT: env - enable OIDC_FORCED', async () => {
     process.env.OIDC_FORCED = 'true';
 });
