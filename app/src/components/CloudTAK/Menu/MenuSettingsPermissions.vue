@@ -111,6 +111,7 @@ import StandardItem from '../util/StandardItem.vue';
 import LocationDisclosure from '../util/LocationDisclosure.vue';
 import type { LocationDisclosureStage } from '../util/LocationDisclosure.vue';
 import { isNativePlatform, addAppLifecycleListeners } from '../../../utils/capacitor.ts';
+import { isPermissionListed } from '../../../utils/permission-list.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
 import type { BrowserPermissionState } from '../../../stores/device.ts';
@@ -219,7 +220,8 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
 
 const permissionItems = computed(() => {
     return permissionDescriptors
-        .filter((permission) => permission.key !== 'backgroundLocation' || isNativePlatform())
+        // Browser-only rows are hidden in the phone app, and background location in the browser
+        .filter((permission) => isPermissionListed(permission.key, isNativePlatform()))
         .map((permission) => {
             const status = deviceStore.permissions[permission.key];
 
