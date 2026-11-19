@@ -240,14 +240,15 @@ onMounted(async () => {
 });
 onBeforeUnmount(() => removeResumeListener?.());
 
+// A status, not an action: this badge is not a button. The button is below the description.
 function badgeLabel(status: BrowserPermissionState): string {
     switch (status) {
         case 'granted': return 'Allowed';
         case 'when_in_use': return 'While Using';
-        case 'denied': return 'Re-request';
-        case 'prompt': return 'Request';
+        case 'denied': return 'Denied';
+        case 'prompt': return 'Not asked yet';
         case 'unsupported': return 'Unsupported';
-        default: return 'Request';
+        default: return 'Unknown';
     }
 }
 
