@@ -108,7 +108,7 @@
                 </template>
                 <template v-else>
                     <p class='text-secondary'>
-                        CloudTAK needs the following permissions to keep your team informed. You can review these later under Settings.
+                        TAK.NZ needs the following permissions to keep your team informed. You can review these later under Settings.
                     </p>
 
                     <div
@@ -291,7 +291,7 @@ type ModalPage = WarnConfigurationPage | 'disclosure' | 'background';
 const current = ref<ModalPage>(props.page);
 
 const title = computed(() => {
-    return current.value === 'details' ? 'Welcome to CloudTAK' : 'Permissions';
+    return current.value === 'details' ? 'Welcome to TAK.NZ' : 'Permissions';
 });
 
 // --- User Details ---

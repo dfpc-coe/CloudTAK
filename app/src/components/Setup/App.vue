@@ -9,7 +9,7 @@
                                 <div class='text-center mb-4'>
                                     <img
                                         src='/CloudTAKLogo.svg'
-                                        alt='CloudTAK logo'
+                                        alt='TAK.NZ logo'
                                         class='setup-logo'
                                         draggable='false'
                                     >
@@ -181,7 +181,7 @@
         <div class='corner-logo'>
             <img
                 src='/CloudTAKLogo.svg'
-                alt='CloudTAK logo'
+                alt='TAK.NZ logo'
                 draggable='false'
             >
         </div>

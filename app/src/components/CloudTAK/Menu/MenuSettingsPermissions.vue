@@ -166,14 +166,14 @@ const permissionDescriptors: PermissionDescriptor[] = [{
 
 const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsupported' | 'unknown', PermissionStatusText> = {
     granted: {
-        location: 'CloudTAK can access your live position.',
-        backgroundLocation: 'CloudTAK can keep sharing your location while the app is in the background.',
-        notification: 'CloudTAK can deliver browser notifications.',
-        orientation: 'CloudTAK can access your device orientation for compass-based map rotation.',
-        storage: 'CloudTAK can persist local data storage for more reliable offline access.',
-        camera: 'CloudTAK can access your camera when needed.',
-        wakeLock: 'CloudTAK can keep the screen awake during active operations.',
-        fileSystem: 'CloudTAK can open local files for import and export workflows.'
+        location: 'TAK.NZ can access your live position.',
+        backgroundLocation: 'TAK.NZ can keep sharing your location while the app is in the background.',
+        notification: 'TAK.NZ can deliver browser notifications.',
+        orientation: 'TAK.NZ can access your device orientation for compass-based map rotation.',
+        storage: 'TAK.NZ can persist local data storage for more reliable offline access.',
+        camera: 'TAK.NZ can access your camera when needed.',
+        wakeLock: 'TAK.NZ can keep the screen awake during active operations.',
+        fileSystem: 'TAK.NZ can open local files for import and export workflows.'
     },
     denied: {
         location: 'Location access is currently blocked. Use the button below to try again.',
@@ -206,14 +206,14 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
         fileSystem: 'This browser does not support file system access requests.'
     },
     unknown: {
-        location: 'CloudTAK could not determine the current location permission state.',
-        backgroundLocation: 'CloudTAK could not determine the current background location permission state.',
-        notification: 'CloudTAK could not determine the current notification permission state.',
-        orientation: 'CloudTAK could not determine the current device orientation permission state.',
-        storage: 'CloudTAK could not determine the current persistent storage state.',
-        camera: 'CloudTAK could not determine the current camera permission state.',
-        wakeLock: 'CloudTAK could not determine the current wake lock state.',
-        fileSystem: 'CloudTAK could not determine the current file system access state.'
+        location: 'TAK.NZ could not determine the current location permission state.',
+        backgroundLocation: 'TAK.NZ could not determine the current background location permission state.',
+        notification: 'TAK.NZ could not determine the current notification permission state.',
+        orientation: 'TAK.NZ could not determine the current device orientation permission state.',
+        storage: 'TAK.NZ could not determine the current persistent storage state.',
+        camera: 'TAK.NZ could not determine the current camera permission state.',
+        wakeLock: 'TAK.NZ could not determine the current wake lock state.',
+        fileSystem: 'TAK.NZ could not determine the current file system access state.'
     }
 };
 
@@ -273,7 +273,7 @@ function badgeProps(status: BrowserPermissionState): Record<string, string> {
 
 function descriptionFor(type: PermissionKey, status: BrowserPermissionState): string {
     if (status === 'when_in_use') {
-        return 'Location is only shared while CloudTAK is open. Set Location to "Always" in Settings so your team keeps seeing you when the app is in the background.';
+        return 'Location is only shared while TAK.NZ is open. Set Location to "Always" in Settings so your team keeps seeing you when the app is in the background.';
     }
 
     if (isNativePlatform() && status !== 'granted' && status !== 'unsupported') {
