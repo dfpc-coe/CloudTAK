@@ -89,7 +89,7 @@ Repository **TAK-NZ/CloudTAK** → Settings → Secrets and variables → Action
 |---|---|
 | `ASC_KEY_ID` | the Key ID from step 4 |
 | `ASC_ISSUER_ID` | the Issuer ID from step 4 |
-| `ASC_KEY_P8_BASE64` | the base64 text from step 4 |
+| `ASC_KEY_P8_BASE64` | the base64 text from step 4. The raw text of the `.p8` file (starting `-----BEGIN PRIVATE KEY-----`) is accepted too |
 | `APPLE_TEAM_ID` | the Team ID from step 1 |
 
 **Environment.** The TestFlight job runs in an environment called `ios-testflight`, so it only runs after someone approves it
@@ -191,6 +191,7 @@ Users and Access → Integrations → App Store Connect API → revoke the key, 
 | "not a valid name for an app id" | The App ID description has a dot or symbol. Use letters, numbers and spaces only: `TAK NZ`. |
 | English (New Zealand) is missing | It is not offered. Use English (U.K.). |
 | No **Users** item under Users and Access | It is called **People**. |
+| "Invalid authentication key credential" (`keyPathInvalid`) from `xcodebuild`, or "... is not an App Store Connect API key" | The `ASC_KEY_P8_BASE64` secret is not a valid key. Paste the whole `.p8` file text, or its base64, with nothing else. If it keeps failing, create a new key (step 4), since a key can only be downloaded once. |
 | Workflow can't start | It runs only from `main`, and needs an approval on the `ios-testflight` environment. |
 | `Secret ... is not set` at the start | One of the four secrets is missing. Check the names exactly. |
 | Signing fails ("No profiles", "Failed to create provisioning profile", authentication errors) | The API key role is not Admin, the App ID or app record does not match `nz.tak.app`, or an agreement in the developer account or App Store Connect needs accepting. |
