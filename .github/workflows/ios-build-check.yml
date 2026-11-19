@@ -44,6 +44,12 @@ jobs:
         working-directory: app
         run: npx cap sync ios
 
+      # The project lists GoogleService-Info.plist (the Firebase push config, which holds credentials
+      # and is not in git) as a bundled resource, so it cannot build without it. This build never
+      # runs, so it drops the two entries instead.
+      - name: Leave out the Firebase config
+        run: perl -ni -e 'print unless /GoogleService-Info\.plist in Resources/' app/ios/App/App.xcodeproj/project.pbxproj
+
       - name: Show the Xcode version and the project's schemes
         run: |
           xcodebuild -version

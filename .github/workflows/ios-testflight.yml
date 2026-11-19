@@ -5,7 +5,8 @@ name: iOS TestFlight
 # ios-testflight environment) and only runs from main.
 #
 # Secrets (repository or the ios-testflight environment): ASC_KEY_ID, ASC_ISSUER_ID,
-# ASC_KEY_P8_BASE64 (the App Store Connect API key, base64) and APPLE_TEAM_ID.
+# ASC_KEY_P8_BASE64 (the App Store Connect API key, base64) and APPLE_TEAM_ID. For push, later:
+# GOOGLE_SERVICE_INFO_PLIST_B64 (the Firebase GoogleService-Info.plist, base64).
 on:
   workflow_dispatch:
     inputs:
@@ -68,6 +69,24 @@ jobs:
       - name: Sync Capacitor into the iOS project
         working-directory: app
         run: npx cap sync ios
+
+      # The Xcode project bundles GoogleService-Info.plist (the Firebase push config). It holds credentials,
+      # so it is not in git. With the GOOGLE_SERVICE_INFO_PLIST_B64 secret set it is written to both
+      # paths the project uses and push can work. Without it the two entries are dropped from the
+      # project and the build has no Firebase config, so push stays off (the Firebase plugin logs a
+      # message and carries on).
+      - name: Firebase config for push
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_B64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_B64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICE_INFO_PLIST_B64" ]; then
+            echo "$GOOGLE_SERVICE_INFO_PLIST_B64" | base64 --decode > app/ios/App/App/GoogleService-Info.plist
+            cp app/ios/App/App/GoogleService-Info.plist app/ios/App/GoogleService-Info.plist
+            echo "Using the Firebase config from the secret."
+          else
+            perl -ni -e 'print unless /GoogleService-Info\.plist in Resources/' app/ios/App/App.xcodeproj/project.pbxproj
+            echo "No Firebase config set: building without it, push stays off."
+          fi
 
       - name: Work out the version and build number
         id: version
