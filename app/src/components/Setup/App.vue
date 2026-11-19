@@ -60,9 +60,19 @@
                                             v-model='searchTerm'
                                             icon='search'
                                             label='Search by Name'
-                                            placeholder='Search CloudTAK providers'
+                                            placeholder='Search servers'
                                             class='mb-3'
                                         />
+                                        <div
+                                            v-if='providersSource !== "network"'
+                                            class='text-muted small mb-2'
+                                        >
+                                            Could not reach the server list. Showing {{ providersSource === 'cache' ? 'the last saved list' : 'the built-in list' }}.
+                                            <a
+                                                href='#'
+                                                @click.prevent='loadProviders'
+                                            >Try again</a>
+                                        </div>
 
                                         <TablerNone
                                             v-if='filteredProviders.length === 0'
@@ -182,24 +192,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { Preferences } from '@capacitor/preferences'
-import { fetchWithTimeout, normalizeServerUrl, validateServer } from './connect.ts'
+import { normalizeServerUrl, validateServer } from './connect.ts'
+import { loadProviders as resolveProviders, providerLogoSrc } from './providers.ts'
+import type { Provider, ProviderSource } from './providers.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
 
-type ProviderLogo = {
-    filename?: string
-    mediaType?: string
-    base64?: string
-}
-
-type Provider = {
-    name: string
-    url: string
-    logo?: ProviderLogo
-}
-
-const PROVIDER_REGISTRY_URL = 'https://api.cloudtak.io/'
 
 const providers = ref<Provider[]>([])
+const providersSource = ref<ProviderSource>('network')
 const providersLoading = ref(true)
 const providersError = ref<Error | null>(null)
 
@@ -227,10 +227,7 @@ function isConnectingTo(url: string): boolean {
 }
 
 function providerLogo(provider: Provider): string | null {
-    if (!provider.logo?.base64) return null
-
-    const mime = provider.logo.mediaType || 'image/png'
-    return `data:${mime};base64,${provider.logo.base64}`
+    return providerLogoSrc(provider)
 }
 
 function showView(view: 'providers' | 'manual'): void {
@@ -241,15 +238,12 @@ function showView(view: 'providers' | 'manual'): void {
 async function loadProviders(): Promise<void> {
     providersLoading.value = true
     providersError.value = null
-
     try {
-        const response = await fetchWithTimeout(PROVIDER_REGISTRY_URL)
-        if (!response.ok) throw new Error(`Provider list request failed with status ${response.status}`)
-
-        const data = await response.json()
-        providers.value = Array.isArray(data?.servers) ? data.servers : []
-    } catch (err) {
-        providersError.value = err instanceof Error ? err : new Error('Failed to load providers')
+        // Never fails and never comes back empty: falls back to the saved list,
+        // then to the servers built into the app
+        const result = await resolveProviders()
+        providers.value = result.providers
+        providersSource.value = result.source
     } finally {
         providersLoading.value = false
     }
