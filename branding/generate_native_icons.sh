@@ -77,6 +77,24 @@ for d in mdpi:108:48 hdpi:162:72 xhdpi:216:96 xxhdpi:324:144 xxxhdpi:432:192; do
         "$TMP/l.png" -gravity center -composite "$dir/ic_launcher_round.png"
 done
 
+# Status-bar / notification icon (24dp): Android only uses the alpha channel and
+# draws it white, so this must be a silhouette, not the full-colour launcher icon
+# (which renders as an unreadable blob). The full shield is too detailed at this
+# size, so use the kiwi alone (branding/logo/tak-nz-kiwi.svg, the kiwi path
+# extracted from tak-nz-logo.svg).
+KIWI_SVG="branding/logo/tak-nz-kiwi.svg"
+[ -f "$KIWI_SVG" ] || { echo "Error: $KIWI_SVG not found"; exit 1; }
+for d in mdpi:24 hdpi:36 xhdpi:48 xxhdpi:72 xxxhdpi:96; do
+    IFS=: read -r name px <<<"$d"
+    mkdir -p "$ANDROID_RES/drawable-$name"
+    echo "Android notification icon $name"
+    w="$(fill_px "$px" 0.96)"
+    rsvg-convert -w "$w" -a "$KIWI_SVG" -o "$TMP/k.png"
+    convert -size "${px}x${px}" xc:none "$TMP/k.png" -gravity center -composite -alpha extract "$TMP/ka.png"
+    convert -size "${px}x${px}" xc:white "$TMP/ka.png" -alpha off -compose CopyOpacity -composite \
+        -type GrayscaleAlpha "$ANDROID_RES/drawable-$name/ic_stat_tak.png"
+done
+
 # Adaptive background: flat brand colour instead of upstream's teal gradient
 cat > "$ANDROID_RES/drawable/ic_launcher_background.xml" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
@@ -124,7 +142,7 @@ if [ -d "$ICON_DIR" ]; then
       "layers" : [
         {
           "image-name" : "CloudTAK Icon Color.svg",
-          "name" : "TAK-NZ Logo",
+          "name" : "TAK.NZ Logo",
           "position" : {
             "scale" : 0.6,
             "translation-in-points" : [

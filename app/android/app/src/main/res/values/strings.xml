@@ -1,7 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">TAK-NZ</string>
-    <string name="title_activity_main">TAK-NZ</string>
+    <string name="app_name">TAK.NZ</string>
+    <string name="title_activity_main">TAK.NZ</string>
     <string name="package_name">nz.tak.app</string>
     <string name="custom_url_scheme">nz.tak.app</string>
+    <!-- Status-bar icon for the background location notification (white silhouette, see branding/generate_native_icons.sh) -->
+    <string name="capacitor_background_geolocation_notification_icon">drawable/ic_stat_tak</string>
+    <string name="capacitor_background_geolocation_notification_color">#003366</string>
 </resources>

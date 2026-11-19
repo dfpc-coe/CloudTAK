@@ -1,6 +1,6 @@
 {
     "appId": "nz.tak.app",
-    "appName": "TAK-NZ",
+    "appName": "TAK.NZ",
     "webDir": "dist",
     "ios": {
         "includePlugins": [
