@@ -319,7 +319,7 @@ export async function fetchUpstream(url: URL, agent = `CloudTAK/${pkg.version}`)
 export async function fetchJsonUpstream(
     url: URL,
     agent = `CloudTAK/${pkg.version}`,
-): Promise<{ status: number; json: unknown | null; retryAfterS: number | null }> {
+): Promise<{ status: number; json: unknown; retryAfterS: number | null }> {
     let res;
     try {
         res = await fetch(url, {

@@ -34,9 +34,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(ErrorResponse),
         }),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const list = await config.models.Errors.list({
                 limit: req.query.limit,
@@ -64,9 +65,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             errorid: Type.Integer({ minimum: 1 }),
         }),
         res: ErrorResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const error = await config.models.Errors.from(req.params.errorid);
 
@@ -112,9 +114,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             errorid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             await config.models.Errors.delete(req.params.errorid);
 
@@ -140,9 +143,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
         }),
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             await config.models.Errors.delete(sql`
                 (${Param(req.query.username)}::TEXT IS NULL OR ${Param(req.query.username)}::TEXT = username)

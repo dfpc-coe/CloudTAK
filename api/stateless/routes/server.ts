@@ -35,6 +35,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     });
 
     await schema.get('/server', {
+        security: Auth.security({ optional: true }),
         name: 'Get Server',
         group: 'Server',
         description: 'Get Server',
@@ -125,6 +126,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
         }),
         res: ServerResponse,
+        security: Auth.security({ optional: true }),
     }, async (req, res) => {
         try {
             if (config.server.auth.key && config.server.auth.cert) {

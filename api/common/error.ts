@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 // Pass `details` (ie: TAKServerError) through to the client - Err.respond only serializes status/message
 const respond = Err.respond.bind(Err);
 
-Err.respond = function (err: unknown, res: Response, messages: object[] = []) {
+Err.respond = function (err: unknown, res: Response, messages?: object[]) {
     if (
         err && typeof err === 'object'
         && 'details' in err && typeof err.details === 'string' && err.details.length
@@ -18,7 +18,7 @@ Err.respond = function (err: unknown, res: Response, messages: object[] = []) {
         return res.status(status).send({
             status,
             message: 'safe' in err && typeof err.safe === 'string' ? err.safe : 'Internal Server Error',
-            messages,
+            messages: messages ?? [],
             details: err.details,
         });
     }

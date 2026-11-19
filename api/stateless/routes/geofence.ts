@@ -22,9 +22,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'Geofence',
         description: 'Get Geofence server connection status',
         res: GeofenceStatusResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             res.json(await config.hub.geofenceStatus());
         } catch (err) {

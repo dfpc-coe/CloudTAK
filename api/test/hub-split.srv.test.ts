@@ -7,6 +7,7 @@ import ConfigStateless from '../stateless/config.js';
 import server from '../index.js';
 import type ServerManager from '../common/server.js';
 import { testDatabase } from './db.js';
+import { rawDataToString } from '../common/stringify.js';
 
 process.env.HUB_RPC_PORT = '0';
 
@@ -127,7 +128,7 @@ test('Split: WS handshake against the hub instance completes', async () => {
     const outcome = await new Promise<{ outcome: string }>((resolve, reject) => {
         const conn = new ws(url);
         conn.on('message', (data) => {
-            const msg = JSON.parse(String(data));
+            const msg = JSON.parse(rawDataToString(data));
             if (msg.type === 'connected') {
                 conn.close();
                 resolve({ outcome: 'connected' });

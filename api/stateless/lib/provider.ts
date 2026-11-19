@@ -78,7 +78,7 @@ export default class AuthProvider {
         const auth = new APIAuthPassword(username, password);
         const api = await TAKAPI.init(new URL(this.config.server.webtak), auth);
 
-        const contents = await api.OAuth.parse(auth.jwt);
+        const contents = api.OAuth.parse(auth.jwt);
 
         let profile;
         try {

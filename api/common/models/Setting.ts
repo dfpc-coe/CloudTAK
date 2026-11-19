@@ -23,7 +23,7 @@ function parseJSONSetting<K extends keyof FullConfigType>(key: K, raw: string): 
  * 'true'/'false' and numbers as '4', etc.
  */
 function coerceRawValue<K extends keyof FullConfigType>(key: K, raw: string): FullConfigType[K] {
-    const schema = FullConfig.properties[key] as any;
+    const schema: { type?: string; anyOf?: Array<Record<string, unknown>> } = FullConfig.properties[key];
 
     if (schema.type === 'boolean') return (raw === 'true') as FullConfigType[K];
     if (schema.type === 'integer' || schema.type === 'number') return Number(raw) as FullConfigType[K];
@@ -31,9 +31,9 @@ function coerceRawValue<K extends keyof FullConfigType>(key: K, raw: string): Fu
 
     // Handle union types e.g. Type.Union([Type.Null(), Type.Integer()])
     if (Array.isArray(schema.anyOf)) {
-        const hasNumber = schema.anyOf.some((s: any) => s.type === 'integer' || s.type === 'number');
+        const hasNumber = schema.anyOf.some(s => s.type === 'integer' || s.type === 'number');
         if (hasNumber) return Number(raw) as FullConfigType[K];
-        const hasArray = schema.anyOf.some((s: any) => s.type === 'array');
+        const hasArray = schema.anyOf.some(s => s.type === 'array');
         if (hasArray) return parseJSONSetting(key, raw);
     }
 

@@ -170,7 +170,7 @@ export default class ProfileControl {
         };
 
         for (const key of Object.keys(full_config)) {
-            (profile as any)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
+            (profile as Record<string, unknown>)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
         }
 
         // Surface the IdP field locks the frontend uses to disable the callsign
@@ -184,8 +184,8 @@ export default class ProfileControl {
             const managed = Boolean(full_config[`tak::${field}_managed` as keyof typeof full_config]);
             // Internal bookkeeping, not part of ProfileResponse - strip the flattened
             // form so only the derived `_locked` flag is exposed to clients.
-            delete (profile as any)[`tak_${field}_managed`];
-            (profile as any)[`tak_${field}_locked`] = syncEnabled && managed;
+            delete (profile as Record<string, unknown>)[`tak_${field}_managed`];
+            (profile as Record<string, unknown>)[`tak_${field}_locked`] = syncEnabled && managed;
         }
 
         const presence = await this.config.hub.wsPresence([profile.username]);
@@ -240,7 +240,7 @@ export default class ProfileControl {
 
         const systemDisplayDefaults = await this.config.models.Setting.typedMany(displayDefaults);
 
-        const configs: Array<Promise<any>> = [];
+        const configs: Array<Promise<unknown>> = [];
 
         for (const [key, value] of Object.entries(systemDisplayDefaults)) {
             configs.push(this.config.models.ProfileConfig.commit(profile.username, { [key]: value }));

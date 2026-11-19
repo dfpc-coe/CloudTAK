@@ -50,7 +50,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(FeatureResponse),
         }),
-
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -125,7 +125,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     res.write(output);
                     res.end();
                 } else {
-                    throw new Err(400, null, `Unknown Export Format: ${req.query.format}`);
+                    throw new Err(400, null, `Unknown Export Format: ${String(req.query.format)}`);
                 }
             }
         } catch (err) {
@@ -144,6 +144,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             path: Type.Optional(Type.String()),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
@@ -182,6 +183,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: FeatureResponse,
         res: FeatureResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
@@ -230,6 +232,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             id: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {
@@ -264,6 +267,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             id: Type.String(),
         }),
         res: FeatureResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await Auth.is_connection(config, req, {

@@ -8,6 +8,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     let logos: Map<number, Buffer> = await buildLogos(config);
 
     await schema.get('/manifest.webmanifest', {
+        security: [],
         name: 'Get Web Manifest',
         group: 'Manifest',
         description: 'Return the Web Manifest for PWA Use',
@@ -58,6 +59,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     });
 
     await schema.get('/manifest.webmanifest/logos/:size', {
+        security: [],
         name: 'Get Manifest Logo',
         group: 'Manifest',
         description: 'Return a resized PNG logo for PWA use',

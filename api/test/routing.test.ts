@@ -183,5 +183,5 @@ test('Routing - manager retries a provider that failed to initialize', async (t)
 });
 
 test('Routing - teardown', async () => {
-    await config.pg.end();
+    config.pg.end();
 });

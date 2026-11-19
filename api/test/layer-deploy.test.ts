@@ -28,7 +28,7 @@ process.env.AWS_REGION = 'us-gov-east-1';
 const config = {
     StackName: 'test',
     SigningSecret: 'test-secret',
-} as any;
+} as unknown as Parameters<typeof LayerDeploy.apply>[0];
 
 const stack = {
     Description: 'Test Layer',
@@ -113,7 +113,7 @@ test('LayerDeploy.apply updates when current image digest exists', async () => {
             throw new Error('Unexpected ECR command');
         });
 
-        await LayerDeploy.apply(config, 1, stack as any);
+        await LayerDeploy.apply(config, 1, stack);
 
         assert.deepEqual(cfCommands, ['update']);
     } finally {
@@ -190,7 +190,7 @@ test('LayerDeploy.apply recreates stack when current image digest is missing', a
             throw new Error('Unexpected ECR command');
         });
 
-        await LayerDeploy.apply(config, 1, stack as any);
+        await LayerDeploy.apply(config, 1, stack);
 
         assert.deepEqual(cfCommands, ['delete', 'create']);
     } finally {

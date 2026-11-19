@@ -47,6 +47,7 @@ export const CoreEntity = pgTable('core_entity', {
     links: jsonb().$type<Array<Static<typeof CoreEntityLink>>>().notNull().default([]),
     style: jsonb().$type<Static<typeof CoreEntityStyle>>().notNull().default({}),
     geometry: geometry({ type: GeometryType.Point, srid: 4326 }).$type<Point>(), // Required for Events - a Device may be unlocated
+    stale: integer(), // Seconds after its last update the Entity stops being broadcast - NULL never expires
 });
 
 /**
@@ -474,7 +475,7 @@ export const Basemap = pgTable('basemaps', {
     name: text().notNull(),
     url: text().notNull(),
 
-    protocol: text().notNull().default(Basemap_Protocol.ZXY),
+    protocol: text().$type<Basemap_Protocol>().notNull().default(Basemap_Protocol.ZXY),
 
     bounds: geometry({ type: GeometryType.Polygon, srid: 4326 }).$type<Polygon>(),
     // TileJSON 3.0.0 center: [longitude, latitude, zoom]
@@ -705,7 +706,7 @@ export const LayerOutgoing = pgTable('layers_outgoing', {
     subscriptions: text().array().notNull().default([]),
 
     environment: jsonb().notNull().default({}),
-    ephemeral: jsonb().$type<Record<string, any>>().notNull().default({}),
+    ephemeral: jsonb().$type<Record<string, unknown>>().notNull().default({}),
 });
 
 export const LayerIncoming = pgTable('layers_incoming', {
@@ -721,7 +722,7 @@ export const LayerIncoming = pgTable('layers_incoming', {
     enabled_styles: boolean().notNull().default(false),
     styles: jsonb().$type<Static<typeof StyleContainer>>().notNull().default({}),
     environment: jsonb().notNull().default({}),
-    ephemeral: jsonb().$type<Record<string, any>>().notNull().default({}),
+    ephemeral: jsonb().$type<Record<string, unknown>>().notNull().default({}),
     config: jsonb().$type<Static<typeof Layer_Config>>().notNull().default({}),
 
     // Data Destinations

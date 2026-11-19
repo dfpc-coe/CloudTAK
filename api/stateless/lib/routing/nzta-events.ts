@@ -140,7 +140,7 @@ function nzOffsetMs(at: Date): number {
 
 /** NZTA timestamps are New Zealand local time, `YYYY-MM-DD HH:MM:SS`, with no zone */
 export function parseNZTime(value: unknown): Date | null {
-    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(String(value ?? ''));
+    const m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec((typeof value === 'string' || typeof value === 'number' ? String(value) : ''));
     if (!m) return null;
 
     const naive = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6]));

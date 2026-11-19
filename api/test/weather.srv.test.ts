@@ -101,7 +101,7 @@ interface TileResult {
 
 async function tile(
     query: string,
-    opts: { z?: number | string; x?: number | string; y?: number | string; auth?: 'user' | 'admin' | 'query' | 'none' | string } = {},
+    opts: { z?: number | string; x?: number | string; y?: number | string; auth?: string } = {},
 ): Promise<TileResult> {
     const { z = 4, x = 3, y = 5 } = opts;
     const auth = opts.auth ?? 'user';

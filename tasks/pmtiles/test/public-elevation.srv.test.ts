@@ -3,16 +3,14 @@ import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import http from 'http';
 import type { AddressInfo } from 'net';
-import type { Express } from 'express';
-import type { FileTiles as FileTilesClass } from '../lib/tiles.js';
 import { demTile } from './lib/dem.js';
 
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
-let app: Express;
+let app: typeof import('../index.js')['app'];
 let server: http.Server;
-let FileTiles: typeof FileTilesClass;
+let FileTiles: typeof import('../lib/tiles.js')['FileTiles'];
 
 test('Setup', async () => {
     const mod = await import('../index.js');

@@ -10,6 +10,7 @@ import {
     DefaultLayerLines,
     DefaultLayerPolys,
 } from './esri/layer.js';
+import { stringify } from '../../common/stringify.js';
 
 type EsriErrorResponse = { message: string; details?: unknown };
 
@@ -218,7 +219,7 @@ export class EsriBase {
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             if (err instanceof Error) {
-                if (err.cause) err.message = `${err.message}: ${err.cause}`;
+                if (err.cause) err.message = `${err.message}: ${stringify(err.cause)}`;
                 throw new Err(400, err, String(err));
             } else {
                 throw new Err(400, new Error(String(err)), String(err));
@@ -361,7 +362,7 @@ class EsriProxyPortal {
         if (isEsriError(json)) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json as {
-            servers: any[];
+            servers: unknown[];
         };
     }
 
@@ -542,8 +543,8 @@ class EsriProxyLayer {
             throw new Err(400, null, 'Can only sample a FeatureServer or MapServer');
         }
 
-        const count: any = await this.#sampleFeatures(where, true);
-        const features: any = await this.#sampleFeatures(where, false);
+        const count = await this.#sampleFeatures(where, true) as { count: number };
+        const features = await this.#sampleFeatures(where, false);
 
         return {
             count: count.count,

@@ -9,6 +9,35 @@ import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
 import pem from 'pem';
 import xmljs from 'xml-js';
 
+/** Authentik API payloads - third party JSON, only the fields read here are typed */
+interface AuthentikGroup {
+    pk?: string;
+    num_pk?: number;
+    name: string;
+    attributes?: {
+        agencyId?: number;
+        agencyName?: string;
+        description?: string;
+        channelId?: number;
+        channelName?: string;
+        [key: string]: unknown;
+    };
+    [key: string]: unknown;
+}
+interface AuthentikUser {
+    pk: number;
+    username: string;
+    email?: string;
+    name?: string;
+    groups?: Array<string>;
+    attributes?: { takCallsign?: string; takColor?: unknown; takRole?: unknown; [key: string]: unknown };
+    [key: string]: unknown;
+}
+interface AuthentikPage<T> {
+    results: Array<T>;
+    pagination?: { next?: number };
+}
+
 const TAK_GROUPS: ReadonlySet<string> = new Set(Object.values(TAKGroup));
 const TAK_ROLES: ReadonlySet<string> = new Set(Object.values(TAKRole));
 
@@ -216,8 +245,8 @@ export default class AuthentikProvider {
      * `search` is forwarded to Authentik verbatim when provided. The larger
      * `page_size` reduces the number of round-trips for the common case.
      */
-    private async fetchAllGroups(token: string, search?: string): Promise<any[]> {
-        const results: any[] = [];
+    private async fetchAllGroups(token: string, search?: string): Promise<AuthentikGroup[]> {
+        const results: AuthentikGroup[] = [];
         let page = 1;
 
         for (;;) {
@@ -235,7 +264,7 @@ export default class AuthentikProvider {
 
             if (!response.ok) throw new Err(500, new Error(await response.text()), 'Authentik Groups Fetch Error');
 
-            const data: any = await response.json();
+            const data = await response.json() as AuthentikPage<AuthentikGroup>;
             if (Array.isArray(data.results)) results.push(...data.results);
 
             const next = data.pagination?.next;
@@ -255,20 +284,20 @@ export default class AuthentikProvider {
         const agencyPrefix = process.env.OIDC_AGENCY_ADMIN_GROUP_PREFIX || 'CloudTAKAgency';
 
         const groups = await this.fetchAllGroups(creds.token, filter);
-        let filteredResults = groups.filter((g: any) => g.name.startsWith(agencyPrefix));
+        let filteredResults = groups.filter((g: AuthentikGroup) => g.name.startsWith(agencyPrefix));
 
         // Defense in depth: even if a route forgets to gate, a non-system-admin
         // only ever sees the agencies they administer. agencyId is the agency
         // group's own id (see interface-user mapping); compare numerically.
         if (!scope.all) {
-            filteredResults = filteredResults.filter((g: any) =>
+            filteredResults = filteredResults.filter((g: AuthentikGroup) =>
                 agencyInScope(scope, g.attributes?.agencyId),
             );
         }
 
         return {
             total: filteredResults.length,
-            items: filteredResults.map((g: any) => ({
+            items: filteredResults.map((g: AuthentikGroup) => ({
                 id: g.attributes?.agencyId || 0,
                 name: g.attributes?.agencyName || g.name,
                 description: g.attributes?.description || '',
@@ -300,7 +329,7 @@ export default class AuthentikProvider {
 
         if (!response.ok) throw new Err(500, new Error(await response.text()), 'Authentik Agency Fetch Error');
 
-        const data: any = await response.json();
+        const data = await response.json() as AuthentikPage<AuthentikGroup>;
         const group = data.results[0];
 
         if (!group) throw new Err(404, null, 'Agency not found');
@@ -316,7 +345,7 @@ export default class AuthentikProvider {
         name: string;
         agency_id?: number;
         password: string;
-        integration: any;
+        integration: { description?: string; [key: string]: unknown };
     }): Promise<Static<typeof MachineUser>> {
         const creds = await this.auth();
 
@@ -330,7 +359,7 @@ export default class AuthentikProvider {
         });
 
         if (!userResponse.ok) throw new Err(500, new Error(await userResponse.text()), 'Authentik User Fetch Error');
-        const creatorData: any = await userResponse.json();
+        const creatorData = await userResponse.json() as AuthentikPage<AuthentikUser>;
         const creatorUsername = creatorData.results[0]?.username || 'unknown';
 
         const agencyPrefix = body.agency_id ? `agency${body.agency_id}-` : '';
@@ -374,7 +403,7 @@ export default class AuthentikProvider {
             throw new Err(500, new Error(errorText), 'Authentik Service Account Creation Error');
         }
 
-        const userData: any = await createResponse.json();
+        const userData = await createResponse.json() as { user_pk: number };
         const userId = userData.user_pk;
 
         const passwordUrl = new URL(`/api/v3/core/users/${userId}/set_password/`, this.authentikUrl);
@@ -411,7 +440,7 @@ export default class AuthentikProvider {
 
         if (!response.ok) throw new Err(500, new Error(await response.text()), 'Authentik User Fetch Error');
 
-        const data: any = await response.json();
+        const data = await response.json() as AuthentikPage<AuthentikUser>;
         const user = data.results[0];
 
         if (!user) throw new Err(404, null, 'Machine user not found');
@@ -466,8 +495,8 @@ export default class AuthentikProvider {
         // so they must not appear as separate list entries. Track which variant
         // names exist so we can advertise the available access levels per
         // channel.
-        const groupNames = new Set<string>(groups.map((g: any) => g.name));
-        let channels = groups.filter((g: any) =>
+        const groupNames = new Set<string>(groups.map((g: AuthentikGroup) => g.name));
+        let channels = groups.filter((g: AuthentikGroup) =>
             g.name.startsWith(channelPrefix)
             && !g.name.endsWith('_READ')
             && !g.name.endsWith('_WRITE'),
@@ -479,18 +508,18 @@ export default class AuthentikProvider {
         // so a non-system-admin can never enumerate channels outside their
         // agencies regardless of the query param they pass.
         if (!scope.all) {
-            channels = channels.filter((g: any) =>
+            channels = channels.filter((g: AuthentikGroup) =>
                 agencyInScope(scope, g.attributes?.agencyId),
             );
         }
 
         if (query.agency) {
-            channels = channels.filter((g: any) => g.attributes?.agencyId === query.agency);
+            channels = channels.filter((g: AuthentikGroup) => g.attributes?.agencyId === query.agency);
         }
 
         return {
             total: channels.length,
-            items: channels.map((g: any) => {
+            items: channels.map((g: AuthentikGroup) => {
                 const rdn = g.name.slice(channelPrefix.length);
 
                 // Duplex is always available (it is the base group itself);
@@ -523,7 +552,7 @@ export default class AuthentikProvider {
         // The channel is identified by the BASE (duplex) group, which is the
         // only variant carrying channelId/channelName. Its `rdn` (name without
         // the prefix) is what the _READ / _WRITE variant names are built from.
-        const baseGroup = groups.find((g: any) =>
+        const baseGroup = groups.find((g: AuthentikGroup) =>
             g.name.startsWith(channelPrefix)
             && (g.attributes?.channelId === body.channel_id || g.num_pk === body.channel_id),
         );
@@ -534,7 +563,7 @@ export default class AuthentikProvider {
         //   duplex -> base group, read -> _READ, write -> _WRITE.
         const rdn = baseGroup.name.slice(channelPrefix.length);
         const targetName = channelGroupName(channelPrefix, rdn, body.access);
-        const targetGroup = groups.find((g: any) => g.name === targetName);
+        const targetGroup = groups.find((g: AuthentikGroup) => g.name === targetName);
 
         // The _READ / _WRITE variant groups are provisioned externally (TAK
         // Server side). If the requested access level's group does not exist we
@@ -585,7 +614,7 @@ export default class AuthentikProvider {
                 return;
             }
 
-            const data: any = await response.json();
+            const data = await response.json() as AuthentikPage<AuthentikUser>;
             const user = data.results[0];
 
             if (!user) {
@@ -634,14 +663,14 @@ export default class AuthentikProvider {
      * first avoids silently failing (and skipping cert enrollment/attribute
      * sync) for accounts where the two differ.
      */
-    private async findUserByEmailOrUsername(token: string, identifier: string): Promise<any> {
+    private async findUserByEmailOrUsername(token: string, identifier: string): Promise<AuthentikUser | undefined> {
         const byEmailUrl = new URL('/api/v3/core/users/', this.authentikUrl);
         byEmailUrl.searchParams.append('email', identifier);
         const byEmailResponse = await fetch(byEmailUrl, {
             headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         });
         if (!byEmailResponse.ok) throw new Err(500, new Error(await byEmailResponse.text()), 'Authentik User Fetch Error');
-        const byEmailData: any = await byEmailResponse.json();
+        const byEmailData = await byEmailResponse.json() as AuthentikPage<AuthentikUser>;
         if (byEmailData.results && byEmailData.results.length > 0) return byEmailData.results[0];
 
         const byUsernameUrl = new URL('/api/v3/core/users/', this.authentikUrl);
@@ -650,7 +679,7 @@ export default class AuthentikProvider {
             headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         });
         if (!byUsernameResponse.ok) throw new Err(500, new Error(await byUsernameResponse.text()), 'Authentik User Fetch Error');
-        const byUsernameData: any = await byUsernameResponse.json();
+        const byUsernameData = await byUsernameResponse.json() as AuthentikPage<AuthentikUser>;
         return byUsernameData.results?.[0];
     }
 
@@ -687,7 +716,7 @@ export default class AuthentikProvider {
                     },
                 });
                 if (groupResponse.ok) {
-                    const groupData: any = await groupResponse.json();
+                    const groupData = await groupResponse.json() as AuthentikGroup;
                     if (groupData.name) groups.push(groupData.name);
                 }
             } catch (err) {
@@ -852,9 +881,13 @@ export default class AuthentikProvider {
         }
         const configXml = await configResponse.text();
 
-        let parsedConfig: any;
+        let parsedConfig: {
+            'ns2:certificateConfig'?: {
+                nameEntries?: { nameEntry?: Array<{ _attributes?: { name?: string; value?: string } }> };
+            };
+        };
         try {
-            parsedConfig = xmljs.xml2js(configXml, { compact: true });
+            parsedConfig = xmljs.xml2js(configXml, { compact: true }) as typeof parsedConfig;
         } catch (err) {
             throw new Err(500, err instanceof Error ? err : null, `[M2M] Failed to parse /tls/config XML for ${username}: ${configXml.slice(0, 500)}`);
         }
@@ -893,7 +926,7 @@ export default class AuthentikProvider {
             throw new Err(500, null, `[M2M] TAK Server signClient/v2 rejected bearer token (${signResponse.status}): ${signBody}`);
         }
 
-        let signed: any;
+        let signed: { signedCert: string; ca0?: string; ca1?: string };
         try {
             signed = JSON.parse(signBody);
         } catch {
@@ -1016,7 +1049,7 @@ export default class AuthentikProvider {
         });
 
         if (!userResponse.ok) throw new Err(500, new Error(await userResponse.text()), 'Failed to fetch user');
-        const userData: any = await userResponse.json();
+        const userData = await userResponse.json() as AuthentikUser;
 
         // Use password auth instead of potentially revoked certificate
         const takAuth = new APIAuthPassword(userData.username, tempPassword);
