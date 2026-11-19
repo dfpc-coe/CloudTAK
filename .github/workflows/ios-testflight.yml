@@ -133,7 +133,10 @@ jobs:
           fi
           echo "The API key file looks valid."
 
-      - name: Archive
+      # The archive is built unsigned on purpose. Signing during "archive" makes Xcode ask for an iOS
+      # *development* profile, which needs a registered device, and a fresh CI runner has none. The
+      # app is signed once, for distribution, in the export step below (cloud-managed signing).
+      - name: Archive (unsigned)
         run: |
           set -o pipefail
           xcodebuild -version
@@ -144,17 +147,14 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/App.xcarchive" \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath "$RUNNER_TEMP/AuthKey_${ASC_KEY_ID}.p8" \
-            -authenticationKeyID "$ASC_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_STYLE=Automatic \
             CODE_SIGN_ENTITLEMENTS=App/App-TestFlight.entitlements \
             MARKETING_VERSION="${{ steps.version.outputs.version }}" \
             CURRENT_PROJECT_VERSION="${{ steps.version.outputs.build }}" \
             2>&1 | tee "$RUNNER_TEMP/archive.log" | xcbeautify --renderer github-actions
-
       - name: Export${{ inputs.upload && ' and upload to TestFlight' || '' }}
         run: |
           set -o pipefail
