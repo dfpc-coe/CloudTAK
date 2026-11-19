@@ -366,7 +366,9 @@ import type { FullConfig } from '../base/config.ts';
 import { isNativePlatform, supportsServiceWorker } from '../utils/capacitor.ts';
 import { getCurrentEntryBuildId } from '../utils/service-worker.ts';
 import { useRouter, useRoute } from 'vue-router'
-import { server } from '../std.ts';
+import { server, stdurl } from '../std.ts';
+import { startNativeSSO, completeNativeSSO, cancelNativeSSO, closeSSOBrowser, listenForSSOCallback } from '../utils/native-sso.ts';
+import type { SSOCallback } from '../utils/native-sso.ts';
 import { useAppStore } from '../stores/app.ts';
 import {
     TablerBadge,
@@ -550,7 +552,18 @@ function startPasskeyIfAllowed(): void {
     }
 }
 
+// Removes the native SSO callback listener (see handleSSOCallback)
+let removeSSOListener: (() => void) | undefined;
 onMounted(async () => {
+    // The native app finishes an SSO login in the system browser and is reopened
+    // through its URL scheme, so listen before anything below can return early
+    if (isNativePlatform()) {
+        try {
+            removeSSOListener = await listenForSSOCallback((callback) => { void handleSSOCallback(callback); });
+        } catch (err) {
+            console.error('Failed to listen for the SSO callback', err);
+        }
+    }
     // Detect an existing (un-cleared) session left behind by a previous login.
     // This MUST run before any of the login-consuming branches below (ETL
     // token, OIDC fragment, query-string token) - those branches call
@@ -657,7 +670,7 @@ onMounted(async () => {
 
     // Check in-app OIDC status (env-var/CDK-driven, see GET /api/server/oidc).
     try {
-        const oidcRes = await fetch('/api/server/oidc');
+        const oidcRes = await fetch(stdurl('/api/server/oidc'));
         if (oidcRes.ok) {
             const oidcStatus = await oidcRes.json() as { oidc_enabled: boolean; oidc_forced?: boolean };
             albOidcEnabled.value = oidcStatus.oidc_enabled;
@@ -668,7 +681,9 @@ onMounted(async () => {
             // `sso_error` (or a future one that does the same) would otherwise
             // send the browser straight back to SSO with no visible error and
             // no way out. See ssoError below for how the message is shown.
-            if (albOidcForced.value && !route.query.local && !route.query.sso_error) {
+            // `signed_out` is set by the native app after logout, where the
+            // IdP session was just ended and a redirect would loop back to it
+            if (albOidcForced.value && !route.query.local && !route.query.sso_error && !route.query.signed_out) {
                 loading.value = true;
                 loadingMessage.value = 'Redirecting to SSO...';
                 loginWithSSO();
@@ -762,6 +777,7 @@ async function createLogin() {
 }
 
 onUnmounted(() => {
+    removeSSOListener?.();
     WebAuthnAbortService.cancelCeremony();
 });
 
@@ -911,9 +927,55 @@ async function skipCertRenewal(): Promise<void> {
     await navigateAfterLogin();
 }
 
-function loginWithSSO() {
-    const redirect = route.query.redirect || '/';
-    window.location.href = `/api/login/oidc?redirect=${encodeURIComponent(String(redirect))}`;
+async function loginWithSSO() {
+    const redirect = String(route.query.redirect || '/');
+
+    if (isNativePlatform()) {
+        // The bundled app cannot take part in the web redirect flow - see utils/native-sso.ts
+        ssoError.value = null;
+        loading.value = true;
+        loadingMessage.value = 'Opening SSO login...';
+        try {
+            await startNativeSSO(redirect);
+        } catch (err) {
+            ssoError.value = err instanceof Error ? err.message : 'Unable to start SSO login';
+        }
+        // The browser is on screen now. Show the login form again behind it, so
+        // that closing the browser without finishing leaves a usable page
+        loading.value = false;
+        return;
+    }
+
+    window.location.href = `/api/login/oidc?redirect=${encodeURIComponent(redirect)}`;
+}
+
+// Native app: the system browser returned to us through the URL scheme
+async function handleSSOCallback(callback: SSOCallback): Promise<void> {
+    await closeSSOBrowser();
+
+    if ('error' in callback) {
+        await cancelNativeSSO();
+        loading.value = false;
+        ssoError.value = callback.error;
+        return;
+    }
+
+    loading.value = true;
+    loadingMessage.value = 'Completing login...';
+    try {
+        const result = await completeNativeSSO(callback.code);
+        if (!result) {
+            // Nothing pending: a repeated delivery of a login that already finished
+            loading.value = false;
+            return;
+        }
+        await applySession(result.login);
+        if (!await settleSession()) return;
+        await router.replace(result.redirect.startsWith('/') ? result.redirect : '/');
+    } catch (err) {
+        loading.value = false;
+        ssoError.value = err instanceof Error ? err.message : 'SSO login failed';
+    }
 }
 </script>
 

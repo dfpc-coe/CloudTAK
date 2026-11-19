@@ -9,7 +9,7 @@ import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox';
 import Provider from '../lib/provider.js';
 import ProfileControl from '../lib/control/profile.js';
-import { X509Certificate } from 'crypto';
+import { X509Certificate, createHash, timingSafeEqual } from 'crypto';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { discovery, authorizationUrl, exchangeCode, userinfo } from '../lib/oidc.js';
 import type { OIDCConfig } from '../lib/oidc.js';
@@ -27,6 +27,57 @@ function certNeedsRenewal(certPem: string | undefined): boolean {
     } catch {
         return true;
     }
+}
+
+/**
+ * TAK-NZ: native app SSO handoff.
+ *
+ * The mobile app cannot finish an SSO login inside its own WebView (the bundled
+ * app and the server are different origins), so it runs the flow in the system
+ * browser and gets control back through a custom URL scheme. Any app can claim
+ * a custom scheme, so the URL it receives carries only a short-lived `code`,
+ * never a session. The code is redeemed at POST /login/oidc/exchange together
+ * with the PKCE-style `verifier` that only the app that began the login holds
+ * (the browser only ever sees its SHA-256 `app_challenge`).
+ */
+const APP_CHALLENGE_PATTERN = '^[A-Za-z0-9_-]{43}$';
+
+function appScheme(): string {
+    return process.env.MOBILE_APP_SCHEME || 'nz.tak.app';
+}
+
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
+ * Hand control back to the mobile app. A page with a meta refresh and a visible
+ * link is used instead of a bare 302 because browsers differ in whether they
+ * follow a redirect to a custom scheme without a user gesture.
+ */
+function redirectToApp(res: { status: (code: number) => unknown; type: (type: string) => unknown; send: (body: string) => unknown }, params: Record<string, string>): void {
+    const target = `${appScheme()}://login?${new URLSearchParams(params).toString()}`;
+    const href = escapeHtml(target);
+    res.status(200);
+    res.type('html');
+    res.send(`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="0;url=${href}">
+<title>Return to TAK.NZ</title>
+</head>
+<body>
+<p>Returning to the TAK.NZ app&hellip;</p>
+<p><a href="${href}">Open TAK.NZ</a></p>
+</body>
+</html>`);
 }
 
 /**
@@ -175,6 +226,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
      * with an authorization code.
      */
     await schema.get('/login/oidc', {
+        security: [],
         name: 'OIDC Login',
         group: 'Login',
         description: 'Redirect the browser to the configured OIDC Identity Provider to begin an SSO login',
@@ -182,8 +234,16 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             redirect: Type.Optional(Type.String({
                 description: 'In-App location to navigate to after a successful login',
             })),
+            app_challenge: Type.Optional(Type.String({
+                description: 'Mobile app only: base64url SHA-256 (43 characters) of a secret verifier held by the app. When set, the login hands back to the app by URL scheme with a one-time code instead of a web session',
+            })),
         }),
     }, async (req, res) => {
+        // Checked here rather than as a schema pattern so a bad value is a plain 400
+        if (req.query.app_challenge !== undefined && !new RegExp(APP_CHALLENGE_PATTERN).test(req.query.app_challenge)) {
+            return Err.respond(new Err(400, null, 'app_challenge must be a base64url SHA-256 digest'), res);
+        }
+
         try {
             const oidc = oidcConfig(config);
             const disc = await discovery(oidc.discovery);
@@ -191,12 +251,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const state = jwt.sign({
                 t: 'oidc',
                 ...(req.query.redirect ? { r: req.query.redirect } : {}),
+                ...(req.query.app_challenge ? { c: req.query.app_challenge } : {}),
             }, config.SigningSecret, { expiresIn: '10m' });
 
             res.redirect(authorizationUrl(disc, oidc, state));
         } catch (err) {
             console.error('OIDC login error:', err);
             const message = err instanceof Error ? err.message : 'SSO Login Failed';
+            if (req.query.app_challenge) return redirectToApp(res, { sso_error: message });
+
             // `local=true` prevents Login.vue's forced-SSO check from immediately
             // redirecting back here when OIDC_FORCED is set - without it, a
             // persistent config error (e.g. a bad OIDC_DISCOVERY_URL) would loop
@@ -215,6 +278,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
      * previously triggered by the ALB OIDC headers.
      */
     await schema.get('/login/oidc/callback', {
+        security: [],
         name: 'OIDC Login Callback',
         group: 'Login',
         description: 'OIDC Authorization Code callback - exchanges the code, validates the user and establishes a CloudTAK session',
@@ -225,6 +289,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             error_description: Type.Optional(Type.String()),
         }),
     }, async (req, res) => {
+        // Set once the state proves this login began in the mobile app, so that
+        // every outcome (including failures) returns to the app, not the web page
+        let fromApp = false;
         try {
             if (req.query.error) {
                 throw new Err(401, null, req.query.error_description || req.query.error);
@@ -232,13 +299,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'OIDC Callback is missing code or state');
             }
 
-            let state: { t?: string; r?: string };
+            let state: { t?: string; r?: string; c?: string };
             try {
-                state = jwt.verify(req.query.state, config.SigningSecret) as { t?: string; r?: string };
+                state = jwt.verify(req.query.state, config.SigningSecret) as { t?: string; r?: string; c?: string };
             } catch (err) {
                 throw new Err(401, err instanceof Error ? err : null, 'Invalid OIDC State - Please try logging in again');
             }
             if (state.t !== 'oidc') throw new Err(401, null, 'Invalid OIDC State - Please try logging in again');
+            fromApp = typeof state.c === 'string' && state.c.length > 0;
 
             const oidc = oidcConfig(config);
             const disc = await discovery(oidc.discovery);
@@ -275,6 +343,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const localOnlyAccounts = (process.env.LOCAL_ONLY_ACCOUNTS || '')
                 .split(',').map((a: string) => a.trim()).filter(Boolean);
             if (localOnlyAccounts.includes(email)) {
+                if (fromApp) return redirectToApp(res, { sso_error: 'This account requires local login' });
                 return res.redirect(`/login?local=true&sso_error=${encodeURIComponent('This account requires local login. Use /login?local=true')}`);
             }
 
@@ -470,6 +539,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
+            if (fromApp && state.c) {
+                // Everything above (profile, certificate, attribute sync) is done;
+                // the session itself is only issued when the app redeems this code
+                // with its verifier at POST /login/oidc/exchange
+                const code = jwt.sign({ t: 'oidc-app', e: email, c: state.c }, config.SigningSecret, { expiresIn: '2m' });
+                return redirectToApp(res, { code });
+            }
+
             // Same session + token pair issuance as POST /login, so SSO users also
             // get a refresh token and the configured token/refresh lifetimes
             const login = await issueSession(config, req, profile);
@@ -485,9 +562,49 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         } catch (err) {
             console.error('OIDC login error:', err);
             const message = err instanceof Error ? err.message : 'SSO Login Failed';
+            if (fromApp) return redirectToApp(res, { sso_error: message });
             // See the comment on the equivalent redirect in /login/oidc above -
             // `local=true` stops this from looping forever under OIDC_FORCED.
             return res.redirect(`/login?local=true&sso_error=${encodeURIComponent(message)}`);
+        }
+    });
+
+    /**
+     * Redeem the one-time code the SSO callback handed to the mobile app. The
+     * code is only useful together with the verifier the app generated before
+     * it opened the browser, so an app that merely intercepts the URL scheme
+     * cannot turn it into a session.
+     */
+    await schema.post('/login/oidc/exchange', {
+        security: [],
+        name: 'OIDC App Login Exchange',
+        group: 'Login',
+        description: 'Exchange the one-time code returned to the mobile app after an SSO login, plus the PKCE verifier, for a CloudTAK session',
+        body: Type.Object({
+            code: Type.String(),
+            verifier: Type.String({ minLength: 32, maxLength: 128 }),
+        }),
+        res: LoginResponse,
+    }, async (req, res) => {
+        try {
+            let claims: { t?: string; e?: string; c?: string };
+            try {
+                claims = jwt.verify(req.body.code, config.SigningSecret) as { t?: string; e?: string; c?: string };
+            } catch (err) {
+                throw new Err(401, err instanceof Error ? err : null, 'Invalid or expired login code - Please try logging in again');
+            }
+            if (claims.t !== 'oidc-app' || !claims.e || !claims.c) {
+                throw new Err(401, null, 'Invalid or expired login code - Please try logging in again');
+            }
+            const expected = Buffer.from(claims.c, 'base64url');
+            const actual = createHash('sha256').update(req.body.verifier).digest();
+            if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) {
+                throw new Err(401, null, 'Login verification failed - Please try logging in again');
+            }
+            const profile = await config.models.Profile.from(claims.e);
+            res.json(await issueSession(config, req, profile));
+        } catch (err) {
+            Err.respond(err, res);
         }
     });
 
@@ -496,6 +613,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
      * configured) so the Authentik session is also terminated, or to /login.
      */
     await schema.get('/logout', {
+        security: [],
         name: 'Logout',
         group: 'Login',
         description: 'Logout and redirect to the IdP end-session endpoint if OIDC is configured',

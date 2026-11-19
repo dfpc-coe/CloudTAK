@@ -46,6 +46,7 @@ import { CloudTAKTransferHandler } from '../workers/handler.ts';
 import ProfileConfig from '../base/profile.ts';
 import Config from '../base/config.ts';
 import { isNativePlatform, whenForegrounded } from '../utils/capacitor.ts';
+import { ssoLogoutRedirect } from '../utils/native-sso.ts';
 import { withTimeout } from '../utils/async.ts';
 import { db, suspendDatabase, resumeDatabase, liveQuery } from '../database.ts';
 import { serializeWorkerBootConfig } from '../utils/worker-boot.ts';
@@ -1336,7 +1337,7 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Channels_List) {
                     this.hasNoChannels = false;
                 } else if (msg.type === WorkerMessageType.Session_Logout) {
-                    window.location.href = '/api/logout';
+                    void ssoLogoutRedirect();
                 } else if (msg.type === WorkerMessageType.Channel_Change) {
                     this.channelChange = true;
                 } else if (msg.type === WorkerMessageType.Feature_Render) {
