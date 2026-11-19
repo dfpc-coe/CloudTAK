@@ -23,9 +23,9 @@
                 <li>Your location is sent to the TAK server you are connected to and shared with members of your team.</li>
                 <li>The server's administrator controls whether location data is stored and for how long.</li>
                 <li v-if='stage === "background" && android'>
-                    A persistent notification is shown whenever CloudTAK is sharing your location in the background.
+                    A persistent notification is shown whenever TAK.NZ is sharing your location in the background.
                 </li>
-                <li>CloudTAK does not use your location for advertising.</li>
+                <li>TAK.NZ does not use your location for advertising.</li>
             </ul>
         </div>
 
@@ -90,18 +90,18 @@ const title = computed(() => {
 
 const lead = computed(() => {
     if (props.stage === 'background') {
-        return 'CloudTAK shares your location with your team even when the app is closed or not in use, so your position stays current on the map while you are not looking at it.';
+        return 'TAK.NZ shares your location with your team even when the app is closed or not in use, so your position stays current on the map while you are not looking at it.';
     }
 
     return isNativePlatform()
-        ? "CloudTAK collects your device's location, including when the app is closed or not in use, so your team can see your position on the map."
-        : "CloudTAK collects your device's location while it is open in your browser so your team can see your position on the map.";
+        ? "TAK.NZ collects your device's location, including when the app is closed or not in use, so your team can see your position on the map."
+        : "TAK.NZ collects your device's location while it is open in your browser so your team can see your position on the map.";
 });
 
 const next = computed(() => {
     if (props.stage === 'background') {
         if (props.settings) {
-            return `Next, CloudTAK will open your device settings. Set Location to ${always} to keep sharing your position in the background.`;
+            return `Next, TAK.NZ will open your device settings. Set Location to ${always} to keep sharing your position in the background.`;
         } else if (android) {
             return 'Next, Android will ask for background location access. Choose "Allow all the time" to keep sharing your position in the background. You can change this anytime in Settings.';
         }
@@ -110,7 +110,7 @@ const next = computed(() => {
     }
 
     if (props.settings) {
-        return `Next, CloudTAK will open your device settings. Set Location to ${always} to share your position with your team, including in the background.`;
+        return `Next, TAK.NZ will open your device settings. Set Location to ${always} to share your position with your team, including in the background.`;
     } else if (android) {
         return 'Next, Android will ask for location access. Choose "While using the app" or "Allow all the time" to continue. You can change this anytime in Settings.';
     } else if (isIOSPlatform()) {

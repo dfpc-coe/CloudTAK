@@ -7,4 +7,6 @@
     <!-- Status-bar icon for the background location notification (white silhouette, see branding/generate_native_icons.sh) -->
     <string name="capacitor_background_geolocation_notification_icon">drawable/ic_stat_tak</string>
     <string name="capacitor_background_geolocation_notification_color">#003366</string>
+    <!-- Shown in Android's notification settings for the app. "Tracking" (the plugin default) sounds like surveillance -->
+    <string name="capacitor_background_geolocation_notification_channel_name">Location sharing</string>
 </resources>
