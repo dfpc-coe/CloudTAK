@@ -33,6 +33,9 @@ exists), all iOS work, and CI.
   `PROVIDER_REGISTRY_URL` doesn't have to change. The provider list it shows is
   upstream's.
 
+**Build (one command):** `scripts/build-android-debug.sh` does everything below, including
+the plugin-copy workaround, and prints the APK path. The manual steps are:
+
 **Build:**
 
 ```bash
@@ -94,7 +97,7 @@ When the test build works, continue with the full plan below.
 | Decision | Notes |
 |---|---|
 | App ID | `nz.tak.app` (assumed here) |
-| Store display name | Used in `strings.xml`, `Info.plist`, store listings. Placeholder below: `TAK-NZ` |
+| Store display name | Used in `strings.xml`, `Info.plist`, store listings. Set to `TAK.NZ` |
 | Associated domain | A domain we control, for iOS `webcredentials:` (password and passkey autofill). Placeholder: `tak.nz` |
 | Server selection in the app | See section 5. Registry list, fixed server, or manual URL |
 | Push notifications | Whether to ship them in v1. Needs Firebase and an APNs key |
@@ -282,6 +285,40 @@ for both the `.appiconset` and the `.icon`.
 
 Colours and theme: also check `styles.xml` and the `StatusBar` block in
 `capacitor.config.json` (`style: DARK`, `overlaysWebView: true`).
+
+---
+
+### SSO inside the app
+
+The web SSO flow (navigate to `/api/login/oidc`, land back on `/login#sso=...`)
+cannot work inside the app: the bundled app and the server are different origins.
+The app instead runs the login in the system browser and gets control back
+through its URL scheme.
+
+1. `app/src/utils/native-sso.ts` creates a random verifier, sends only its SHA-256
+   (`app_challenge`) to `GET /api/login/oidc`, and opens the page with
+   `@capacitor/browser`.
+2. After the IdP login, `GET /api/login/oidc/callback` returns to
+   `nz.tak.app://login?code=...` (a small HTML page with a link, because browsers
+   differ on following a bare redirect to a custom scheme). Failures return the same
+   way as `?sso_error=...`.
+3. The app redeems the code at `POST /api/login/oidc/exchange` with the verifier.
+   Any app can claim a custom URL scheme, so the URL carries only a 2-minute code
+   that is useless without the verifier, never a session.
+
+No IdP change is needed: the redirect URI is still the server's callback. The
+scheme comes from `MOBILE_APP_SCHEME` on the server (default `nz.tak.app`) and must
+match the Android `custom_url_scheme` string and the iOS `CFBundleURLSchemes`.
+Logout in the app opens `/api/logout` in the browser (to end the IdP session) and
+returns to `/login?signed_out=1`, which stops forced SSO from signing straight back in.
+
+### Notification icon
+
+Android draws the status-bar icon from its alpha channel only, so the full-colour
+launcher icon shows as a blob. `ic_stat_tak` (the kiwi alone, from
+`branding/logo/tak-nz-kiwi.svg`) is used for the background-location notification
+(`capacitor_background_geolocation_notification_icon` in `strings.xml`) and as the
+default push notification icon (`AndroidManifest.xml`).
 
 ---
 
