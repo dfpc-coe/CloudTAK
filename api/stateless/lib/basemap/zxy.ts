@@ -42,7 +42,7 @@ export default class ZXYBasemap extends BasemapProtocol {
             const { safe, reason } = await isSafeUrl(url.href);
             if (!safe) throw new Err(400, null, `Blocked tile URL: ${reason}`);
 
-            const stream = await undici.pipeline(url, {
+            const stream = undici.pipeline(url, {
                 method: 'GET',
                 headers: opts.headers as Record<string, string>,
             }, ({ statusCode, headers, body }) => {

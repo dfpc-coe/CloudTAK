@@ -5,7 +5,7 @@ import { MapPage } from '../pages/MapPage.ts';
 import { cloudtakUsername, cloudtakPassword } from '../lib/env.ts';
 import { getStoredToken } from '../lib/session.ts';
 
-test.use({ storageState: { cookies: [], origins: [] } });
+test.use({ storageState: { cookies: [], origins: [] }, autoLogin: false });
 
 const passkeyButton = (page: Page) => page.getByRole('button', { name: 'Sign in with Passkey' });
 const errorModal = (page: Page) => page.getByText('Website Error');
@@ -54,20 +54,10 @@ test.describe('Auth: smoke and happy path', () => {
         await expect(login.password).toBeVisible({ timeout: 30_000 });
         expect(new URL(page.url()).pathname).toContain('/login');
 
-        // Observed: logout is client-side only. After logout the UI returns to
-        // the login page, but the JWT still validates server-side (GET
-        // /api/login returns 200, not 401) until it expires (~16h per the
-        // login route source). For a shared-device, public-safety context
-        // this is worth confirming with the team: is server-side revocation
-        // on logout intended? Until that's answered, we assert the ACTUAL
-        // behavior (client cleared) rather than fail on an assumed contract.
         const res = await page.request.get('/api/login', {
             headers: { Authorization: `Bearer ${token}` },
         });
-        expect(
-            res.status(),
-            'documenting observed behavior: token still valid server-side after logout',
-        ).toBe(200);
+        expect(res.status(), 'old token must be rejected after logout').toBe(401);
     });
 
     test('AUTH-05 browser Back after login keeps the session (observed)', async ({ authedMap, page }) => {
@@ -103,9 +93,9 @@ test.describe('Auth: passkey enrollment and login', () => {
      * We verify sign-in by landing on the map, not by clicking the button
      * (which appears briefly then vanishes once login succeeds).
      *
-     * Also: CloudTAK's logout is client-side only and the session is held in
-     * memory (appStore + Capacitor's in-memory Preferences cache), so we
-     * clear persisted storage AND hard-reload to get a truly logged-out app.
+     * Also: part of the session lives in memory (appStore + Capacitor's
+     * in-memory Preferences cache), so we clear persisted storage AND
+     * hard-reload to get a truly logged-out app.
      *
      * CLEANUP IS MANDATORY: the server-side credential outlives the virtual
      * authenticator, so the test removes the QA-TEST passkey it created. This
@@ -335,10 +325,6 @@ test.describe('Auth: access control', () => {
         await page.getByTitle('Logout').click();
         await expect(login.password).toBeVisible({ timeout: 30_000 });
 
-        // Press Back: the authenticated map must NOT be restored from history.
-        // (Note: logout is client-side only per AUTH-04, so this checks the
-        // client protection - a bystander pressing Back on the device should
-        // not land back on the map.)
         await page.goBack();
 
         // Still on login, no map canvas exposed.
@@ -397,14 +383,12 @@ test.describe('Auth: access control', () => {
         expect(res.status()).toBe(401);
     });
 
-    test('AUTH-19 issued token is configured to expire (~16h)', async ({ authedMap, page }) => {
-        // Full "session expires mid-map, graceful re-auth prompt" behavior
-        // can't be exercised without either waiting 16h or forging an expired
-        // token signed with the server secret (not available to tests). What
-        // we CAN verify without waiting: the issued JWT carries an `exp` claim
-        // set ~16h out (login route signs with expiresIn: '16h'). The app's
-        // reaction to an already-invalid token is covered by AUTH-18, since an
-        // expired token fails jwt.verify() on the same path as a corrupted one.
+    test('AUTH-19 issued token is configured to expire (~192h)', async ({ authedMap, page }) => {
+        // The access token lifetime is the login::token::expiry server setting,
+        // default 192h / 8 days (api/stateless/lib/user/session.ts); a refresh
+        // token is issued alongside it. The app's reaction to an already-invalid
+        // token is covered by AUTH-18, since an expired token fails jwt.verify()
+        // on the same path as a corrupted one.
         const token = await getStoredToken(page);
         expect(token, 'should have a token after login').toBeTruthy();
 
@@ -424,10 +408,9 @@ test.describe('Auth: access control', () => {
         expect(payload.exp, 'JWT should carry an exp claim').toBeTruthy();
         expect(payload.iat, 'JWT should carry an iat claim').toBeTruthy();
 
-        // exp - iat should be ~16 hours (57600s). Allow a minute of slack.
         const lifetimeSeconds = (payload.exp as number) - (payload.iat as number);
-        expect(lifetimeSeconds).toBeGreaterThan(16 * 3600 - 60);
-        expect(lifetimeSeconds).toBeLessThan(16 * 3600 + 60);
+        expect(lifetimeSeconds).toBeGreaterThan(192 * 3600 - 60);
+        expect(lifetimeSeconds).toBeLessThan(192 * 3600 + 60);
 
         // And exp should be in the future for a freshly issued token.
         expect((payload.exp as number) * 1000).toBeGreaterThan(Date.now());

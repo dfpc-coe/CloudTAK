@@ -7,7 +7,7 @@
         '
     >
         <div
-            v-for='feat in mapStore.select.feats'
+            v-for='(feat, idx) in mapStore.select.feats'
             :key='feat.properties.id || feat.id'
             role='menuitem'
             tabindex='0'
@@ -16,6 +16,8 @@
         >
             <Feature
                 :feature='feat'
+                :title='rows[idx]?.title || ""'
+                :detail='rows[idx]?.detail || ""'
                 :delete-button='false'
             />
         </div>
@@ -26,12 +28,40 @@
 import { ref, onMounted, onUnmounted, watch, markRaw } from 'vue';
 import Feature from './FeatureRow.vue'
 import { useMapStore } from '../../../stores/map.ts';
+import { getFeatureOverlay } from './featureCut.ts';
+import { fetchTitleTemplate, featureTitle } from './titleTemplate.ts';
 import * as mapgl from 'maplibre-gl';
+import type { MapGeoJSONFeature } from 'maplibre-gl';
 
 const emit = defineEmits([ 'selected' ]);
 
 const mapStore = useMapStore();
 const selectMenu = ref<HTMLElement | null>(null);
+
+const rows = ref<Array<{ title: string; detail: string }>>([]);
+
+watch(() => mapStore.select.feats as unknown as Array<MapGeoJSONFeature>, async (feats) => {
+    const templates = new Map<number, Promise<string | null>>();
+
+    const next = await Promise.all(feats.map(async (feat) => {
+        const overlay = getFeatureOverlay(feat);
+        if (!overlay) return { title: '', detail: '' };
+
+        let template = templates.get(overlay.id);
+        if (!template) {
+            template = fetchTitleTemplate(overlay).catch(() => null);
+            templates.set(overlay.id, template);
+        }
+
+        return {
+            title: featureTitle(feat.properties, await template, ''),
+            detail: overlay.name
+        };
+    }));
+
+    if ((mapStore.select.feats as unknown) !== feats) return;
+    rows.value = next;
+}, { immediate: true });
 
 onMounted(() => {
     if (!selectMenu.value) return;

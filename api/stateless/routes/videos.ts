@@ -13,9 +13,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'VideoService',
         description: 'Get Video Service Configuration',
         res: Configuration,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const configuration = await videoControl.configuration();
 
@@ -35,9 +36,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: Type.Object({
             path: PathListItem,
         }),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             res.json({
                 path: await videoControl.path(req.params.path),

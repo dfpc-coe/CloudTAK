@@ -273,6 +273,13 @@
                                         @update:model-value='void updateOverlay(card.overlay, { opacity: $event })'
                                     />
                                 </div>
+                                <SlopeClasses
+                                    v-if='isSlopeOverlay(card.overlay)'
+                                    :model-value='parseSlopeArgs(card.overlay.args)'
+                                    :debounce='500'
+                                    hint='Your classes only - the shared basemap is unchanged.'
+                                    @update:model-value='void updateOverlay(card.overlay, { args: { ...card.overlay.args, ...slopeArgs($event) } })'
+                                />
                                 <TreeVector
                                     v-if='card.overlay.type === "vector"'
                                     :overlay='card.overlay'
@@ -307,6 +314,8 @@ import {
     TablerRange
 } from '@tak-ps/vue-tabler';
 import TreeVector from './Overlays/TreeVector.vue';
+import SlopeClasses from './Basemaps/SlopeClasses.vue';
+import { isSlopeURL, parseSlopeArgs, slopeArgs } from './Basemaps/slope.ts';
 import {
     IconGripVertical,
     IconCloudPin,
@@ -509,6 +518,10 @@ function handleCardClick(overlay: Overlay) {
 function hasOverlayDetails(overlay: Overlay): boolean {
     return overlay.type === 'raster'
         || overlay.type === 'vector';
+}
+
+function isSlopeOverlay(overlay: Overlay): boolean {
+    return overlay.type === 'raster' && isSlopeURL(overlay.tilejson?.tiles?.[0]);
 }
 
 function resolveOverlayStatus(overlay: Overlay): OverlayStatus {

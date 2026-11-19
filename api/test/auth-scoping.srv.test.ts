@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import ws from 'ws';
 import Flight from './flight.js';
+import { rawDataToString } from '../common/stringify.js';
 
 const flight = new Flight();
 
@@ -163,7 +164,7 @@ function subscribe(connection: number, token: string): Promise<{ type: string; m
         conn.on('unexpected-response', () => reject(new Error('Upgrade rejected')));
         conn.on('error', err => reject(err));
         conn.on('message', (data) => {
-            const res = JSON.parse(String(data));
+            const res = JSON.parse(rawDataToString(data));
 
             if (res.type === 'status') return;
 

@@ -3,7 +3,7 @@ import { StandardResponse, CoreEventEffectResponse } from '../../common/types.js
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResource, AuthResourceAccess } from '../../common/auth.js';
+import Auth, { AuthResource } from '../../common/auth.js';
 import { CoreEventEffect } from '../../common/schema.js';
 import { CoreEventEffect_Status } from '../../common/enums.js';
 import type ConfigStateless from '../config.js';
@@ -17,11 +17,6 @@ import * as Default from '../lib/limits.js';
 export default async function router(schema: Schema, config: ConfigStateless) {
     const eventControl = new EntityControl(config, 'Event');
     const deviceControl = new EntityControl(config, 'Device');
-
-    const resources = [
-        { access: AuthResourceAccess.CONNECTION },
-        { access: AuthResourceAccess.LAYER },
-    ];
 
     const EventParam = Type.Object({
         event: Type.String({ format: 'uuid' }),
@@ -68,10 +63,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: ['event:read', 'effect:read'],
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
@@ -108,10 +100,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventEffectResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: ['event:read', 'effect:read'],
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
@@ -157,10 +146,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventEffectResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: ['event:update', 'effect:create'],
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
@@ -202,10 +188,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: CoreEventEffectResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: ['event:update', 'effect:update'],
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);
@@ -233,10 +216,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         res: StandardResponse,
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
-                scope: ['event:update', 'effect:delete'],
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             const connection = auth instanceof AuthResource ? await eventControl.resourceConnection(auth) : null;
             const event = await config.models.CoreEntity.augmented_from(req.params.event);

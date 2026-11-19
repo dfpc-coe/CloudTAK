@@ -17,12 +17,18 @@ const EVENT_STALE = 30 * 60 * 1000;
 const ENTITY_INTERVAL = 10 * 1000;
 
 /** A Device has no end - its marker lives for as long as the Device is broadcast */
-const DEVICE_STALE = EVENT_STALE;
+const DEVICE_STALE = 30 * 1000;
 
 /** CoT stale in ms - capped at the Event's ended time so clients drop the marker when the Event ends */
 function eventStale(ended: string | null): number {
     if (!ended) return EVENT_STALE;
     return Math.max(30 * 1000, Math.min(EVENT_STALE, new Date(ended).getTime() - Date.now()));
+}
+
+/** CoT stale in ms - capped at the time left before the Entity stops being broadcast */
+function entityStale(fallback: number, remaining: number | null): number {
+    if (remaining === null) return fallback;
+    return Math.max(1000, Math.min(fallback, Math.round(remaining * 1000)));
 }
 
 export const ConnectionAuth = Type.Object({
@@ -308,6 +314,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
 
                 const links: Array<Record<string, string>> = [];
                 const remarks: string[] = [];
+                let address: { text: string } | undefined;
                 let start: string;
                 let stale: number;
 
@@ -323,7 +330,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
                     });
 
                     start = entity.updated;
-                    stale = DEVICE_STALE;
+                    stale = entityStale(DEVICE_STALE, entity.remaining);
                 } else {
                     links.push({
                         relation: 'p',
@@ -335,8 +342,11 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
 
                     remarks.push(`Location:\n${entity.location}`, `Priority:\n${entity.priority}`);
 
+                    const location = entity.location.trim();
+                    if (location) address = { text: location };
+
                     start = entity.started;
-                    stale = eventStale(entity.ended);
+                    stale = entityStale(eventStale(entity.ended), entity.remaining);
                 }
 
                 // `r-u` (refinement url) links render in ATAK as tappable
@@ -368,6 +378,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
                             how: 'm-g',
                             callsign: entity.name,
                             remarks: remarks.join('\n\n'),
+                            address,
                             start,
                             stale,
                             dest,
@@ -381,7 +392,7 @@ export class AdminConnConfig implements ConnectionConfig, CoreEntitySubmitter {
             }
 
             if (cots.length) {
-                tak.write(cots);
+                void tak.write(cots);
             }
 
             // A sweep rebuilds the map so Entities that stop broadcasting are dropped

@@ -33,6 +33,8 @@ export enum Action {
     PPROF = 'pprof',
 }
 
+const ProxyProtocols = ['http:', 'https:', 'rtsp:', 'rtsps:', 'rtmp:', 'rtmps:', 'srt:'];
+
 export const Protocols = Type.Object({
     rtmp: Type.Optional(Type.Object({
         name: Type.String(),
@@ -572,15 +574,21 @@ export default class VideoServiceControl {
                     ...(await this.config.models.Setting.typed('media::proxy::allow', [])).value,
                 ];
 
-                // Skip isSafeUrl check when StackName=test (test mode)
-                if (process.env.StackName !== 'test') {
-                    const { safe, reason } = await isSafeUrl(lease.proxy, {
-                        allow: proxyAllow,
-                    });
-                    if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+                const proxy = new URL(lease.proxy);
+
+                if (!ProxyProtocols.includes(proxy.protocol)) {
+                    throw new Err(400, null, `Unsupported Video Stream Protocol: ${proxy.protocol}`);
                 }
 
-                const proxy = new URL(lease.proxy);
+                // Skip isSafeUrl check when StackName=test (test mode)
+                if (process.env.StackName !== 'test') {
+                    // isSafeUrl only accepts http(s), so stream protocols are host-checked as http
+                    const { safe, reason } = await isSafeUrl(
+                        ['http:', 'https:'].includes(proxy.protocol) ? lease.proxy : `http://${proxy.host}`,
+                        { allow: proxyAllow },
+                    );
+                    if (!safe) throw new Err(400, null, `Blocked URL: ${reason}`);
+                }
 
                 // Check for HLS Errors
                 if (['http:', 'https:'].includes(proxy.protocol)) {

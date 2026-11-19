@@ -75,17 +75,17 @@ function serializeConfigValue<K extends keyof Static<typeof FullConfig>>(
     key: K,
     value: Static<typeof FullConfig>[K],
 ): string {
-    const schema = FullConfig.properties[key] as any;
+    const schema: { type?: string; anyOf?: Array<Record<string, unknown>> } = FullConfig.properties[key];
 
     if (schema.type === 'array' || schema.type === 'object') {
         return JSON.stringify(value);
     }
 
-    if (Array.isArray(schema.anyOf) && schema.anyOf.some((entry: any) => entry.type === 'array' || entry.type === 'object')) {
+    if (Array.isArray(schema.anyOf) && schema.anyOf.some(entry => entry.type === 'array' || entry.type === 'object')) {
         return JSON.stringify(value);
     }
 
-    return String(value);
+    return typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value);
 }
 
 export default async function router(schema: Schema, config: ConfigStateless) {
@@ -122,9 +122,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         description: 'Update Config Key/Values',
         body: Type.Partial(FullConfig),
         res: Type.Partial(FullConfig),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const updatedKeys = Object.keys(req.body) as (keyof Static<typeof FullConfig>)[];
             const refreshGeofence = updatedKeys.some(key => GeofenceConfigKeys.has(key));
@@ -191,7 +192,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 };
             }))).forEach((k) => {
                 if (k.status === 'rejected') return;
-                return final[k.value.key as keyof Static<typeof FullConfig>] = k.value.value as any;
+                return final[k.value.key as keyof Static<typeof FullConfig>] = k.value.value as never;
             });
 
             if (refreshGeofence) {
@@ -220,6 +221,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     });
 
     await schema.get('/config/login', {
+        security: [],
         name: 'Login Config',
         group: 'Config',
         description: 'Return Login Config',
@@ -290,6 +292,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     });
 
     await schema.get('/config/tiles', {
+        security: [],
         name: 'Tile Config',
         group: 'Config',
         description: 'Return Tile Config',

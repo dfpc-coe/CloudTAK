@@ -10,8 +10,8 @@ import { SQL, is, sql, eq, and, asc, desc, getTableColumns } from 'drizzle-orm';
 
 /** kind is internal - keep it out of payloads */
 export const EntityColumns = Object.fromEntries(
-    Object.entries(getTableColumns(CoreEntity)).filter(([name]) => name !== 'kind'),
-) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntity>>, 'kind'>;
+    Object.entries(getTableColumns(CoreEntity)).filter(([name]) => name !== 'kind' && name !== 'stale'),
+) as Omit<ReturnType<typeof getTableColumns<typeof CoreEntity>>, 'kind' | 'stale'>;
 
 /** Event side table columns - the shared primary key is already selected from core_entity */
 const EventColumns = Object.fromEntries(
@@ -172,10 +172,17 @@ const BOARDS = sql`COALESCE((
 /** An Event is active until its ended time - a future ended keeps it active until then */
 export const ACTIVE = sql<boolean>`(${CoreEntityEvent.ended} IS NULL OR ${CoreEntityEvent.ended} > Now())`;
 
-/** An Entity is broadcast as CoT when it is located - a Device, or an Event that is still active */
-export const BROADCAST = sql<boolean>`(${CoreEntity.geometry} IS NOT NULL AND (${CoreEntity.kind} = ${LayerMapping_Destination.COREDEVICE} OR ${ACTIVE}))`;
+/** Seconds until an Entity stops being broadcast - NULL for an Entity that never expires */
+export const REMAINING = sql<number | null>`EXTRACT(EPOCH FROM (${CoreEntity.updated} + ${CoreEntity.stale} * INTERVAL '1 second' - Now()))::FLOAT8`;
 
-type BroadcastEntity = Omit<typeof CoreEntity.$inferSelect, 'kind' | 'geometry'> & {
+/** An Entity is live until its stale seconds have passed since its last update */
+export const LIVE = sql<boolean>`(${CoreEntity.stale} IS NULL OR ${CoreEntity.updated} + ${CoreEntity.stale} * INTERVAL '1 second' > Now())`;
+
+/** An Entity is broadcast as CoT when it is located & live - a Device, or an Event that is still active */
+export const BROADCAST = sql<boolean>`(${CoreEntity.geometry} IS NOT NULL AND ${LIVE} AND (${CoreEntity.kind} = ${LayerMapping_Destination.COREDEVICE} OR ${ACTIVE}))`;
+
+type BroadcastEntity = Omit<typeof CoreEntity.$inferSelect, 'kind' | 'geometry' | 'stale'> & {
+    remaining: number | null;
     geometry: Static<typeof GeoJSONFeatureGeometryPoint>;
     channels: number[];
     external_ids: Record<string, string>;
@@ -224,7 +231,37 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
         }
     }
 
-    async augmented_from(id: unknown | SQL<unknown>): Promise<Static<typeof CoreEventResponse>> {
+    /** The kind and sharing columns of an Entity of any kind - enough for access control */
+    async shared_from(id: string): Promise<{
+        id: string;
+        kind: LayerMapping_Destination;
+        username: string | null;
+        connection: number | null;
+        editable: boolean;
+        channels: number[];
+    }> {
+        const SubTable = channelsSubquery(this.pool);
+
+        const pgres = await this.pool
+            .select({
+                id: CoreEntity.id,
+                kind: CoreEntity.kind,
+                username: CoreEntity.username,
+                connection: CoreEntity.connection,
+                editable: CoreEntity.editable,
+                channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
+            })
+            .from(CoreEntity)
+            .leftJoin(SubTable, eq(CoreEntity.id, SubTable.entity))
+            .where(eq(CoreEntity.id, id))
+            .limit(1);
+
+        if (pgres.length !== 1) throw new Err(404, null, `Item Not Found`);
+
+        return { ...pgres[0], channels: pgres[0].channels as number[] };
+    }
+
+    async augmented_from(id: unknown): Promise<Static<typeof CoreEventResponse>> {
         const SubTable = channelsSubquery(this.pool);
 
         const pgres = await this.pool
@@ -342,6 +379,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
                     entity: { ...EntityColumns, kind: CoreEntity.kind },
                     event: EventColumns,
                     device: DeviceColumns,
+                    remaining: REMAINING.as('remaining'),
                     external_ids: EXTERNAL_IDS.as('external_ids'),
                     channels: sql`COALESCE(${SubTable.channels}, '[]'::JSON)`.as('channels'),
                 })
@@ -359,6 +397,7 @@ export default class CoreEntityModel extends Modeler<typeof CoreEntity> {
 
                 const base = {
                     ...entity,
+                    remaining: row.remaining,
                     geometry: entity.geometry as Static<typeof GeoJSONFeatureGeometryPoint>,
                     channels: row.channels as number[],
                     external_ids: row.external_ids as Record<string, string>,

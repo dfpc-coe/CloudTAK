@@ -45,9 +45,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             items: Type.Array(LayerResponse),
         }),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const list = await config.models.Layer.augmented_list({
                 limit: req.query.limit,
@@ -55,7 +56,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    layers.name ~* ${req.query.filter}
+                    (layers.name ~* ${req.query.filter} OR layers.id::TEXT = ${req.query.filter})
                     AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                     AND (${Param(req.query.task)}::TEXT IS NULL OR Starts_With(integrations.prefix || '-v' || layers.version, ${Param(req.query.task)}::TEXT))
@@ -106,6 +107,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             dataid: Type.Integer({ minimum: 1 }),
         }),
         res: DataResponse,
+        security: Auth.security({ user: false, resources: [AuthResourceAccess.DATA] }),
     }, async (req, res) => {
         try {
             const auth = await Auth.as_resource(config, req, {
@@ -160,6 +162,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {

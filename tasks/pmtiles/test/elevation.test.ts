@@ -1,38 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PNG } from 'pngjs';
-import sharp from 'sharp';
 import type { LineString } from 'geojson';
+import { decodeImage, encodeWebP } from '@tak-ps/node-tiles/node';
 import getElevationProfile, { type ElevationFetch } from '../lib/elevation.js';
-
-function encodeMapboxElevation(elevation: number): [number, number, number] {
-    const value = Math.round((elevation + 10000) * 10);
-
-    return [
-        (value >> 16) & 0xff,
-        (value >> 8) & 0xff,
-        value & 0xff,
-    ];
-}
-
-function createTile(elevation: number): Buffer {
-    const png = new PNG({ width: 4, height: 4 });
-    const [r, g, b] = encodeMapboxElevation(elevation);
-
-    for (let index = 0; index < png.data.length; index += 4) {
-        png.data[index] = r;
-        png.data[index + 1] = g;
-        png.data[index + 2] = b;
-        png.data[index + 3] = 0xff;
-    }
-
-    return PNG.sync.write(png);
-}
+import { demTile } from './lib/dem.js';
 
 test('getElevationProfile samples elevations across covered tiles', async () => {
     const requests: string[] = [];
-    const leftTile = createTile(100);
-    const rightTile = createTile(200);
+    const leftTile = await demTile(100);
+    const rightTile = await demTile(200);
     const geometry: LineString = {
         type: 'LineString',
         coordinates: [
@@ -92,7 +68,7 @@ test('getElevationProfile samples elevations across covered tiles', async () => 
 });
 
 test('getElevationProfile decodes WebP raster-dem tiles', async () => {
-    const webp = await sharp(createTile(321)).webp({ lossless: true }).toBuffer();
+    const webp = await encodeWebP(await decodeImage(await demTile(321)), { lossless: true });
     const webpTile = webp.buffer.slice(webp.byteOffset, webp.byteOffset + webp.byteLength) as ArrayBuffer;
     const geometry: LineString = {
         type: 'LineString',

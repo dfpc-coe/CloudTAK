@@ -307,176 +307,176 @@
                 </div>
             </div>
 
+            <PropertyTabs
+                v-model='mode'
+                :tabs='modeOptions'
+                class='flex-shrink-0 pt-2'
+            />
+
             <div
                 class='overflow-auto overflow-x-hidden flex-grow-1'
                 style='min-height: 0;'
             >
-                <PropertyOrigin
-                    v-if='subscription'
-                    :key='cot.id'
-                    :subscription='subscription'
-                    :uid='cot.id'
-                />
+                <div v-if='mode === "details"'>
+                    <PropertyOrigin
+                        v-if='subscription'
+                        :key='cot.id'
+                        :subscription='subscription'
+                        :uid='cot.id'
+                    />
 
-                <div class='pt-1'>
-                    <div
-                        v-if='hasAppearance'
-                        class='px-2 py-2'
-                    >
-                        <AppearanceRow
-                            :properties='cot.properties'
-                            :geometry='cot.geometry'
+                    <div class='pt-1'>
+                        <div
+                            v-if='hasAppearance'
+                            class='px-2 py-2'
+                        >
+                            <AppearanceRow
+                                :properties='cot.properties'
+                                :geometry='cot.geometry'
+                                :edit='is_editable'
+                                @click='router.push(`/cot/${cot.id}/appearance`)'
+                            />
+                        </div>
+
+                        <div
+                            v-for='guid of missionLinks'
+                            :key='guid'
+                            class='px-2 pb-2'
+                        >
+                            <PropertyMission :guid='guid' />
+                        </div>
+
+                        <Coordinate
+                            :key='String(route.params.uid)'
+                            :label='cot.geometry.type === "Point" ? "Location" : "Center"'
                             :edit='is_editable'
-                            @click='router.push(`/cot/${cot.id}/appearance`)'
+                            :hover='is_editable'
+                            :model-value='center'
+                            @update:model-value='updateCoordinates($event)'
+                        />
+
+                        <PropertyElevation
+                            v-if='center.length > 2'
+                            :key='String(route.params.uid)'
+                            label='Elevation'
+                            :unit='units.display_elevation'
+                            :elevation='center[2]'
+                        />
+
+                        <LineLength
+                            v-if='cot.geometry.type === "LineString"'
+                            :key='String(route.params.uid)'
+                            :geometry='cot.geometry'
+                            :unit='units.display_distance'
+                        />
+
+                        <PolygonArea
+                            v-if='cot.geometry.type === "Polygon"'
+                            :key='String(route.params.uid)'
+                            :geometry='cot.geometry'
+                            :unit='units.display_area'
+                        />
+
+                        <PropertyDistance
+                            v-if='cot.properties.shape && cot.properties.shape.ellipse && cot.properties.shape.ellipse.major === cot.properties.shape.ellipse.minor'
+                            :key='cot.properties.id'
+                            label='Radius'
+                            :unit='units.display_distance'
+                            :edit='is_editable'
+                            :hover='is_editable'
+                            :model-value='cot.properties.shape.ellipse.major * 0.001'
+                            @submit='updateRadius($event)'
+                        />
+
+                        <!-- Speed & Course share one row when both are reported -->
+                        <PropertyFactRow
+                            v-if='hasSpeed && hasCourse'
+                            label='Speed'
+                            class='py-1'
+                        >
+                            <div class='row g-2'>
+                                <div class='col-6'>
+                                    <PropertySpeed
+                                        :key='cot.properties.id'
+                                        :inline='true'
+                                        :unit='units.display_speed'
+                                        :speed='Number(cot.properties.speed)'
+                                    />
+                                </div>
+                                <div class='col-6'>
+                                    <PropertyBearing
+                                        :key='cot.properties.id'
+                                        :inline='true'
+                                        label='Course'
+                                        :model-value='Number(cot.properties.course)'
+                                    />
+                                </div>
+                            </div>
+                        </PropertyFactRow>
+
+                        <PropertySpeed
+                            v-else-if='hasSpeed'
+                            :key='cot.properties.id'
+                            :unit='units.display_speed'
+                            :speed='Number(cot.properties.speed)'
+                        />
+
+                        <PropertyBearing
+                            v-else-if='hasCourse'
+                            :key='cot.properties.id'
+                            label='Course'
+                            :model-value='Number(cot.properties.course)'
+                        />
+
+                        <PropertyPhone
+                            v-if='cot.properties.contact && cot.properties.contact.phone'
+                            :key='cot.properties.id'
+                            :phone='cot.properties.contact.phone'
+                        />
+
+                        <PropertyEmail
+                            v-if='username'
+                            :key='cot.properties.id'
+                            :email='username'
+                        />
+
+                        <PropertyFactRow
+                            v-if='battery !== undefined'
+                            label='Battery'
+                            class='py-1'
+                        >
+                            <div class='d-flex align-items-center gap-1'>
+                                <PropertyBattery
+                                    :battery='battery'
+                                    :size='18'
+                                />
+                                <span v-text='`${battery}%`' />
+                            </div>
+                        </PropertyFactRow>
+
+                        <PropertyCreator
+                            v-if='cot.creator'
+                            :key='cot.properties.id'
+                            :creator='cot.creator'
                         />
                     </div>
 
-                    <div
-                        v-for='guid of missionLinks'
-                        :key='guid'
-                        class='px-2 pb-2'
-                    >
-                        <PropertyMission :guid='guid' />
-                    </div>
+                    <PropertyProfile
+                        v-if='lineGeometry && terrainBasemapId'
+                        :key='`${route.params.uid}-${terrainBasemapId}`'
+                        :geometry='lineGeometry'
+                        :terrain-basemap-id='terrainBasemapId'
+                        :distance-unit='units.display_distance'
+                        :elevation-unit='units.display_elevation'
+                    />
 
-                    <Coordinate
-                        :key='String(route.params.uid)'
-                        :label='cot.geometry.type === "Point" ? "Location" : "Center"'
+                    <PropertyRemarks
+                        v-if='cot.properties.remarks !== undefined'
+                        :model-value='cot.properties.remarks'
                         :edit='is_editable'
-                        :hover='is_editable'
-                        :model-value='center'
-                        @update:model-value='updateCoordinates($event)'
+                        @submit='updateProperty("remarks", $event)'
                     />
 
-                    <PropertyElevation
-                        v-if='center.length > 2'
-                        :key='String(route.params.uid)'
-                        label='Elevation'
-                        :unit='units.display_elevation'
-                        :elevation='center[2]'
-                    />
-
-                    <LineLength
-                        v-if='cot.geometry.type === "LineString"'
-                        :key='String(route.params.uid)'
-                        :geometry='cot.geometry'
-                        :unit='units.display_distance'
-                    />
-
-                    <PolygonArea
-                        v-if='cot.geometry.type === "Polygon"'
-                        :key='String(route.params.uid)'
-                        :geometry='cot.geometry'
-                        :unit='units.display_area'
-                    />
-
-                    <PropertyDistance
-                        v-if='cot.properties.shape && cot.properties.shape.ellipse && cot.properties.shape.ellipse.major === cot.properties.shape.ellipse.minor'
-                        :key='cot.properties.id'
-                        label='Radius'
-                        :unit='units.display_distance'
-                        :edit='is_editable'
-                        :hover='is_editable'
-                        :model-value='cot.properties.shape.ellipse.major * 0.001'
-                        @submit='updateRadius($event)'
-                    />
-
-                    <!-- Speed & Course share one row when both are reported -->
-                    <PropertyFactRow
-                        v-if='hasSpeed && hasCourse'
-                        label='Speed'
-                        class='py-1'
-                    >
-                        <div class='row g-2'>
-                            <div class='col-6'>
-                                <PropertySpeed
-                                    :key='cot.properties.id'
-                                    :inline='true'
-                                    :unit='units.display_speed'
-                                    :speed='Number(cot.properties.speed)'
-                                />
-                            </div>
-                            <div class='col-6'>
-                                <PropertyBearing
-                                    :key='cot.properties.id'
-                                    :inline='true'
-                                    label='Course'
-                                    :model-value='Number(cot.properties.course)'
-                                />
-                            </div>
-                        </div>
-                    </PropertyFactRow>
-
-                    <PropertySpeed
-                        v-else-if='hasSpeed'
-                        :key='cot.properties.id'
-                        :unit='units.display_speed'
-                        :speed='Number(cot.properties.speed)'
-                    />
-
-                    <PropertyBearing
-                        v-else-if='hasCourse'
-                        :key='cot.properties.id'
-                        label='Course'
-                        :model-value='Number(cot.properties.course)'
-                    />
-
-                    <PropertyPhone
-                        v-if='cot.properties.contact && cot.properties.contact.phone'
-                        :key='cot.properties.id'
-                        :phone='cot.properties.contact.phone'
-                    />
-
-                    <PropertyEmail
-                        v-if='username'
-                        :key='cot.properties.id'
-                        :email='username'
-                    />
-
-                    <PropertyFactRow
-                        v-if='battery !== undefined'
-                        label='Battery'
-                        class='py-1'
-                    >
-                        <div class='d-flex align-items-center gap-1'>
-                            <PropertyBattery
-                                :battery='battery'
-                                :size='18'
-                            />
-                            <span v-text='`${battery}%`' />
-                        </div>
-                    </PropertyFactRow>
-
-                    <PropertyCreator
-                        v-if='cot.creator'
-                        :key='cot.properties.id'
-                        :creator='cot.creator'
-                    />
-                </div>
-
-                <PropertyProfile
-                    v-if='lineGeometry && terrainBasemapId'
-                    :key='`${route.params.uid}-${terrainBasemapId}`'
-                    :geometry='lineGeometry'
-                    :terrain-basemap-id='terrainBasemapId'
-                    :distance-unit='units.display_distance'
-                    :elevation-unit='units.display_elevation'
-                />
-
-                <PropertyRemarks
-                    v-if='cot.properties.remarks !== undefined'
-                    :model-value='cot.properties.remarks'
-                    :edit='is_editable'
-                    @submit='updateProperty("remarks", $event)'
-                />
-
-                <PropertyTabs
-                    v-model='mode'
-                    :tabs='modeOptions'
-                    class='mt-2'
-                />
-
-                <div v-if='mode === "default"'>
                     <PropertyAttachments
                         v-if='!cot.properties.contact'
                         :key='cot.properties.id'
@@ -639,6 +639,9 @@ import {
     IconLockOpen,
     IconNavigation,
     IconNavigationFilled,
+    IconBug,
+    IconAffiliate,
+    IconListDetails,
 } from '@tabler/icons-vue';
 import Subscriptions from './util/Subscriptions.vue';
 import { server } from '../../std.ts';
@@ -649,6 +652,7 @@ import ProfileConfig from '../../base/profile.ts';
 import OverlayManager from '../../base/overlay.ts';
 import { entityLink, entityLabel, entityRoute, entityRouteName } from '../../utils/core-entity.ts';
 import type { CoreEntityRef } from '../../utils/core-entity.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
 import { setCircleRadius } from '../../base/cot/ellipse.ts';
 
 const mapStore = useMapStore();
@@ -678,13 +682,17 @@ const units = ref({
 
 const username = ref<string | undefined>();
 const type = ref<DBTaxonomy | undefined>();
-const mode = ref('default');
-
 const modeOptions = computed<Array<PropertyTab>>(() => {
-    const opts: Array<PropertyTab> = [{ value: 'default', label: 'Details' }];
-    if (cot.value?.is_skittle) opts.push({ value: 'channels', label: 'Channels' });
-    opts.push({ value: 'debug', label: 'Debug' });
+    const opts: Array<PropertyTab> = [{ value: 'details', label: 'Details', icon: IconListDetails }];
+    if (cot.value?.is_skittle) opts.push({ value: 'channels', label: 'Channels', icon: IconAffiliate });
+    opts.push({ value: 'debug', label: 'Debug', icon: IconBug });
     return opts;
+});
+
+const mode = useRouteTab({
+    base: () => `/cot/${String(route.params.uid)}`,
+    tabs: () => modeOptions.value.map((t) => t.value),
+    fallback: 'details',
 });
 const breadcrumbLive = ref(false);
 const bufferCotId = ref<string | null>(null);
@@ -734,8 +742,7 @@ watch(cot, async () => {
     }
 });
 
-watch(route, async () => {
-    mode.value = 'default'
+watch(() => route.params.uid, async () => {
     breadcrumbLive.value = false;
     offlineEntity.value = undefined;
     await load_cot();

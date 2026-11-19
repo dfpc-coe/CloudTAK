@@ -94,11 +94,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         res: MissionTemplateResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             await Sprites.validate({
                 data: req.body.icon,
@@ -129,11 +128,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             keywords: Type.Optional(Type.Array(Type.String())),
         }),
         res: MissionTemplateResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             if (req.body.icon) {
                 await Sprites.validate({
@@ -160,11 +158,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             mission: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             await config.models.PaletteFeature.delete(sql`template = ${req.params.mission}`);
             await config.models.MissionTemplateLog.delete(sql`template = ${req.params.mission}`);
@@ -266,11 +263,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         res: MissionTemplateLogResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             if (req.body.icon) {
                 await Sprites.validate({
@@ -312,11 +308,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             schema: Type.Optional(Type.Any()),
         }),
         res: MissionTemplateLogResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             if (req.body.icon) {
                 await Sprites.validate({
@@ -352,11 +347,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             log: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             await config.models.MissionTemplateLog.delete(req.params.log);
 
@@ -446,11 +440,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             style: PaletteFeatureStyle,
         }),
         res: PaletteFeatureResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             const feature = await config.models.PaletteFeature.generate({
                 template: req.params.mission,
@@ -477,11 +470,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             style: Type.Optional(PaletteFeatureStyle),
         }),
         res: PaletteFeatureResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             let feature = await config.models.PaletteFeature.from(req.params.feature);
 
@@ -508,11 +500,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             feature: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, {
-                admin: true,
-            });
+            await Auth.as_user(config, req);
 
             const feature = await config.models.PaletteFeature.from(req.params.feature);
 

@@ -5,6 +5,7 @@ import type { Feature } from '@tak-ps/node-cot';
 import WebSocket from 'ws';
 import { ConnectionClient } from './connection-pool.js';
 import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
+import { rawDataToString } from '../../common/stringify.js';
 
 export class ConnectionWebSocket {
     ws: WebSocket;
@@ -29,7 +30,7 @@ export class ConnectionWebSocket {
             this.client = client;
             this.ws.on('message', async (data) => {
                 try {
-                    const msg = JSON.parse(String(data));
+                    const msg = JSON.parse(rawDataToString(data));
 
                     if (msg.type === 'ping') {
                         this.ws.send(JSON.stringify({ type: 'pong' }));
@@ -67,7 +68,7 @@ export class ConnectionWebSocket {
                             chat.position(msg.data.location);
                         }
 
-                        client.tak.write([chat], { stripFlow: true });
+                        void client.tak.write([chat], { stripFlow: true });
 
                         const feat = await CoTParser.to_geojson(chat);
                         const messageId = feat.properties.chat ? (feat.properties.chat.messageId || randomUUID()) : randomUUID();
@@ -106,10 +107,10 @@ export class ConnectionWebSocket {
 
                         const cot = await CoTParser.from_geojson(feat);
 
-                        client.tak.write([cot], { stripFlow: true });
+                        void client.tak.write([cot], { stripFlow: true });
                     }
                 } catch (err) {
-                    console.warn('Warning: Validation Error on WebSocket CoT message:', String(data), err);
+                    console.warn('Warning: Validation Error on WebSocket CoT message:', rawDataToString(data), err);
                     this.ws.send(JSON.stringify({
                         type: 'Error',
                         properties: {

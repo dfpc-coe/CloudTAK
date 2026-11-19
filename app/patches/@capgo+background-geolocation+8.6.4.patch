@@ -1,0 +1,19 @@
+diff --git a/node_modules/@capgo/background-geolocation/android/src/main/java/com/capgo/capacitor_background_geolocation/BackgroundGeolocationService.java b/node_modules/@capgo/background-geolocation/android/src/main/java/com/capgo/capacitor_background_geolocation/BackgroundGeolocationService.java
+index ca20b4d..f7f287c 100644
+--- a/node_modules/@capgo/background-geolocation/android/src/main/java/com/capgo/capacitor_background_geolocation/BackgroundGeolocationService.java
++++ b/node_modules/@capgo/background-geolocation/android/src/main/java/com/capgo/capacitor_background_geolocation/BackgroundGeolocationService.java
+@@ -112,11 +112,12 @@ public class BackgroundGeolocationService extends Service {
+         return false;
+     }
+ 
+-    // In native delivery mode, keep tracking after the user swipes the app away
+-    // from the recents list; otherwise fall back to the default teardown.
++    // Swiping the app away from the recents list ends tracking, matching iOS.
++    // Native delivery mode still outlives the app being backgrounded.
+     @Override
+     public void onTaskRemoved(Intent rootIntent) {
+         if (LocationStore.isEnabled(getApplicationContext())) {
++            ((LocalBinder) binder).stop();
+             return;
+         }
+         super.onTaskRemoved(rootIntent);

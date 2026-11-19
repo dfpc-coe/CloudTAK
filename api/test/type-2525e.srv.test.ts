@@ -21,7 +21,7 @@ test('GET: api/type/2525e', async () => {
         assert.ok(res.body.symbolsets.length > 0);
 
         const ids = res.body.symbolsets.map((set: { id: string }) => set.id);
-        assert.deepEqual(ids, [...ids].sort(), 'symbolsets are sorted by id');
+        assert.deepEqual(ids, [...ids].sort((a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0)), 'symbolsets are sorted by id');
 
         assert.deepEqual(res.body.symbolsets.find((set: { id: string }) => set.id === '10'), {
             id: '10',

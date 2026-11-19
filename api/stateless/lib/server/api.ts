@@ -3,15 +3,22 @@ import path from 'node:path';
 import cors from 'cors';
 import express from 'express';
 import history, { Context } from 'connect-history-api-fallback';
+import morgan from 'morgan';
 import Schema from '@openaddresses/batch-schema';
 import '../../../common/error.js';
 import { StandardResponse } from '../../../common/types.js';
+import { identityOf, securityHandlers, SECURITY_SCHEMES } from '../../../common/auth.js';
 import type Config from '../../../common/config.js';
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('../../../package.json', import.meta.url))));
 
 export default async function buildApi(config: Config): Promise<express.Application> {
     const app = express();
+
+    // Resolve the client address from X-Forwarded-For set by nginx and any private load balancer
+    app.set('trust proxy', 'loopback, linklocal, uniquelocal');
+
+    morgan.token('remote-user', req => identityOf(req));
 
     const schema = new Schema(express.Router(), {
         prefix: '/api',
@@ -34,36 +41,13 @@ export default async function buildApi(config: Config): Promise<express.Applicat
                 version: pkg.version,
             },
             components: {
-                securitySchemes: {
-                    bearerAuth: {
-                        type: 'http',
-                        scheme: 'bearer',
-                        bearerFormat: 'JWT',
-                        description: 'CloudTAK User JWT',
-                    },
-                    connectionAuth: {
-                        type: 'http',
-                        scheme: 'bearer',
-                        bearerFormat: 'JWT',
-                        description: 'Connection token (`etl.<jwt>`)',
-                    },
-                    layerAuth: {
-                        type: 'http',
-                        scheme: 'bearer',
-                        bearerFormat: 'JWT',
-                        description: 'Layer ETL token (`etl.<jwt>`) - the listed scopes must be present in the Layer\'s `permissions`',
-                    },
-                    scimAuth: {
-                        type: 'http',
-                        scheme: 'bearer',
-                        description: 'SCIM token configured by a System Administrator (`scim::token`)',
-                    },
-                },
+                securitySchemes: SECURITY_SCHEMES,
             },
             security: [{
                 bearerAuth: [],
             }],
         },
+        securityHandlers: securityHandlers(config),
     });
 
     app.disable('x-powered-by');
@@ -97,8 +81,6 @@ export default async function buildApi(config: Config): Promise<express.Applicat
 
     app.use('/api/scim', express.json({ type: 'application/scim+json', limit: '50mb' }));
     app.use('/api', schema.router);
-
-    await schema.api();
 
     await schema.load(
         new URL('../../routes/', import.meta.url),

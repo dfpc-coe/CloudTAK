@@ -43,6 +43,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(ImportResponse),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.IMPORT] }),
     }, async (req, res) => {
         try {
             let list;
@@ -70,9 +71,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     `,
                 });
             } else {
-                const auth = await Auth.is_auth(config, req, {
-                    resources: [{ access: AuthResourceAccess.IMPORT }],
-                });
+                const auth = await Auth.is_auth(config, req);
 
                 const username = auth instanceof AuthUser ? auth.email : null;
 
@@ -296,6 +295,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             import: Type.String(),
         }),
         res: ImportResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.IMPORT] }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -331,9 +331,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             import: Type.String(),
         }),
+        security: Auth.security({ token: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { token: true });
+            const user = await Auth.as_user(config, req);
 
             const imp = await config.models.Import.from(req.params.import);
 
@@ -366,6 +367,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             type_id: Type.String(),
         }),
         res: ImportResult,
+        security: Auth.security({ resources: [AuthResourceAccess.IMPORT] }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -404,6 +406,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             error: Type.Optional(Type.String()),
         }),
         res: ImportResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.IMPORT] }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {
@@ -457,6 +460,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             import: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.IMPORT] }),
     }, async (req, res) => {
         try {
             const auth = await Auth.is_auth(config, req, {

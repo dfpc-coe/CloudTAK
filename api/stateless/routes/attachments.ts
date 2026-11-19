@@ -17,11 +17,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const attachmentControl = new AttachmentControl(config);
     const profileControl = new ProfileControl(config);
 
-    const resources = [
-        { access: AuthResourceAccess.CONNECTION },
-        { access: AuthResourceAccess.LAYER },
-    ];
-
     await schema.get('/attachment', {
         name: 'List Attachments',
         group: 'Attachments',
@@ -42,10 +37,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                scope: 'attachment:read',
-                resources,
-            });
+            await Auth.is_auth(config, req);
 
             const items = [];
             for (const hash of Array.isArray(req.query.hash) ? req.query.hash : [req.query.hash]) {
@@ -95,10 +87,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const auth = await Auth.is_auth(config, req, {
-                scope: 'attachment:create',
-                resources,
-            });
+            const auth = await Auth.is_auth(config, req);
 
             if (req.query.mission && !(auth instanceof AuthUser)) {
                 throw new Err(401, null, 'Only an authenticated user can upload an attachment to a mission');
@@ -167,7 +156,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/attachment/:hash', {
         name: 'Get Attachment',
         group: 'Attachments',
-        security: Auth.security('attachment:read', { connection: true }),
         description: 'Attachments',
         params: Type.Object({
             hash: Type.String(),
@@ -178,13 +166,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 description: 'Set Content-Disposition to download the file',
             })),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER], scope: 'attachment:read', token: true }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                token: true,
-                scope: 'attachment:read',
-                resources,
-            });
+            await Auth.is_auth(config, req);
 
             const attachment = await S3.list(`attachment/${req.params.hash}/`);
             if (attachment.length < 1) throw new Err(404, null, 'Attachment not found');

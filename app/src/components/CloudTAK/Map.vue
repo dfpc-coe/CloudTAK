@@ -750,7 +750,7 @@ async function toLocation() {
     const location = await mapStore.worker.profile.location;
 
     if ([LocationState.Preset, LocationState.Live].includes(location.source)) {
-        mapStore.map.flyTo({
+        mapStore.map.jumpTo({
             center: location.coordinates as LngLatLike,
             zoom: 14
         });

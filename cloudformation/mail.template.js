@@ -199,7 +199,7 @@ export default cf.merge({
                 FunctionName: cf.join([cf.stackName, '-router']),
                 Description: 'Route inbound email to ETL Layers',
                 Handler: 'index.handler',
-                Runtime: 'nodejs24.x',
+                Runtime: 'nodejs26.x',
                 MemorySize: 128,
                 Timeout: 30,
                 Role: cf.getAtt('MailRouterFunctionRole', 'Arn'),

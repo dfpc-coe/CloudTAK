@@ -3,32 +3,14 @@ import assert from 'node:assert/strict';
 import jwt from 'jsonwebtoken';
 import http from 'http';
 import type { AddressInfo } from 'net';
-import { PNG } from 'pngjs';
+import { demTile } from './lib/dem.js';
 
 process.env.SigningSecret = 'test-secret';
 process.env.ASSET_BUCKET = 'test-bucket';
 
-let app: any;
+let app: typeof import('../index.js')['app'];
 let server: http.Server;
-let FileTiles: any;
-
-function createTile(elevation: number): ArrayBuffer {
-    const png = new PNG({ width: 4, height: 4 });
-    const value = Math.round((elevation + 10000) * 10);
-    const r = (value >> 16) & 0xff;
-    const g = (value >> 8) & 0xff;
-    const b = value & 0xff;
-
-    for (let index = 0; index < png.data.length; index += 4) {
-        png.data[index] = r;
-        png.data[index + 1] = g;
-        png.data[index + 2] = b;
-        png.data[index + 3] = 0xff;
-    }
-
-    const bytes = new Uint8Array(PNG.sync.write(png));
-    return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
-}
+let FileTiles: typeof import('../lib/tiles.js')['FileTiles'];
 
 test('Setup', async () => {
     const mod = await import('../index.js');
@@ -47,8 +29,8 @@ test('POST /tiles/profile/:username/:file/elevation returns sampled elevations',
     const token = jwt.sign({ email: 'user@example.com', access: 'profile' }, process.env.SigningSecret!);
     const originalFetch = globalThis.fetch;
     const originalRasterTileSource = FileTiles.prototype.rasterTileSource;
-    const leftTile = createTile(100);
-    const rightTile = createTile(200);
+    const leftTile = await demTile(100);
+    const rightTile = await demTile(200);
 
     FileTiles.prototype.rasterTileSource = async function (this: unknown, requestToken: string) {
         assert.equal(requestToken, token);

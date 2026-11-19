@@ -421,14 +421,26 @@ function updateDraftLink(index: number, key: 'remarks' | 'url', value: string): 
     };
 }
 
+// ATAK only lists r-u Links and tells them apart by uid
+function externalLink(link: LinkEntry): LinkEntry {
+    if (link.relation && link.relation !== 'r-u') return link;
+
+    return {
+        ...link,
+        relation: 'r-u',
+        uid: link.uid || crypto.randomUUID(),
+        mime: link.mime || 'text/html'
+    };
+}
+
 function saveExternalLink(index: number): void {
     const nextLinks = links.value.map((link, itemIndex) => {
         if (itemIndex !== index) return link;
 
-        return {
+        return externalLink({
             ...link,
             ...(draftLinks.value[index] || {})
-        };
+        });
     });
 
     updateLinks(nextLinks);
@@ -439,9 +451,7 @@ function saveExternalLink(index: number): void {
 function saveNewLink(): void {
     updateLinks([
         ...links.value,
-        {
-            ...newLink.value
-        }
+        externalLink(newLink.value)
     ]);
 
     isCreatingLink.value = false;

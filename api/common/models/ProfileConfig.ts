@@ -10,13 +10,13 @@ export default class ProfileConfigModel {
         this.pool = pool;
     }
 
-    async from(username: string): Promise<Record<string, any>> {
+    async from(username: string): Promise<Record<string, unknown>> {
         const settings = await this.pool
             .select()
             .from(ProfileSetting)
             .where(eq(ProfileSetting.username, username));
 
-        const config: Record<string, any> = {};
+        const config: Record<string, unknown> = {};
         for (const setting of settings) {
             try {
                 config[setting.key] = JSON.parse(setting.value);
@@ -27,13 +27,13 @@ export default class ProfileConfigModel {
         return config;
     }
 
-    async commit(username: string, config: Record<string, any>): Promise<Record<string, any>> {
+    async commit(username: string, config: Record<string, unknown>): Promise<Record<string, unknown>> {
         const timestamp = new Date().toISOString();
 
         for (const key of Object.keys(config)) {
-            let value = config[key];
-            if (value === undefined) continue;
-            if (typeof value !== 'string') value = JSON.stringify(value);
+            const raw = config[key];
+            if (raw === undefined) continue;
+            const value = typeof raw === 'string' ? raw : JSON.stringify(raw);
 
             await this.pool.insert(ProfileSetting)
                 .values({

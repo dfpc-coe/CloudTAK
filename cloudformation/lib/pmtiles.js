@@ -10,7 +10,7 @@ export default {
         PMTilesReservedConcurrency: {
             Description: 'Reserved concurrency ceiling for the PMTiles Lambda so a tile storm cannot starve other functions in the account',
             Type: 'Number',
-            Default: 100,
+            Default: 300,
             MinValue: 1
         },
         PMTilesProvisionedConcurrency: {
@@ -100,7 +100,7 @@ export default {
                 MemorySize: 128,
                 Timeout: 900,
                 Description: 'Cleanup old files from EFS',
-                Runtime: 'nodejs24.x',
+                Runtime: 'nodejs26.x',
                 Handler: 'index.handler',
                 Role: cf.getAtt('EFSCleanupLambdaRole', 'Arn'),
                 Code: {
@@ -188,7 +188,8 @@ export default {
                         StackName: cf.stackName,
                         ASSET_BUCKET: cf.ref('AssetBucket'),
                         API_URL: cf.join(['https://map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
-                        PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))])
+                        PMTILES_URL: cf.join(['https://tiles.map.', cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))]),
+                        TILE_CACHE_DIR: '/mnt/efs/cache'
                     }
                 },
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),

@@ -27,6 +27,89 @@
 
 ### Pending Release
 
+### v13.124.0 - 2026-11-17
+
+- :arrow_up: Migrate to TS7 for blazing build times - `tsc` is TypeScript 7.0 via `@typescript/native`, tools that need the compiler API (ESLint, `vue-tsc`, TypeDoc) stay on the TypeScript 6 API
+- :arrow_up: Migrate the API off ESLint onto OXLint for blazing lint times
+- :bug: Fix numerous small bugs in the codebase surfaced by OXLint
+- :bug: Paging verification codes are accepted for one 30 second period either side of the current one - the tolerance was never applied, so a code expired at the end of the period it was sent in
+
+### v13.123.2 - 2026-11-17
+
+- :bug: Generate Links that are valid in ATAK
+
+### v13.123.1 - 2026-11-16
+
+- :rocket: Consolidate Permissions
+- :bug: Rectify Mission Changes API call body against TAK Server generated schema
+
+### v13.123.0 - 2026-11-16
+
+- :tada: `API` Core Devices accept a `stale` number of seconds - the Device is no longer broadcast to TAK clients once that long has passed since it was last updated, until its next update. The value is stored on the Core Entity so other kinds can adopt it
+- :rocket: `API` A Core Device without a `stale` is broadcast with a 30 second stale time in place of 30 minutes, so a Device that loses its location or is deleted drops from TAK clients promptly
+- :rocket: `API` Route `security` declarations are now enforced by `@openaddresses/batch-schema` before a request body is parsed or validated - a route without a declaration accepts users only, and every route that accepts Layer, Connection or other resource tokens, a `token` query parameter, or requires a System Administrator declares it via `Auth.security()`
+- :rocket: `API` The token of a request is parsed once and shared by every `Auth` call of a route handler
+- :rocket: `API` An unauthenticated request now receives its `401` before any validation error, with a `WWW-Authenticate` header
+
+### v13.122.8 - 2026-11-10
+
+- :rocket: Display and allow filtering by Layer ID
+
+### v13.122.7 - 2026-11-10
+
+- :rocket: Include Auth Information for failing requests
+
+### v13.122.6 - 2026-11-10
+
+- :bug: HTTP Clients were reused and would then have a potential request killed if it was cutoff by the 60s ALB timeout for the hub
+- :bug: Add 8 sec timeouts to Tile Lambda internal timeouts
+- :bug: Cache empty feature collections
+
+### v13.122.5 - 2026-11-09
+
+- :rocket: Allow users to configure desired notifications.
+
+### v13.122.4 - 2026-11-09
+
+- :rocket: Add support for ephemeral PolyLines via node-cot
+
+### v13.122.3 - 2026-11-09
+
+- :bug: Ensure enter submits the password when joining a password protected Data Sync - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2026
+
+### v13.122.2 - 2026-11-08
+
+- :bug: Ensure app can't be built with plugins
+
+### v13.122.1 - 2026-11-08
+
+- :arrow_up: Update etl-base & node-cot to latest versions
+
+### v13.122.0 - 2026-11-08
+
+- :rocket: Refactor lower tabs into top level tabs for better visibility and discoverability of features
+- :rocket: Redesign Links & Data Syncs property panels to be more visually consistent
+- :tada: Introduce Core Event Timeline APIs for storing timelined events related to an Entity
+
+### v13.121.1 - 2026-11-07
+
+- :rocket: Migrate PMTile Tile utilities into the `@tak-ps/node-tiles` library for better unit testing and common usage across the API and ETL tasks
+- :arrow_up: Update all Lambda runtimes to Node 26
+
+### v13.121.0 - 2026-11-05
+
+- :tada: Introduce Slope & Composite Raster Layers
+- :bug: Data Sync names are trimmed on creation and existing names are trimmed by migration - TAK Server stores mission names trimmed but matches `<dest mission>` exactly, so a padded name left every Layer CoT brokered outside the Mission
+- :rocket: Layer CoTs submitted to a Data Sync are addressed by Mission GUID (`<dest mission-guid>`) rather than name, falling back to the trimmed name for Data Syncs without a stored GUID
+
+### v13.120.0 - 2026-11-05
+
+- :bug: Data Sync chat input is hidden unless the user is subscribed with `MISSION_WRITE` - TAK Server silently drops mission chat from read-only subscribers
+- :rocket: Subscribing to a Data Sync fetches the caller's role once instead of three times - `Subscription.load` skips the role refresh it just performed and `Subscription.update` adopts the stored role when another instance already applied the same subscription change
+- :tada: `PATCH /api/marti/missions/:guid` accepts `defaultRole` and a `password` (a string sets or replaces it, `null` removes it); the Mission response includes `defaultRole` (#2008)
+- :tada: Data Sync info screen shows the default subscriber role & password state with Set/Change/Remove controls for users with `MISSION_SET_ROLE` / `MISSION_SET_PASSWORD` (#2008)
+- :bug: Data Sync "Remove User" now removes the target subscriber (via a role-less TAK Server `PUT .../role`) instead of silently unsubscribing only the caller's own session; the button is gated on `MISSION_SET_ROLE` and failures are shown in the Users list (#2010)
+
 ### v13.119.0 - 2026-11-03
 
 - :tada: Introduce new Appearance Menu

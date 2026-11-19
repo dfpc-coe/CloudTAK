@@ -31,6 +31,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             assets: Type.Array(AssetResponse),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -44,14 +45,15 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
-            const assets: Array<Static<typeof AssetResponse>> = list.assets.map((a: any) => {
-                a.sync = false;
-                if (!data.mission_sync) return a;
-                for (const glob of data.assets) {
-                    a.sync = includesWithGlob([a.name], glob);
-                    if (a.sync) break;
+            const assets: Array<Static<typeof AssetResponse>> = list.assets.map((a) => {
+                let sync = false;
+                if (data.mission_sync) {
+                    for (const glob of data.assets) {
+                        sync = includesWithGlob([a.name], glob);
+                        if (sync) break;
+                    }
                 }
-                return a;
+                return { ...a, sync };
             });
 
             res.json({ ...list, assets });
@@ -72,6 +74,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             'multipart/form-data': true,
         },
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         let data: InferSelectModel<typeof Data>;
         try {
@@ -173,6 +176,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             ext: Type.String(),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -237,10 +241,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             asset: Type.String(),
             ext: Type.String(),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.DATA, AuthResourceAccess.CONNECTION], token: true }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
-                token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },

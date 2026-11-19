@@ -72,6 +72,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             features: Type.Array(SubmitFeature),
         }),
         res: ConnectionSubmitResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         const errors: Array<Static<typeof SubmitError>> = [];
         const skipped: Array<Static<typeof SubmitSkipped>> = [];

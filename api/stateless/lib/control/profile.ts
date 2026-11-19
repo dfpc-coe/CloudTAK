@@ -26,6 +26,13 @@ export const ProfileConfigDefaults = {
     'geometry::point::color': '#ff0000',
     'geometry::point::icon': '',
 
+    'notification::contact': true,
+    'notification::import': true,
+    'notification::alert': true,
+    'notification::medical': true,
+    'notification::mission': true,
+    'notification::chat': true,
+
     'menu::order': [],
 
     'tak::phone': '',
@@ -141,7 +148,7 @@ export default class ProfileControl {
         };
 
         for (const key of Object.keys(full_config)) {
-            (profile as any)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
+            (profile as Record<string, unknown>)[key.replace(/::/g, '_')] = full_config[key as keyof typeof full_config];
         }
 
         const presence = await this.config.hub.wsPresence([profile.username]);

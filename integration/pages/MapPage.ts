@@ -75,9 +75,7 @@ export class MapPage {
     // "A new version of CloudTAK is ready" banner (App.vue); absent most of the time
     readonly updateBanner: Locator;
     readonly updateBannerClose: Locator;
-    // Search modal
-    readonly searchTitle: Locator;
-    readonly searchClose: Locator;
+    readonly searchModal: Locator;
     readonly searchInput: Locator;
     // Manual location pane
     readonly setLocationPane: Locator;
@@ -96,7 +94,6 @@ export class MapPage {
         'Chats',
         'Routes',
         'Files',
-        'Imports',
         'Iconsets',
         'History',
         'Display Settings',
@@ -115,7 +112,6 @@ export class MapPage {
         'Chats': { route: '/menu/chats', title: 'Chats' },
         'Routes': { route: '/menu/routes', title: 'Routes' },
         'Files': { route: '/menu/files', title: 'Files' },
-        'Imports': { route: '/menu/imports', title: 'Data Imports' },
         'Iconsets': { route: '/menu/iconsets', title: 'Iconsets' },
         'History': { route: '/menu/history', title: 'History' },
         'Display Settings': { route: '/menu/settings', title: 'Settings' },
@@ -162,9 +158,8 @@ export class MapPage {
 
         this.panelTitle = page.locator('[role="menubar"] .cloudtak-header .strong');
 
-        this.searchTitle = page.locator('.modal-title', { hasText: /^\s*Search\s*$/ });
-        this.searchClose = page.locator('.modal-header').filter({ has: this.searchTitle }).locator('.btn-close');
-        this.searchInput = page.getByPlaceholder('Search...');
+        this.searchModal = page.locator('.modal.show').filter({ has: page.locator('.search-box') });
+        this.searchInput = this.searchModal.locator('.search-box input');
 
         this.setLocationPane = page.getByText(/Click on the map to (set|update) your location/);
         this.useGps = page.getByRole('button', { name: 'Use GPS' });
@@ -187,6 +182,27 @@ export class MapPage {
     async waitUntilLoaded(): Promise<void> {
         await expect(this.canvas.first()).toBeVisible({ timeout: 90_000 });
         await expect(this.loadingModal).toBeHidden({ timeout: 90_000 });
+        await expect.poll(async () => this.page.evaluate(() => {
+            const root = document.querySelector('#app') as (Element & { __vue_app__?: unknown }) | null;
+            const app = root?.__vue_app__ as {
+                config: { globalProperties: { $pinia?: { _s: Map<string, { isMapLoadedFully?: boolean }> } } };
+            } | undefined;
+            return app?.config.globalProperties.$pinia?._s.get('cloudtak')?.isMapLoadedFully === true;
+        }), {
+            timeout: 90_000,
+            message: 'expected mapStore.isMapLoadedFully to be true (overlays loaded, worker init finished)',
+        }).toBe(true);
+    }
+
+    async openDataSyncs(): Promise<void> {
+        await expect(async () => {
+            await this.activeMission.click();
+            await expect(this.panelTitle).toHaveText('Data Syncs', { timeout: 10_000 });
+        }).toPass({ timeout: 45_000 });
+    }
+
+    async closeSearch(): Promise<void> {
+        await this.searchModal.click({ position: { x: 5, y: 5 } });
     }
 
     // Record basemap tile responses (URL template read from the TileJSON). Call BEFORE goto().
@@ -197,7 +213,7 @@ export class MapPage {
         this.page.on('response', (res) => {
             const url = res.url();
 
-            if (/\/api\/basemap\/\d+\/tiles(\?|$)/.test(url) && !this.tileTemplate) {
+            if (/\/(?:api|tiles)\/basemap\/\d+\/tiles(\?|$)/.test(url) && !this.tileTemplate) {
                 void res.json().then((json: { tiles?: string[] }) => {
                     const template = json.tiles?.[0]?.split('?')[0];
                     if (!template) return;
@@ -209,7 +225,7 @@ export class MapPage {
                 return;
             }
 
-            if (/\/api\/basemap\/\d+\/tiles\/\d+\/\d+\/\d+/.test(url)) {
+            if (/\/(?:api|tiles)\/basemap\/\d+\/tiles\/\d+\/\d+\/\d+/.test(url)) {
                 this.tileResponses.push(res);
             } else if (this.tileTemplate && this.tileTemplate.test(url)) {
                 this.tileResponses.push(res);

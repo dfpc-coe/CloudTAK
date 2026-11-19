@@ -62,6 +62,11 @@
 
         <Offline v-if='isOffline' />
         <template v-else>
+            <TablerAlert
+                v-if='userError'
+                class='mx-2 mt-2'
+                :err='userError'
+            />
             <div
                 v-if='invites.length'
                 class='col-12 px-2 py-2'
@@ -158,7 +163,7 @@
                                 />
                             </TablerIconButton>
                             <TablerDelete
-                                v-if='canInvite'
+                                v-if='canManageRoles'
                                 label='Remove User'
                                 displaytype='icon'
                                 @delete='removeUser(sub)'
@@ -221,6 +226,7 @@ const subscriptions = ref<MissionSubscriptions>([])
 const invites = ref<MissionInvite[]>([]);
 const inviteUsername = ref('');
 const inviteError = ref<Error | undefined>();
+const userError = ref<Error | undefined>();
 const showInvites = ref(false);
 const editingUid = ref<string | null>(null);
 
@@ -290,14 +296,28 @@ function toggleEdit(clientUid: string) {
 }
 
 async function removeUser(sub: MissionSubscriptions[number]) {
-    await props.subscription.removeUser(sub.clientUid);
-    if (editingUid.value === sub.clientUid) editingUid.value = null;
+    userError.value = undefined;
+
+    try {
+        await props.subscription.removeUser(sub.clientUid);
+        if (editingUid.value === sub.clientUid) editingUid.value = null;
+    } catch (err) {
+        userError.value = err instanceof Error ? err : new Error(String(err));
+    }
+
     await fetchSubscriptions();
 }
 
 async function changeRole(sub: MissionSubscriptions[number], role: MissionRoleType) {
     if (role === sub.role.type) return;
-    await props.subscription.changeRole(sub, role);
+    userError.value = undefined;
+
+    try {
+        await props.subscription.changeRole(sub, role);
+    } catch (err) {
+        userError.value = err instanceof Error ? err : new Error(String(err));
+    }
+
     await fetchSubscriptions();
 }
 

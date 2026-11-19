@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const layerControl = new LayerControl(config);
 
     async function deployLayer(layer: Static<typeof LayerResponse>): Promise<void> {
-        const stack = await Lambda.generate(config, layer);
+        const stack = Lambda.generate(config, layer);
         await LayerDeploy.apply(config, layer.id, stack);
     }
 
@@ -62,9 +62,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'LayerAdmin',
         description: 'Redeploy all Layers with latest CloudFormation output',
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             let page = 0;
             let list;
@@ -97,9 +98,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'LayerAdmin',
         description: 'List all layers and whether a newer task version is available',
         res: LayerUpdateManagementListResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const items = await layerControl.listUpdates();
 
@@ -144,6 +146,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
             items: Type.Array(LayerResponse),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const resources = [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }];
@@ -151,7 +154,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             if (req.params.connectionid === 0) {
                 await Auth.as_user(config, req, { admin: true });
             } else {
-                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
             }
 
@@ -161,8 +166,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    layers.name ~* ${req.query.filter}
-                    AND connection = ${Param(req.params.connectionid === 0 ? null : req.params.connectionid)}
+                    (layers.name ~* ${req.query.filter} OR layers.id::TEXT = ${req.query.filter})
+                    AND connection =${Param(req.params.connectionid === 0 ? null : req.params.connectionid)}
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers_incoming.data)
                 `,
             });
@@ -234,9 +239,21 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 maximum: 900,
             }),
 
-            alarm_period: Type.Optional(Type.Integer()),
-            alarm_evals: Type.Optional(Type.Integer()),
-            alarm_points: Type.Optional(Type.Integer()),
+            alarm_period: Type.Integer({
+                default: 30,
+                description: 'CloudWatch alarm period in seconds',
+                minimum: 1,
+            }),
+            alarm_evals: Type.Integer({
+                default: 5,
+                description: 'Number of periods evaluated by the CloudWatch alarm',
+                minimum: 1,
+            }),
+            alarm_points: Type.Integer({
+                default: 4,
+                description: 'Breaching data points required to alarm - must not exceed alarm_evals',
+                minimum: 1,
+            }),
             protected: Type.Boolean({ default: false }),
             vpc: Type.Boolean({
                 default: false,
@@ -258,6 +275,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             })),
         }),
         res: LayerResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             let username: string | null = null;
@@ -279,6 +297,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             CommonLayerControl.validatePermissions(req.body.permissions);
+            CommonLayerControl.validateAlarms(req.body);
 
             if (req.body.incoming && req.body.incoming.cron) {
                 Schedule.is_valid(req.body.incoming.cron);
@@ -332,6 +351,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             config: Type.Optional(Layer_Config),
         }),
         res: LayerIncomingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -354,7 +374,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.styles) {
-                await Style.validate(req.body.styles);
+                Style.validate(req.body.styles);
             }
 
             if (req.body.cron) {
@@ -429,6 +449,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             config: Type.Optional(Layer_Config),
         }),
         res: LayerIncomingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -471,7 +492,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.styles) {
-                await Style.validate(req.body.styles);
+                Style.validate(req.body.styles);
             }
 
             if (req.body.cron) {
@@ -546,6 +567,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -605,6 +627,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             filters: Type.Optional(FilterContainer),
         }),
         res: LayerOutgoingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -627,7 +650,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.filters) {
-                await Filter.validate(req.body.filters);
+                Filter.validate(req.body.filters);
             }
 
             const capabilities = await layerControl.capabilities(layer.task);
@@ -669,6 +692,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             filters: Type.Optional(FilterContainer),
         }),
         res: LayerOutgoingResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -696,7 +720,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             if (req.body.filters) {
-                await Filter.validate(req.body.filters);
+                Filter.validate(req.body.filters);
             }
 
             const outgoing = await config.models.LayerOutgoing.commit(layer.id, updated);
@@ -724,6 +748,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             let connection = null;
@@ -811,15 +836,25 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             task: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
 
-            alarm_period: Type.Optional(Type.Integer()),
-            alarm_evals: Type.Optional(Type.Integer()),
-            alarm_points: Type.Optional(Type.Integer()),
+            alarm_period: Type.Optional(Type.Integer({
+                description: 'CloudWatch alarm period in seconds',
+                minimum: 1,
+            })),
+            alarm_evals: Type.Optional(Type.Integer({
+                description: 'Number of periods evaluated by the CloudWatch alarm',
+                minimum: 1,
+            })),
+            alarm_points: Type.Optional(Type.Integer({
+                description: 'Breaching data points required to alarm - must not exceed alarm_evals',
+                minimum: 1,
+            })),
 
             permissions: Type.Optional(Type.Array(Type.String(), {
                 description: 'Permissions granted to the Layer as <permission>:<level> pairs - ie video:read or video:*',
             })),
         }),
         res: LayerResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             CommonLayerControl.validatePermissions(req.body.permissions);
@@ -838,7 +873,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     throw new Err(400, null, 'Layer is not an admin layer');
                 }
             } else {
-                const auth = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const auth = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
 
                 if (req.body.permissions !== undefined && auth.layer) {
                     throw new Err(403, null, 'Layer tokens cannot modify Layer permissions');
@@ -851,6 +888,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     throw new Err(403, null, 'Only a System Admin can change VPC access');
                 }
             }
+
+            CommonLayerControl.validateAlarms({
+                alarm_evals: req.body.alarm_evals ?? layer.alarm_evals,
+                alarm_points: req.body.alarm_points ?? layer.alarm_points,
+            });
 
             const task = req.body.task || layer.task;
             const taskChanged = req.body.task !== undefined && req.body.task !== layer.task;
@@ -959,6 +1001,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER], token: true }),
     }, async (req, res) => {
         try {
             const resources = [
@@ -968,12 +1011,12 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             let layer;
             if (req.params.connectionid === 0) {
-                await Auth.as_user(config, req, { admin: true, token: true });
+                await Auth.as_user(config, req, { admin: true });
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
                 const { connection } = await Auth.is_connection(config, req, {
-                    token: true, resources,
+                    resources,
                 }, req.params.connectionid);
 
                 if (connection.readonly) throw new Err(400, null, 'Connection is Read-Only mode');
@@ -1017,6 +1060,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const resources = [
@@ -1029,7 +1073,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
 
                 layer = await layerControl.from(connection, req.params.layerid);
             }
@@ -1061,6 +1107,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION] }),
     }, async (req, res) => {
         try {
             const resources = [
@@ -1072,7 +1119,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 await Auth.as_user(config, req, { admin: true });
                 layer = await layerControl.from(null, req.params.layerid);
             } else {
-                const { connection } = await Auth.is_connection(config, req, { resources }, req.params.connectionid);
+                const { connection } = await Auth.is_connection(config, req, {
+                    resources,
+                }, req.params.connectionid);
                 layer = await layerControl.from(connection, req.params.layerid);
             }
 

@@ -34,6 +34,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             features: Type.Array(Feature.InputFeature),
         }),
         res: StandardLayerResponse,
+        security: Auth.security({ user: false, resources: [AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             await Auth.as_resource(config, req, {
@@ -114,6 +115,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     cot.archived(true);
                 }
 
+                const missionDest = data.mission_guid
+                    ? { 'mission-guid': data.mission_guid }
+                    : { mission: data.name.trim() };
+
                 if (data.mission_diff) {
                     if (!Array.isArray(req.body.uids)) {
                         throw new Err(400, null, 'uids Array must be present when submitting to DataSync with MissionDiff');
@@ -133,7 +138,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                         if (!inputFeats.has(String(feat.id))) {
                             /** TODO Add in 5.3 once MissionAPI supports t-x-d-d
                              *  const cot = new ForceDelete(String(feat.id));
-                             *  cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
+                             *  cot.addDest({ ...missionDest, path: `layer-${layer.id}`, after: '' });
                              *  cots.push(cot);
                              */
                             await api.Mission.detachContents(
@@ -188,7 +193,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                             }
                         }
 
-                        cot.addDest({ mission: data.name, path: pathMapEntryLast.uid, after: '' });
+                        cot.addDest({ ...missionDest, path: pathMapEntryLast.uid, after: '' });
                         if (!pathMapEntryLast.uids) pathMapEntryLast.uids = [];
                         pathMapEntryLast.uids.push({ data: cot.uid(), timestamp: new Date().toISOString(), creatorUid: `connection-${data.connection}-data-${data.id}` });
                     }
@@ -232,7 +237,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     cots = filtered;
                 } else {
                     for (const cot of cots) {
-                        cot.addDest({ mission: data.name });
+                        cot.addDest({ ...missionDest });
                     }
                 }
             } else {
@@ -279,6 +284,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             uid: Type.String(),
         }),
         res: Feature.Feature,
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {
@@ -320,6 +326,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             type: Type.String(),
             features: Type.Array(Feature.Feature),
         }),
+        security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
             const { connection } = await Auth.is_connection(config, req, {

@@ -1,33 +1,27 @@
 import Err from '@openaddresses/batch-error';
 import type { StaticCapabilitiesDocument } from '@tak-ps/etl';
-import { PERMISSIONS as ETL_PERMISSIONS, StaticCapabilities } from '@tak-ps/etl';
+import { PERMISSIONS, StaticCapabilities } from '@tak-ps/etl';
 
-/**
- * Permissions grantable to Layer & Connection tokens - the upstream ETL
- * catalogue plus permissions for resources only CloudTAK manages
- */
-export const PERMISSIONS: Record<string, Array<string>> = {
-    ...ETL_PERMISSIONS,
-    assignment: ['create', 'read', 'update', 'delete'],
-    effect: ['create', 'read', 'update', 'delete'],
-    attachment: ['create', 'read'],
-};
+export { PERMISSIONS };
 
 export default class LayerControl {
+    /**
+     * Ensure a Layer's CloudWatch alarm settings are accepted by CloudWatch,
+     * which rejects alarms whose DatapointsToAlarm exceeds EvaluationPeriods
+     */
+    static validateAlarms(alarm: { alarm_evals: number; alarm_points: number }): void {
+        if (alarm.alarm_points > alarm.alarm_evals) {
+            throw new Err(400, null, `Alarm Data Points (${alarm.alarm_points}) must be less than or equal to Evaluation Periods (${alarm.alarm_evals})`);
+        }
+    }
+
     /**
      * Ensure every requested Layer permission is a known `<permission>:<level>`
      * pair from the PERMISSIONS object - `<permission>:*` is valid for every
      * permission
      */
     static isValidPermission(resource: string): boolean {
-        const separator = resource.indexOf(':');
-        if (separator === -1) return false;
-
-        const levels = PERMISSIONS[resource.slice(0, separator)];
-        if (!levels) return false;
-
-        const level = resource.slice(separator + 1);
-        return level === '*' || levels.includes(level);
+        return StaticCapabilities.isValidPermission(resource);
     }
 
     static validatePermissions(permissions?: Array<string>): void {

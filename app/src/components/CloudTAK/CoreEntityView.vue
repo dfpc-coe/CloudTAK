@@ -54,6 +54,14 @@
             style='min-height: 0;'
         >
             <div class='entity-actions d-flex align-items-center flex-nowrap px-2 py-1 border-bottom cloudtak-header flex-shrink-0'>
+                <PropertyCoreEntityStatus
+                    class='ps-1 me-1 flex-shrink-1'
+                    style='min-width: 0; overflow: hidden;'
+                    :started='event.started'
+                    :ended='event.ended'
+                    :priority='event.priority'
+                />
+
                 <TablerIconButton
                     v-if='hasMap'
                     title='Zoom To'
@@ -132,17 +140,46 @@
                 />
             </div>
 
+            <PropertyTabs
+                v-model='tab'
+                :tabs='tabs'
+                class='flex-shrink-0 pt-2'
+            />
+
             <div
                 class='overflow-auto overflow-x-hidden flex-grow-1'
                 style='min-height: 0;'
             >
-                <div class='pt-1'>
+                <div
+                    v-show='tab === "timeline"'
+                    class='h-100'
+                >
+                    <PropertyCoreEntityTimeline
+                        :entity='event.id'
+                        :edit='is_editable'
+                        @change='timelineChanged'
+                    />
+                </div>
+
+                <div
+                    v-show='tab === "details"'
+                    class='pt-1'
+                >
                     <div class='px-2 pb-2'>
                         <AppearanceRow
                             :properties='entityAppearance(event)'
                             :geometry='event.geometry'
                             :edit='is_editable && !embedded'
                             @click='router.push(`/event/${event.id}/appearance`)'
+                        />
+                    </div>
+
+                    <div class='px-2 pb-2'>
+                        <PropertyCoreEntityLatestActivity
+                            :entry='latest'
+                            :total='timelineTotal'
+                            :edit='is_editable'
+                            @open='tab = "timeline"'
                         />
                     </div>
 
@@ -197,21 +234,13 @@
                             v-text='event.username'
                         />
                     </PropertyFactRow>
-                </div>
 
-                <PropertyRemarks
-                    :model-value='event.remarks'
-                    :edit='is_editable'
-                    @submit='patch({ remarks: $event })'
-                />
+                    <PropertyRemarks
+                        :model-value='event.remarks'
+                        :edit='is_editable'
+                        @submit='patch({ remarks: $event })'
+                    />
 
-                <PropertyTabs
-                    v-model='tab'
-                    :tabs='tabs'
-                    class='mt-2'
-                />
-
-                <div v-show='tab === "details"'>
                     <PropertyCoreEntityLinks
                         :model-value='event.links'
                         :edit='is_editable'
@@ -307,6 +336,11 @@ import {
     IconCircleX,
     IconPlayerStop,
     IconPlayerPlay,
+    IconForms,
+    IconClockEdit,
+    IconAffiliate,
+    IconUserCheck,
+    IconListDetails,
 } from '@tabler/icons-vue';
 import MenuTemplate from './util/MenuTemplate.vue';
 import CopyField from './util/CopyField.vue';
@@ -325,13 +359,17 @@ import PropertyCoreEntityAssignments from './Property/PropertyCoreEntityAssignme
 import PropertyCoreEntityMetadata from './Property/PropertyCoreEntityMetadata.vue';
 import PropertyCoreEntityMission from './Property/PropertyCoreEntityMission.vue';
 import PropertyCoreEntityTimes from './Property/PropertyCoreEntityTimes.vue';
+import PropertyCoreEntityStatus from './Property/PropertyCoreEntityStatus.vue';
+import PropertyCoreEntityTimeline from './Property/PropertyCoreEntityTimeline.vue';
+import PropertyCoreEntityLatestActivity from './Property/PropertyCoreEntityLatestActivity.vue';
 import FormWizard from './util/FormWizard.vue';
-import type { CoreForm, CoreEntity, CoreEntityBoardSummary, CoreEntityFormResponse } from '../../types.ts';
+import type { CoreForm, CoreEntity, CoreEntityBoardSummary, CoreEntityFormResponse, CoreEntityTimelineEntry } from '../../types.ts';
 import { server } from '../../std.ts';
 import { db, liveQuery } from '../../database.ts';
 import { missingRequiredForms } from '../../utils/column-forms.ts';
 import { useMapStore } from '../../stores/map.ts';
 import { useEntityAccess } from '../../utils/entity-access.ts';
+import { useRouteTab } from '../../utils/route-tab.ts';
 import { entityMarkerProperties, entityAppearance } from '../../utils/core-entity.ts';
 
 // When an eventId prop is provided the view runs embedded (the Event Board
@@ -377,14 +415,24 @@ const formWizard = ref<{
 /** Bumped when the wizard submits Responses so the Forms section re-fetches */
 const formsRefresh = ref(0);
 
-const tab = ref('details');
+/** Newest Timeline entry & total - the Latest Activity row and the tab badge */
+const latest = ref<CoreEntityTimelineEntry | undefined>();
+const timelineTotal = ref(0);
 
-const tabs: Array<PropertyTab> = [
-    { value: 'details', label: 'Details' },
-    { value: 'channels', label: 'Channels' },
-    { value: 'assignments', label: 'Assignments' },
-    { value: 'forms', label: 'Forms' },
-];
+const tabs = computed<Array<PropertyTab>>(() => [
+    { value: 'details', label: 'Details', icon: IconListDetails },
+    { value: 'timeline', label: 'Timeline', icon: IconClockEdit, count: timelineTotal.value },
+    { value: 'channels', label: 'Channels', icon: IconAffiliate },
+    { value: 'assignments', label: 'Assignments', icon: IconUserCheck },
+    { value: 'forms', label: 'Forms', icon: IconForms },
+]);
+
+const tab = useRouteTab({
+    base: () => `/event/${eventKey.value}`,
+    tabs: () => tabs.value.map((t) => t.value),
+    fallback: 'details',
+    embedded: () => embedded.value,
+});
 
 const { is_creator, is_editable, load: loadAccess } = useEntityAccess(event);
 
@@ -411,11 +459,44 @@ async function fetchEvent(): Promise<void> {
 
     try {
         event.value = await loadEvent();
+        await loadLatest();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
 
     loading.value = false;
+}
+
+/** The newest Timeline entry - a failure here leaves the Event up without the Latest Activity row */
+async function loadLatest(): Promise<void> {
+    if (!event.value) return;
+
+    try {
+        const res = await server.GET('/api/core/entity/{:entity}/timeline', {
+            params: {
+                path: { ':entity': event.value.id },
+                query: {
+                    limit: 1,
+                    page: 0,
+                    order: 'desc',
+                    sort: 'occurred',
+                    filter: '',
+                }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        latest.value = res.data.items[0];
+        timelineTotal.value = res.data.total;
+    } catch (err) {
+        console.error('Failed to load the Timeline of Core Event', err);
+    }
+}
+
+function timelineChanged(total: number): void {
+    timelineTotal.value = total;
+    void loadLatest();
 }
 
 /** Reload server state in place - no loading flash, the current Event stays up on failure */

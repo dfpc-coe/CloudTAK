@@ -61,9 +61,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             total: Type.Integer(),
             items: Type.Array(ProfileListResponse),
         }),
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const columns = getTableColumns(Profile);
             const column = columns[req.query.sort as keyof typeof columns];
@@ -116,9 +117,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         body: UserPatchBody,
         res: UserResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { admin: true });
+            const user = await Auth.as_user(config, req);
 
             const profileBody = req.body as UserPatchBodyType;
 
@@ -170,9 +172,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             username: Type.String(),
         }),
         res: UserResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const profile = await profileControl.from(req.params.username);
 
@@ -221,9 +224,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }),
         }),
         res: StandardResponse,
+        security: Auth.security({ admin: true }),
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { admin: true });
+            const user = await Auth.as_user(config, req);
 
             if (req.query.username !== req.params.username) {
                 throw new Err(400, null, 'Confirmation username does not match the user being erased');
