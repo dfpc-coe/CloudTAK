@@ -71,6 +71,10 @@ exports.handler = async (event, context) => {
       invalidation_flow: invalidationFlow.pk,
       redirect_uris: redirectUris,
       client_type: 'confidential',
+      // REQUIRED. Authentik 2026.8 defaults `grant_types` to an empty list when it is omitted, and a
+      // provider with no grant types rejects every authorize request with `invalid_request` ("The request is
+      // otherwise malformed"), so logins fail. The same set as the TAK Team Manager provider.
+      grant_types: ['authorization_code', 'implicit', 'hybrid'],
       include_claims_in_id_token: true,
       access_code_validity: 'minutes=1',
       access_token_validity: 'minutes=5',
