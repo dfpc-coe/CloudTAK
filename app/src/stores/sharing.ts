@@ -118,8 +118,12 @@ export const useSharingStore = defineStore('sharing', {
                     }
                 };
 
+                // Start the "reconnecting" clock now, not from when the pause closed the connection
+                map.connectionClosedAt = Date.now();
                 await step('the server connection', () => map.worker.resumeSharing());
                 await step('location', async () => {
+                    // Permissions can change while the app is paused (or in system settings)
+                    await device.geolocation.refreshStatus();
                     map.location = LocationState.Loading;
                     await map.startLocationWatch();
                 });

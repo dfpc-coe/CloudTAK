@@ -335,6 +335,23 @@ user resumes. It belongs to the user who paused; a different user signing in on 
 same device starts live. If a step of pausing fails, the app still counts as paused
 and shows the error; it never falls back to live.
 
+The Home logo's dot shows the connection (`utils/connection-state.ts`):
+
+| Dot | Meaning |
+|---|---|
+| Solid green | Connected |
+| Pulsing orange | The connection is closed and the app is reconnecting by itself (after the phone wakes, or on resuming). It turns red after 60 seconds without success |
+| Solid red | Not connected: the device has no network, or reconnecting has failed for over a minute |
+| Grey ring | Sharing paused by the user (wins over the others) |
+
+### Permissions
+
+Settings > Permissions can ask for camera and notifications directly. Location keeps
+its disclosure first. A permission the user has already refused is re-granted from
+the system settings, because Android stops showing the prompt once it has been
+refused: the button reads "Open Settings", and the list refreshes when the app comes
+back to the foreground.
+
 Where it shows: a broadcast icon button left of Logout in the main menu footer
 (Pause asks for confirmation, Resume does not), a "Live" / "Paused" label under the
 username, a grey ring (instead of the green or red dot) on the Home logo, and a

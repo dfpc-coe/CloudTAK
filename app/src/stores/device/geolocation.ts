@@ -223,6 +223,10 @@ export class GeolocationPermission {
             void this.seedImmediateFix(handler, generation);
         } catch (err) {
             console.error('Failed to start location watch', err);
+            // A watcher that failed to start (for example ALREADY_STARTED while the
+            // previous one is still shutting down, as can happen right after a
+            // pause) would otherwise stay dead until the app is restarted
+            if (generation === this.watchGeneration) this.scheduleRestart();
         }
     }
 
