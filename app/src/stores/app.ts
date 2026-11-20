@@ -8,7 +8,7 @@ import { withTimeout } from '../utils/async.ts';
 import Config from '../base/config.ts';
 import ServerManager from '../base/server.ts';
 import router from '../router.ts';
-import { isNativePlatform, isAndroidPlatform } from '../utils/capacitor.ts';
+import { isBundledPlatform, isNativePlatform, isAndroidPlatform } from '../utils/capacitor.ts';
 import { unregisterPushToken } from '../base/push.ts';
 import { GeolocationPermission } from './device.ts';
 import { server, setSessionRefresher } from '../std.ts';
@@ -160,7 +160,7 @@ export const useAppStore = defineStore('cloudtak-app', {
 
             const { value: serverUrl } = await Preferences.get({ key: 'serverUrl' });
             await Preferences.clear();
-            if (isNativePlatform() && serverUrl) {
+            if (isBundledPlatform() && serverUrl) {
                 await Preferences.set({ key: 'serverUrl', value: serverUrl });
             }
 
@@ -330,7 +330,7 @@ export const useAppStore = defineStore('cloudtak-app', {
         async bootstrap(): Promise<boolean> {
             this.loadingStage = 'Connecting to server…';
 
-            if (!isNativePlatform()) {
+            if (!isBundledPlatform()) {
                 await this.setServerUrl(window.location.origin);
             } else {
                 const { value } = await Preferences.get({ key: 'serverUrl' });

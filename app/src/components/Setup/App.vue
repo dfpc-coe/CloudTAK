@@ -180,7 +180,7 @@
 
 <script setup lang='ts'>
 import { computed, onMounted, ref } from 'vue'
-import { Capacitor } from '@capacitor/core'
+import { isBundledPlatform } from '../../utils/capacitor.ts'
 import { Preferences } from '@capacitor/preferences'
 import { fetchWithTimeout, normalizeServerUrl, validateServer } from './connect.ts'
 import { TablerAlert, TablerInput, TablerLoading, TablerNone } from '@tak-ps/vue-tabler'
@@ -272,7 +272,7 @@ async function connect(rawUrl: string): Promise<void> {
     try {
         await validateServer(url)
 
-        if (Capacitor.isNativePlatform()) {
+        if (isBundledPlatform()) {
             // Preferences only — an IndexedDB write followed by an immediate
             // navigation wedges the database for the next page in WKWebView.
             await Preferences.set({ key: 'serverUrl', value: url })
@@ -289,7 +289,7 @@ async function connect(rawUrl: string): Promise<void> {
 }
 
 onMounted(async () => {
-    if (!Capacitor.isNativePlatform()) {
+    if (!isBundledPlatform()) {
         window.location.href = '/'
         return
     }
