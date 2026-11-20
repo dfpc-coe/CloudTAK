@@ -200,6 +200,8 @@ Users and Access → Integrations → App Store Connect API → revoke the key, 
 | Upload works, but nothing appears in TestFlight | Processing takes 5 to 30 minutes. Check the email from App Store Connect for a rejection (for example a missing icon or usage description). |
 | You are not offered the build on the iPhone | You are not in the Internal Testing group, or you are signed in to TestFlight with a different Apple Account. |
 | "Firebase was not configured: GoogleService-Info.plist is missing" in the app log, or push does not work | Expected until [push is set up](#adding-push-notifications). The Firebase plugin logs this and carries on without push. |
+| `Your team has no devices from which to generate a provisioning profile` | Xcode asked for an iOS *development* profile while archiving. The workflow avoids this: it archives unsigned and signs once, for distribution, in the export step. Do not turn signing back on in the Archive step. |
+| `ITMS-90725: SDK version issue` (Apple email) | Warning only. The build used an older iOS SDK than Apple will require. The workflows run on the `xcode-27` runner image to meet the April 2027 requirement. |
 | No shared scheme found | The project has no committed scheme. Xcode generates one. The workflow logs list the schemes. |
 | The compile check fails on a pull request | It uses no secrets. Read the Xcode log artifact. A common cause is a new Swift package or a changed `ios/` file. |
 

@@ -481,8 +481,9 @@ or manual dispatch only.
 
 ### iOS builds and TestFlight, without a Mac
 
-iOS needs Xcode, so it is built on a GitHub-hosted macOS runner (`macos-26`, Xcode 26.6 at the
-time of writing). Nothing needs a Mac of your own.
+iOS needs Xcode, so it is built on a GitHub-hosted macOS runner (`xcode-27`, Xcode 27.1 at the
+time of writing). Apple requires the iOS 27 SDK (Xcode 27 or later) for uploads from April 2027, so
+`macos-26` (Xcode 26) would be rejected after that date. Nothing needs a Mac of your own.
 
 | Workflow | When | What it does |
 |---|---|---|
