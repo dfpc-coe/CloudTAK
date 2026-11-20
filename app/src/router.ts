@@ -250,7 +250,16 @@ const router = VueRouter.createRouter({
     ]
 });
 
+// A navigation away aborts in-flight route chunk imports; recovering from
+// those would cancel the navigation and reload this page instead
+let unloading = false;
+if (typeof window !== 'undefined') {
+    window.addEventListener('beforeunload', () => { unloading = true; });
+}
+
 router.onError((error, to) => {
+    if (unloading) return;
+
     if (
         error.message.includes('Failed to fetch dynamically imported module') ||
         error.message.includes('Importing a module script failed')
