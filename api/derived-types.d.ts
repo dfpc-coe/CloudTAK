@@ -2297,7 +2297,7 @@ export interface paths {
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
                             "display::style"?: "System Default" | "Light" | "Dark";
-                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "display::radiation_dose"?: "sieverts" | "rems";
@@ -2591,7 +2591,7 @@ export interface paths {
                         "display::projection"?: "mercator" | "globe";
                         "display::zoom"?: "always" | "conditional" | "never";
                         "display::style"?: "System Default" | "Light" | "Dark";
-                        "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                        "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                         "display::text"?: "Small" | "Medium" | "Large";
                         "display::icon_rotation"?: boolean;
                         "display::radiation_dose"?: "sieverts" | "rems";
@@ -2810,7 +2810,7 @@ export interface paths {
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
                             "display::style"?: "System Default" | "Light" | "Dark";
-                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "display::radiation_dose"?: "sieverts" | "rems";
@@ -3049,7 +3049,7 @@ export interface paths {
                             };
                             coordinate: {
                                 /** @default dd */
-                                value: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                                value: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                                 options: string[];
                             };
                             text: {
@@ -55565,7 +55565,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -55699,7 +55699,7 @@ export interface paths {
                         display_projection?: "mercator" | "globe";
                         display_zoom?: "always" | "conditional" | "never";
                         display_style?: "System Default" | "Light" | "Dark";
-                        display_coordinate?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                        display_coordinate?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                         display_icon_rotation?: boolean;
                         display_stale?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         display_text?: "Small" | "Medium" | "Large";
@@ -55764,7 +55764,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -59727,7 +59727,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -60015,7 +60015,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";

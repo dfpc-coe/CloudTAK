@@ -52,7 +52,7 @@ test('GET api/config/display', async () => {
             },
             coordinate: {
                 value: 'dd',
-                options: ['dd', 'dm', 'dms', 'mgrs', 'utm'],
+                options: ['dd', 'dm', 'dms', 'mgrs', 'utm', 'bng'],
             },
             text: {
                 value: 'Medium',

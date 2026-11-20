@@ -82,10 +82,18 @@
                     :key='mode.value'
                     class='tabler-dropdown__item cloudtak-hover cursor-pointer px-3 py-2 text-body'
                     :class='{ "tabler-dropdown__item--active": mapStore.coordFormat === mode.value }'
+                    :data-test='`mode-${mode.value}`'
                     @click='void setCoordFormat(mode.value)'
                 >
                     <span class='fw-semibold'>{{ mode.label }}</span>
                     <span class='text-secondary ms-2 small'>{{ mode.title }}</span>
+                    <div
+                        v-if='!locatedModes.has(mode.value)'
+                        class='text-secondary small'
+                        data-test='mode-unavailable'
+                    >
+                        Not defined at this location
+                    </div>
                 </li>
             </template>
         </TablerDropdown>
@@ -103,7 +111,7 @@ import {
     IconCursorText,
     IconCurrentLocation
 } from '@tabler/icons-vue';
-import { formatCoordPair, COORD_MODES, type CoordMode } from '../../../utils/coordinateFormat.ts';
+import { formatCoordPair, coordModesAt, coordModeAt, COORD_MODES, type CoordMode } from '../../../utils/coordinateFormat.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { isNativePlatform } from '../../../utils/capacitor.ts';
 
@@ -190,6 +198,11 @@ const displayCoord = computed(() => {
     return cursorCoord.value;
 });
 
+const locatedModes = computed(() => {
+    const c = displayCoord.value;
+    return new Set((c ? coordModesAt(c.lat, c.lng) : COORD_MODES).map((mode) => mode.value));
+});
+
 async function setCoordFormat(mode: CoordMode): Promise<void> {
     mapStore.coordFormat = mode;
     await mapStore.worker.profile.update({
@@ -205,7 +218,7 @@ const formattedCoord = computed(() => {
     return formatCoordPair(
         c.lat,
         c.lng,
-        mapStore.coordFormat as CoordMode,
+        coordModeAt(mapStore.coordFormat as CoordMode, c.lat, c.lng),
         5
     );
 });

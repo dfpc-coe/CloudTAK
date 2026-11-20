@@ -176,6 +176,7 @@ export enum Profile_Coordinate {
     DMS = 'dms',
     MGRS = 'mgrs',
     UTM = 'utm',
+    BNG = 'bng',
 }
 
 export enum Basemap_Format {
