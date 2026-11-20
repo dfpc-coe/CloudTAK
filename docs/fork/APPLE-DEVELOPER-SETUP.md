@@ -106,8 +106,10 @@ level every workflow in the repo can read them.
 **You (the Account Holder)** are already an App Store Connect user and need no invitation.
 
 **Other people** are added as users: App Store Connect → **Users and Access** → **People** → **+**. Give first name,
-last name and email (it does not have to be an Apple Account yet), a role without access to settings such as
-Developer or Marketing, and limit it to this app. The invitation expires after 3 days. An individual account can add up
+last name and email (it does not have to be an Apple Account yet), and the role **Marketing**, limited to this app
+(**Access: Apps → Only selected apps → TAK.NZ**). Internal testers must have Admin, App Manager, Developer or
+Marketing, and Marketing is the lowest of these: it cannot upload builds or reach Certificates, Identifiers & Profiles.
+A person with another role (such as Customer Support or Sales) is not listed under **Invite Testers**. The invitation expires after 3 days. An individual account can add up
 to 50 such users, and they only get App Store Connect, not team membership
 (<https://developer.apple.com/help/app-store-connect/manage-your-team/add-and-edit-users/>).
 
