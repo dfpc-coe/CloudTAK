@@ -8,6 +8,7 @@ api/data-dev/
 app/dev-dist/
 app/ios/
 app/android/
+app/src-tauri/
 app/plugins/*
 !app/plugins/*.ts
 !app/plugins/README.md

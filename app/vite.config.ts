@@ -133,6 +133,9 @@ export default defineConfig(({ mode }) => {
         },
         server: {
             port: 8080,
+            watch: {
+                ignored: ['**/src-tauri/**'],
+            },
             proxy: {
                 '/api': {
                     ws: true,

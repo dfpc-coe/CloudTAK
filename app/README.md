@@ -40,6 +40,23 @@ npm run doc
 The generated HTML documentation is written to `dist/typedoc/`.
 On tagged releases, the release workflow also deploys this output to GitHub Pages.
 
+### Desktop app (Tauri demo)
+
+`src-tauri/` wraps the same `dist/` bundle that Capacitor ships on Android and
+iOS in a [Tauri 2](https://tauri.app) desktop shell. As on mobile, the first
+run shows the Setup page and the chosen server URL is stored on the device.
+
+Requires a Rust toolchain plus the
+[Tauri system prerequisites](https://tauri.app/start/prerequisites/)
+(`libwebkit2gtk-4.1-dev` and friends on Linux).
+
+```
+npm run desktop:dev     # Vite dev server inside the desktop window
+npm run desktop:build   # installers under src-tauri/target/release/bundle
+```
+
+`File → Change Server URL` clears all stored data and returns to Setup.
+
 ### Customize configuration
 
 See [Configuration Reference](https://cli.vuejs.org/config/).
