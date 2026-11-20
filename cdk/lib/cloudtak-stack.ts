@@ -360,6 +360,10 @@ export class CloudTakStack extends cdk.Stack {
     // back credentials for the CloudTAK API container.
     let oidcClientId: string | undefined;
     let oidcClientSecret: cdk.aws_secretsmanager.ISecret | undefined;
+    let scimToken: cdk.aws_secretsmanager.ISecret | undefined;
+    if (envConfig.cloudtak.scimEnabled && !envConfig.cloudtak.oidcEnabled) {
+      throw new Error('cloudtak.scimEnabled requires cloudtak.oidcEnabled: the Authentik SCIM provider is created by the OIDC setup');
+    }
     if (envConfig.cloudtak.oidcEnabled) {
       const authentikUrl = envConfig.cloudtak.authentikUrl || 
         cdk.Fn.importValue(`TAK-${envConfig.stackName}-AuthInfra-AuthentikUrl`);
@@ -379,10 +383,12 @@ export class CloudTakStack extends cdk.Stack {
         kmsKeyArn: kmsKey.keyArn,
         vpc,
         securityGroup: securityGroups.ecs,
+        scimEnabled: envConfig.cloudtak.scimEnabled,
       });
 
       oidcClientId = oidcSetup.clientId;
       oidcClientSecret = oidcSetup.clientSecret;
+      scimToken = oidcSetup.scimToken;
     }
     
     // Create Application Load Balancer with HTTPS (plain TLS termination —
@@ -466,6 +472,7 @@ export class CloudTakStack extends cdk.Stack {
       serviceUrl: route53Records.serviceUrl,
       oidcClientId,
       oidcClientSecret,
+      scimToken,
       hubAlbDnsName: hubLoadBalancer.alb.loadBalancerDnsName
     });
 

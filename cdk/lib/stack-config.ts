@@ -40,6 +40,12 @@ export interface ContextEnvironmentConfig {
     webhooksSubdomain?: string;
     oidcEnabled?: boolean;
     oidcForced?: boolean;
+    /**
+     * Provision Authentik users into CloudTAK over SCIM. Creates a generated bearer token in Secrets
+     * Manager, hands it to the CloudTAK API (`SCIM_ENABLED` / `SCIM_TOKEN`) and creates the matching
+     * Authentik SCIM provider on the CloudTAK application. Requires `oidcEnabled`. Defaults to false.
+     */
+    scimEnabled?: boolean;
     authentikUrl?: string;
     authentikAppSlug?: string;
     syncAuthentikAttributesOnLogin?: boolean;

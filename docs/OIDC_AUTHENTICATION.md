@@ -134,6 +134,26 @@ Enable per environment in `cdk.json`:
 }
 ```
 
+## SCIM user provisioning (optional)
+
+CloudTAK accepts SCIM 2.0 at `/api/scim/v2` (`Users`, plus `Groups`, which are accepted but not stored).
+Set `"scimEnabled": true` next to `oidcEnabled` to have the stack wire up both ends, with no admin steps:
+
+| Piece | Where | What it does |
+|---|---|---|
+| Bearer token | Secrets Manager `TAK-<stack>-CloudTAK-ScimToken` | 48 generated characters, encrypted with the stack KMS key |
+| CloudTAK API | container env `SCIM_ENABLED=true`, secret `SCIM_TOKEN` | Checks that token on every SCIM request. The `scim::*` settings in the database (and the admin UI) are ignored while this is on |
+| Authentik | SCIM provider `TAK-CloudTAK-SCIM`, created by the OIDC setup Lambda | Sends Authentik users to `<CloudTAK URL>/api/scim/v2` with the same token. It is attached to the CloudTAK application as a backchannel provider |
+
+The provider uses Authentik's own User and Group SCIM mappings, plus a `scim-exclude-ckadmin` mapping that
+skips the built-in `ckadmin` account, which exists only in CloudTAK. Service accounts are not provisioned.
+The Lambda runs on every deploy, so a rotated token is picked up on both sides together.
+
+`scimEnabled` requires `oidcEnabled` (the stack refuses to synthesize otherwise). It defaults to off. On an
+environment where the provider was created by hand, turning it on takes the provider over by name and
+replaces its token. Expect a short run of `401`s from Authentik's sync between the Lambda and the new API
+task going live.
+
 ## Certificate enrollment
 
 On login, `AuthentikProvider.enrollUserCertificate()` provisions a TAK client certificate for new users

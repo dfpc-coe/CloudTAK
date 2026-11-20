@@ -15,14 +15,33 @@ export interface CloudTakOidcSetupProps {
   kmsKeyArn: string;
   vpc?: cdk.aws_ec2.IVpc;
   securityGroup?: cdk.aws_ec2.ISecurityGroup;
+  /**
+   * Create the SCIM bearer token and the Authentik SCIM provider that pushes users to CloudTAK
+   * (`<cloudtakUrl>/api/scim/v2`). The CloudTAK API reads the same token from `scimToken`.
+   */
+  scimEnabled?: boolean;
 }
 
 export class CloudTakOidcSetup extends Construct {
   public readonly clientId: string;
   public readonly clientSecret: secretsmanager.ISecret;
+  /** Generated SCIM bearer token. Only set when `scimEnabled` is true. */
+  public readonly scimToken?: secretsmanager.ISecret;
 
   constructor(scope: Construct, id: string, props: CloudTakOidcSetupProps) {
     super(scope, id);
+
+    const kmsKey = cdk.aws_kms.Key.fromKeyArn(this, 'KmsKey', props.kmsKeyArn);
+
+    // The same token is presented by Authentik (SCIM provider) and checked by the CloudTAK API
+    if (props.scimEnabled) {
+      this.scimToken = new secretsmanager.Secret(this, 'ScimToken', {
+        secretName: `TAK-${props.stackName}-CloudTAK-ScimToken`,
+        description: 'Bearer token shared by the Authentik SCIM provider and the CloudTAK SCIM API',
+        generateSecretString: { passwordLength: 48, excludePunctuation: true },
+        encryptionKey: kmsKey,
+      });
+    }
 
     // Create Lambda function for OIDC setup
     const oidcSetupFunction = new nodejs.NodejsFunction(this, 'OidcSetupFunction', {
@@ -59,6 +78,10 @@ export class CloudTakOidcSetup extends Construct {
         REDIRECT_URIS: JSON.stringify([`${props.cloudtakUrl}/api/login/oidc/callback`]),
         LAUNCH_URL: `${props.cloudtakUrl}/api/login/oidc`,
         GROUP_NAME: 'Team Awareness Kit',
+        ...(this.scimToken && {
+          SCIM_TOKEN_SECRET_ARN: this.scimToken.secretArn,
+          SCIM_URL: `${props.cloudtakUrl}/api/scim/v2`,
+        }),
       },
     });
 
@@ -69,6 +92,7 @@ export class CloudTakOidcSetup extends Construct {
       props.authentikAdminSecretArn
     );
     authentikAdminSecret.grantRead(oidcSetupFunction);
+    this.scimToken?.grantRead(oidcSetupFunction);
 
     // Grant Lambda permission to use KMS key
     oidcSetupFunction.addToRolePolicy(new iam.PolicyStatement({
@@ -103,7 +127,7 @@ export class CloudTakOidcSetup extends Construct {
       secretStringValue: cdk.SecretValue.resourceAttribute(
         oidcSetup.getAttString('clientSecret')
       ),
-      encryptionKey: cdk.aws_kms.Key.fromKeyArn(this, 'KmsKey', props.kmsKeyArn),
+      encryptionKey: kmsKey,
     });
   }
 }
