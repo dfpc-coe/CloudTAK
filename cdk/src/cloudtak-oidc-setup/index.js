@@ -104,6 +104,18 @@ exports.handler = async (event, context) => {
     if (groupName) {
       await assignGroupToApplication(api, application.slug, groupName);
     }
+
+    // Optional: SCIM provider that provisions Authentik users into CloudTAK. Only when the stack
+    // enabled SCIM (cloudtak.scimEnabled), which also hands the same token to the CloudTAK API.
+    if (process.env.SCIM_TOKEN_SECRET_ARN) {
+      const scimToken = await getSecretString(secretsManager, process.env.SCIM_TOKEN_SECRET_ARN, 'token');
+      await setupScimProvider(api, {
+        name: process.env.SCIM_PROVIDER_NAME || 'TAK-CloudTAK-SCIM',
+        url: process.env.SCIM_URL,
+        token: scimToken,
+        applicationSlug: application.slug,
+      });
+    }
     
     // Get OIDC configuration
     const oidcConfig = await getOidcConfiguration(authentikUrl, applicationSlug);
@@ -293,6 +305,97 @@ async function getOrCreateGroupsScopeMapping(api) {
   });
 
   return response.data;
+}
+
+async function getSecretString(secretsManager, secretId, jsonKey) {
+  const data = await secretsManager.send(new GetSecretValueCommand({ SecretId: secretId }));
+  try {
+    const parsed = JSON.parse(data.SecretString);
+    if (parsed && typeof parsed === 'object' && parsed[jsonKey]) return parsed[jsonKey];
+  } catch {
+    // not JSON: the secret string is the value itself
+  }
+  return data.SecretString;
+}
+
+// Username CloudTAK keeps for its own built-in administrator. It exists only in CloudTAK, so it must
+// never be pushed back to it (or be re-created from an Authentik account of the same name).
+const SCIM_EXCLUDED_USERNAME = 'ckadmin';
+
+const SCIM_EXCLUDE_MAPPING_NAME = `scim-exclude-${SCIM_EXCLUDED_USERNAME}`;
+const SCIM_EXCLUDE_MAPPING_EXPRESSION = [
+  `if request.user.username == "${SCIM_EXCLUDED_USERNAME}":`,
+  '    raise SkipObject',
+  '# Returning None allows authentik to safely ignore this mapping for other users',
+  'return None',
+  '',
+].join('\n');
+
+/**
+ * Create or update the Authentik SCIM provider that provisions users into CloudTAK
+ * (`/api/scim/v2`), and attach it to the CloudTAK application as a backchannel provider.
+ *
+ * CloudTAK authenticates the requests with the same token (`SCIM_TOKEN`, see
+ * api/stateless/lib/control/scim.ts), so both sides read one Secrets Manager secret.
+ */
+async function setupScimProvider(api, { name, url, token, applicationSlug }) {
+  if (!url) throw new Error('SCIM_URL is required when SCIM_TOKEN_SECRET_ARN is set');
+  if (!token) throw new Error('The SCIM token secret is empty');
+
+  // Authentik's own User and Group SCIM mappings (managed, so they cannot be created here)
+  const userMapping = await getManagedScimMapping(api, 'goauthentik.io/providers/scim/user');
+  const groupMapping = await getManagedScimMapping(api, 'goauthentik.io/providers/scim/group');
+  const excludeMapping = await createOrUpdateScimMapping(api, {
+    name: SCIM_EXCLUDE_MAPPING_NAME,
+    expression: SCIM_EXCLUDE_MAPPING_EXPRESSION,
+  });
+
+  const providerData = {
+    name,
+    url,
+    auth_mode: 'token',
+    token,
+    verify_certificates: true,
+    exclude_users_service_account: true,
+    property_mappings: [userMapping.pk, excludeMapping.pk],
+    property_mappings_group: [groupMapping.pk],
+  };
+
+  const existing = await api.get('/api/v3/providers/scim/', { params: { name } });
+  const found = (existing.data.results || []).find((p) => p.name === name);
+  let provider;
+  if (found) {
+    provider = (await api.patch(`/api/v3/providers/scim/${found.pk}/`, providerData)).data;
+  } else {
+    provider = (await api.post('/api/v3/providers/scim/', providerData)).data;
+  }
+
+  // Attach as a backchannel provider, keeping any others already on the application
+  const app = (await api.get(`/api/v3/core/applications/${applicationSlug}/`)).data;
+  const backchannel = new Set(app.backchannel_providers || []);
+  backchannel.add(provider.pk);
+  await api.patch(`/api/v3/core/applications/${applicationSlug}/`, {
+    backchannel_providers: [...backchannel],
+  });
+
+  console.log(`SCIM provider ${name} (${provider.pk}) attached to application ${applicationSlug}`);
+  return provider;
+}
+
+async function getManagedScimMapping(api, managed) {
+  const response = await api.get('/api/v3/propertymappings/provider/scim/', { params: { managed } });
+  const mapping = (response.data.results || []).find((m) => m.managed === managed);
+  if (!mapping) throw new Error(`Authentik SCIM mapping ${managed} not found`);
+  return mapping;
+}
+
+async function createOrUpdateScimMapping(api, mappingData) {
+  const existing = await api.get('/api/v3/propertymappings/provider/scim/', { params: { search: mappingData.name } });
+  const found = (existing.data.results || []).find((m) => m.name === mappingData.name);
+  if (found) {
+    return (await api.patch(`/api/v3/propertymappings/provider/scim/${found.pk}/`, mappingData)).data;
+  }
+  return (await api.post('/api/v3/propertymappings/provider/scim/', mappingData)).data;
 }
 
 async function getOidcConfiguration(authentikUrl, applicationSlug) {

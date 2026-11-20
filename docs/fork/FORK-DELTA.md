@@ -217,6 +217,20 @@ with the same person's device certificate.
 - Agency changes on a connection are restricted to system admins.
 - `AgencyResponse` gains an optional `description` field.
 
+### SCIM token from the environment
+`api/stateless/lib/control/scim.ts`, `api/test/scim-env.test.ts`,
+`cdk/src/cloudtak-oidc-setup/index.js`, `cdk/lib/constructs/cloudtak-oidc-setup.ts`
+
+- Upstream keeps the SCIM switch and bearer token in the database (`scim::enabled`, `scim::token`), entered
+  by a System Administrator. That cannot be automated: the Authentik SCIM provider has to be created with
+  the same token, and nothing outside the API can write the setting.
+- `ScimControl.settings()` returns `SCIM_ENABLED` / `SCIM_TOKEN` from the environment when
+  `SCIM_ENABLED=true`, and never reads the database in that mode. Without the variable the upstream path is
+  unchanged. This follows how OIDC is already env-driven (`isOidcEnabled`).
+- The CDK stack (`cloudtak.scimEnabled`) generates the token in Secrets Manager, injects it into the API
+  container, and the OIDC setup Lambda creates the Authentik `TAK-CloudTAK-SCIM` provider with it. See
+  `docs/OIDC_AUTHENTICATION.md`.
+- On a future upstream sync, keep the `settings()` method and its single call in `auth()`.
 ### Certificate lifecycle
 
 `api/stateless/lib/cert-health.ts`, `api/stateless/routes/connection.ts`,

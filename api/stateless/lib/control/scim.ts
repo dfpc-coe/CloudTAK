@@ -202,13 +202,34 @@ export default class ScimControl {
     }
 
     /**
-     * Ensure SCIM is enabled and the request carries the configured bearer token
+     * SCIM settings in effect.
+     *
+     * TAK-NZ: when `SCIM_ENABLED=true` the CDK stack owns SCIM. The bearer token comes from
+     * `SCIM_TOKEN` (a Secrets Manager secret), the same secret the Authentik SCIM provider is
+     * created with, so both sides always agree and no admin has to copy a token between them.
+     * The database `scim::*` settings are ignored in that mode. Without the variable the
+     * upstream behaviour (settings configured by a System Administrator) is unchanged.
+     * This mirrors how OIDC is env-driven (see `isOidcEnabled`).
      */
-    async auth(req: AnyRequest): Promise<void> {
-        const settings = await this.config.models.Setting.typedMany({
+    async settings(): Promise<{ 'scim::enabled': boolean; 'scim::token': string }> {
+        if (process.env.SCIM_ENABLED === 'true') {
+            return {
+                'scim::enabled': true,
+                'scim::token': process.env.SCIM_TOKEN || '',
+            };
+        }
+
+        return await this.config.models.Setting.typedMany({
             'scim::enabled': false,
             'scim::token': '',
         });
+    }
+
+    /**
+     * Ensure SCIM is enabled and the request carries the configured bearer token
+     */
+    async auth(req: AnyRequest): Promise<void> {
+        const settings = await this.settings();
 
         if (!settings['scim::enabled']) {
             throw new ScimErr(403, 'SCIM provisioning is not enabled');

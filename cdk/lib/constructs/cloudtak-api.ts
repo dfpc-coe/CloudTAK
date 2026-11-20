@@ -49,6 +49,11 @@ export interface CloudTakApiProps {
   /** Secret holding the OIDC client secret from the Authentik OAuth2 provider */
   oidcClientSecret?: secretsmanager.ISecret;
   /**
+   * SCIM bearer token shared with the Authentik SCIM provider (set when cloudtak.scimEnabled is true).
+   * Switches the API to env-driven SCIM: `SCIM_ENABLED=true` and `SCIM_TOKEN`.
+   */
+  scimToken?: secretsmanager.ISecret;
+  /**
    * Internal hub ALB DNS name. Set once the stateless/stateful split is wired;
    * the stateless tier calls the hub for anything needing a TAK Server
    * connection. Omit to run the container in single-service `both` mode.
@@ -95,6 +100,7 @@ export class CloudTakApi extends Construct {
       serviceUrl,
       oidcClientId,
       oidcClientSecret,
+      scimToken,
       hubAlbDnsName
     } = props;
 
@@ -427,6 +433,10 @@ export class CloudTakApi extends Construct {
         oidcClientSecret.grantRead(executionRole);
       }
     }
+    // SCIM_TOKEN is injected the same way (execution role, at container startup)
+    if (scimToken) {
+      scimToken.grantRead(executionRole);
+    }
 
 
 
@@ -521,7 +531,9 @@ export class CloudTakApi extends Construct {
           'OIDC_AGENCY_ADMIN_GROUP_PREFIX': envConfig.cloudtak.oidcAgencyAdminGroupPrefix || 'CloudTAKAgency',
           'AUTHENTIK_CHANNEL_GROUP_PREFIX': envConfig.cloudtak.authentikChannelGroupPrefix || 'tak_',
           'LOCAL_ONLY_ACCOUNTS': (envConfig.cloudtak.localOnlyAccounts || []).join(',')
-        })
+        }),
+        // Env-driven SCIM: the API checks SCIM_TOKEN instead of the database scim::* settings
+        ...(scimToken && { 'SCIM_ENABLED': 'true' })
       },
       secrets: {
         'SigningSecret': ecs.Secret.fromSecretsManager(signingSecret),
@@ -531,6 +543,9 @@ export class CloudTakApi extends Construct {
         'CLOUDTAK_Config_geofence_password': ecs.Secret.fromSecretsManager(geofenceSecret),
         ...(envConfig.cloudtak.oidcEnabled && oidcClientSecret && {
           'OIDC_CLIENT_SECRET': ecs.Secret.fromSecretsManager(oidcClientSecret),
+        }),
+        ...(scimToken && {
+          'SCIM_TOKEN': ecs.Secret.fromSecretsManager(scimToken),
         })
       }
     };
