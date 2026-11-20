@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>CloudTAK needs your location to show your position on the map.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>CloudTAK needs your location to show your position on the map.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>CloudTAK uses the camera to attach photos to map features.</string>
+</dict>
+</plist>
