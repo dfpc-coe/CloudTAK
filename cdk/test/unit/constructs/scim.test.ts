@@ -53,8 +53,9 @@ function oidcLambdaEnvironment(template: Template): Record<string, unknown> {
 }
 
 describe('cloudtak.scimEnabled', () => {
-  describe('off (the default)', () => {
-    const template = synth({ oidcEnabled: true });
+  describe('off', () => {
+    // cdk.json turns it on, so switch it off explicitly
+    const template = synth({ oidcEnabled: true, scimEnabled: false });
 
     it('creates no SCIM token secret', () => {
       const secrets = template.findResources('AWS::SecretsManager::Secret', {
@@ -77,6 +78,14 @@ describe('cloudtak.scimEnabled', () => {
 
   describe('on', () => {
     const template = synth({ oidcEnabled: true, scimEnabled: true });
+
+    it('is on in the shipped dev-test and prod config, like oidcEnabled', () => {
+      const cdkJson = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../cdk.json'), 'utf-8'));
+      for (const env of ['dev-test', 'prod']) {
+        expect(cdkJson.context[env].cloudtak.oidcEnabled).toBe(true);
+        expect(cdkJson.context[env].cloudtak.scimEnabled).toBe(true);
+      }
+    });
 
     it('generates one 48 character token in Secrets Manager', () => {
       template.hasResourceProperties('AWS::SecretsManager::Secret', {

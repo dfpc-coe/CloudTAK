@@ -137,7 +137,8 @@ Enable per environment in `cdk.json`:
 ## SCIM user provisioning (optional)
 
 CloudTAK accepts SCIM 2.0 at `/api/scim/v2` (`Users`, plus `Groups`, which are accepted but not stored).
-Set `"scimEnabled": true` next to `oidcEnabled` to have the stack wire up both ends, with no admin steps:
+`cdk.json` sets `"scimEnabled": true` next to `oidcEnabled` for dev-test and prod, and the stack then wires up
+both ends with no admin steps:
 
 | Piece | Where | What it does |
 |---|---|---|
@@ -149,8 +150,9 @@ The provider uses Authentik's own User and Group SCIM mappings, plus a `scim-exc
 skips the built-in `ckadmin` account, which exists only in CloudTAK. Service accounts are not provisioned.
 The Lambda runs on every deploy, so a rotated token is picked up on both sides together.
 
-`scimEnabled` requires `oidcEnabled` (the stack refuses to synthesize otherwise). It defaults to off. On an
-environment where the provider was created by hand, turning it on takes the provider over by name and
+`scimEnabled` requires `oidcEnabled` (the stack refuses to synthesize otherwise). It is off when the key is
+absent, and `cdk.json` turns it on. Like `oidcEnabled`, it is a `cdk.json` setting, not part of the S3
+`cloudtak-config.env` file. On an environment where the provider was created by hand, the first deploy takes the provider over by name and
 replaces its token. Expect a short run of `401`s from Authentik's sync between the Lambda and the new API
 task going live.
 
