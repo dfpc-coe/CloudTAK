@@ -38,13 +38,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Allows user's to upload geotagged photos and share them with other user's</string>
+	<string>TAK.NZ uses the camera to take geotagged photos that you can share with your team.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>User's are able to login to the service via FaceID or a Passkey</string>
+	<string>TAK.NZ uses Face ID to let you sign in with a passkey.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>TAK.NZ shares location with other authenticated users for real-time team situational awareness</string>
+	<string>TAK.NZ keeps sharing your position with your team while the app is in the background, so they can still see where you are. You can pause sharing at any time.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>TAK.NZ shares location with other authenticated users for real-time team situational awareness</string>
+	<string>TAK.NZ shows your position to the other people on your team so everyone has the same live picture of the situation.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -70,9 +70,9 @@
 		<string>remote-notification</string>
 	</array>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>TAK.NZ saves Quick Pic photos taken in the app to your photo library</string>
+	<string>TAK.NZ saves photos you take in the app to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>TAK.NZ allows the user to upload photos from their photo gallery to attach to map markers</string>
+	<string>TAK.NZ lets you attach photos from your library to map markers.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
