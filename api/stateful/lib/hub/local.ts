@@ -105,6 +105,21 @@ export default class LocalHub implements HubClient {
     }
 
     async submitCots(req: SubmitCotsRequest): Promise<void> {
+        // TAK.NZ: only the session chosen as the user's broadcaster gets its position
+        // forwarded. A dropped fix is a success for the caller - the native layer
+        // must not retry or back off because another device is the broadcaster
+        let relay = false;
+        if (req.selfLocation && typeof req.connection === 'string') {
+            const gate = this.config.locationArbiter.gate(req.connection, {
+                session: req.selfLocation.session,
+                source: req.selfLocation.source,
+                accuracy: req.selfLocation.accuracy,
+                channel: 'post',
+            });
+            if (!gate.forward) return;
+            relay = this.config.locationArbiter.mode === 'enforce' && !!gate.decision?.accept;
+        }
+
         let client = this.config.conns.get(req.connection);
 
         if (req.ensureProfile && typeof req.connection === 'string') {
@@ -134,6 +149,12 @@ export default class LocalHub implements HubClient {
         if (req.broadcast) {
             this.config.conns.cots(client.config, req.cots).catch((err) => {
                 console.error(`Error: Failed to broadcast CoTs for ${req.connection}:`, err);
+            });
+        } else if (relay) {
+            // TAK Server does not echo a CoT to the connection that sent it, so the
+            // user's other sessions would never see their own broadcaster's position
+            this.config.conns.cots(client.config, req.cots, { excludeSession: req.selfLocation?.session }).catch((err) => {
+                console.error(`Error: Failed to relay self location for ${req.connection}:`, err);
             });
         }
     }

@@ -28,6 +28,11 @@ export default class Atlas {
     // TAK.NZ: the user paused sharing. No TAK connection and no self-position
     // broadcast until resumeSharing(). Set before init() when the app starts paused
     sharingPaused: boolean;
+    // TAK.NZ: another of the user's sessions is broadcasting their location. This
+    // session stays connected but leaves its own position out of the local self marker
+    broadcastStandby: boolean;
+    // What the user's other sessions call this one ("Pixel 8 (app)")
+    sessionLabel: string;
 
     db = Comlink.proxy(new AtlasDatabase(this));
     conn = Comlink.proxy(new AtlasConnection(this));
@@ -42,6 +47,8 @@ export default class Atlas {
         this.initialized = false;
         this.suspended = false;
         this.sharingPaused = false;
+        this.broadcastStandby = false;
+        this.sessionLabel = '';
 
         this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
             const msg = event.data;
@@ -89,6 +96,13 @@ export default class Atlas {
         if (!this.conn.isOpen) this.conn.connect(this.username);
     }
 
+    setSessionLabel(label: string): void {
+        this.sessionLabel = label;
+    }
+    /** Take over / Resume: ask the server to make this session the location broadcaster */
+    claimBroadcast(): void {
+        this.conn.claimBroadcast();
+    }
     async init(authToken: string) {
         // Only skip if we know initialization has successfully completed before
         if (this.initialized) return;

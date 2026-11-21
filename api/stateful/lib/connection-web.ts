@@ -4,6 +4,8 @@ import { DirectChat, MissionChat, CoTParser } from '@tak-ps/node-cot';
 import type { Feature } from '@tak-ps/node-cot';
 import WebSocket from 'ws';
 import { ConnectionClient } from './connection-pool.js';
+import { ProfileConnConfig } from '../../common/connection-config.js';
+import { sourceOf } from './location-arbiter.js';
 import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
 import { rawDataToString } from '../../common/stringify.js';
 
@@ -129,12 +131,41 @@ export class ConnectionWebSocket {
                                 }));
                             }
                         }
+                    } else if (msg.type === 'broadcast:claim') {
+                        // Take over / Resume: this session asks to be the location broadcaster
+                        if (client.config instanceof ProfileConnConfig && this.session) {
+                            client.config.config.locationArbiter.claim(String(client.config.id), this.session);
+                        }
                     } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 
                         const cot = await CoTParser.from_geojson(feat);
 
+                        // TAK.NZ: the user's own position goes through the broadcaster check
+                        let relay = false;
+                        const loose = feat as { id?: unknown; properties?: { id?: unknown; ce?: unknown }; geometry?: { coordinates?: unknown } };
+                        if (client.config instanceof ProfileConnConfig && (loose.id ?? loose.properties?.id) === client.config.uid()) {
+                            const arbiter = client.config.config.locationArbiter;
+                            const { source, accuracy } = sourceOf(loose.geometry?.coordinates, loose.properties?.ce);
+                            const gate = arbiter.gate(String(client.config.id), {
+                                session: this.session,
+                                source,
+                                accuracy,
+                                channel: 'ws',
+                            });
+                            if (!gate.forward) return;
+                            relay = arbiter.mode === 'enforce' && !!gate.decision?.accept;
+                        }
+
                         void client.tak.write([cot], { stripFlow: true });
+
+                        if (relay) {
+                            // TAK Server does not echo to the sender: show this position on the
+                            // user's other sessions too
+                            client.config.config.conns.cots(client.config, [cot], { excludeSession: this.session }).catch((err) => {
+                                console.error('Error: Failed to relay self location:', err);
+                            });
+                        }
                     }
                 } catch (err) {
                     console.warn('Warning: Validation Error on WebSocket CoT message:', rawDataToString(data), err);

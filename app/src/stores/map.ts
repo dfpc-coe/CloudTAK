@@ -20,6 +20,7 @@ import HistoryLayer from './modules/history.ts';
 import { useDeviceStore, type BatteryInfo, type NativeDeliveryOptions } from './device.ts';
 import { useAppStore } from './app.ts';
 import { useSharingStore } from './sharing.ts';
+import { sessionLabel } from '../utils/session-label.ts';
 import * as Comlink from 'comlink';
 import AtlasWorker from '../workers/atlas.ts?worker&url';
 import COT from '../base/cot.ts';
@@ -1263,6 +1264,8 @@ export const useMapStore = defineStore('cloudtak', {
             if (pausedUser && await useSharingStore().load(pausedUser)) {
                 await withTimeout(this.worker.pauseSharing(), WORKER_INIT_TIMEOUT_MS, 'Pause sharing');
             }
+            // TAK.NZ: what the user's other sessions call this one when it is the broadcaster
+            await withTimeout(this.worker.setSessionLabel(sessionLabel()), WORKER_INIT_TIMEOUT_MS, 'Session label');
             await withTimeout(this.worker.init(token || ''), WORKER_INIT_TIMEOUT_MS, 'Atlas worker init');
 
             try {
@@ -1333,6 +1336,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.speedUnit = msg.body.unit;
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
+                } else if (msg.type === WorkerMessageType.Broadcast_State) {
+                    useSharingStore().setBroadcast(msg.body.active === true, msg.body.by || null);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
                     this.isOpen = true;
                     this.connectionClosedAt = null;

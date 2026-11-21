@@ -39,6 +39,24 @@
                         stroke='1'
                     />
                 </TablerIconButton>
+                <!-- Native app: the pause / resume control. Web: only shows who is broadcasting -->
+                <SharingToggle
+                    :size='18'
+                    class='flex-shrink-0'
+                    data-test='sharing-toggle'
+                />
+                <span
+                    v-if='webBroadcastState'
+                    class='flex-shrink-0 d-flex'
+                    :title='webBroadcastState === "standby" ? "Another device is sharing your location" : "This browser is sharing your location"'
+                    data-test='broadcast-status'
+                >
+                    <IconBroadcast
+                        :size='18'
+                        stroke='1'
+                        :class='webBroadcastState === "standby" ? "text-info" : "text-green"'
+                    />
+                </span>
             </div>
 
             <div
@@ -81,6 +99,7 @@
         </div>
 
         <GPSPanelCoordinates />
+        <BroadcastChip />
     </div>
 </template>
 
@@ -93,11 +112,16 @@ import { useDeviceStore } from '../../../stores/device.ts';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { TablerIconButton } from '@tak-ps/vue-tabler';
 import {
+    IconBroadcast,
     IconLocation,
     IconLocationPin,
     IconLocationOff,
 } from '@tabler/icons-vue';
 import GPSPanelCoordinates from './GPSPanelCoordinates.vue';
+import BroadcastChip from './BroadcastChip.vue';
+import SharingToggle from '../SharingToggle.vue';
+import { useSharingStore } from '../../../stores/sharing.ts';
+import { isNativePlatform } from '../../../utils/capacitor.ts';
 
 const props = defineProps<{
     mode: string;
@@ -108,6 +132,17 @@ defineEmits(['set-location', 'to-location']);
 const mapStore = useMapStore();
 const appStore = useAppStore();
 const deviceStore = useDeviceStore();
+const sharing = useSharingStore();
+
+// The web has no Pause, so the icon only reports which session is broadcasting. It
+// stays hidden until the server reports a state, so nothing changes before then
+const webBroadcastState = computed<'live' | 'standby' | null>(() => {
+    if (isNativePlatform() || !sharing.broadcastKnown) return null;
+    if (sharing.standby) return 'standby';
+    // With no position there is nothing to share, so it would be wrong to say it is
+    const hasPosition = mapStore.location === LocationState.Live || mapStore.location === LocationState.Preset;
+    return hasPosition ? 'live' : null;
+});
 
 // On small screens the bottom panes overlap the GPS panel, so hide it while they are shown
 const hidden = computed(() => {

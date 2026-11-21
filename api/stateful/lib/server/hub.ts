@@ -45,6 +45,8 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                 token: String(params.get('token')),
                 format: String(params.get('format') || 'raw'),
                 events,
+                // TAK.NZ: what this session is called when another session is told who is broadcasting
+                label: Array.from(String(params.get('label') || '')).filter((c) => c >= ' ' && c !== '\u007f').join('').trim().slice(0, 40),
             };
 
             const auth = await tokenParser(config, parsedParams.token, config.SigningSecret);
@@ -139,6 +141,9 @@ export function attachWebsocket(srv: Server, config: ConfigStateful): ws.WebSock
                 const created = client !== existing;
 
                 const connClient = new ConnectionWebSocket(ws, parsedParams.format, parsedParams.events, client, auth.session);
+                if (auth.session && parsedParams.label) {
+                    config.locationArbiter.label(parsedParams.connection, auth.session, parsedParams.label);
+                }
 
                 let webClients = config.wsClients.get(parsedParams.connection);
                 if (!webClients) webClients = [];

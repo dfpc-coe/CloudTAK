@@ -10,6 +10,7 @@ const map = {
     worker: {
         pauseSharing: vi.fn(async () => { calls.push('worker.pause'); }),
         resumeSharing: vi.fn(async () => { calls.push('worker.resume'); }),
+        claimBroadcast: vi.fn(async () => { calls.push('worker.claim'); }),
     },
     syncGeolocateControl: vi.fn(),
     startLocationWatch: vi.fn(async () => { calls.push('location.start'); }),
@@ -140,5 +141,38 @@ describe('sharing store', () => {
         calls.length = 0;
         await sharing.pause();
         expect(calls).toEqual([]);
+    });
+    it('resume asks for the broadcaster role after everything else is back', async () => {
+        prefs.set(PAUSED_BY_KEY, 'alice@example.com');
+        const sharing = useSharingStore();
+        await sharing.load('alice@example.com');
+        await sharing.resume();
+        expect(calls).toContain('worker.claim');
+        expect(calls.indexOf('worker.claim')).toBeGreaterThan(calls.indexOf('worker.resume'));
+    });
+    it('starting live does not claim anything', async () => {
+        const sharing = useSharingStore();
+        await sharing.load('alice@example.com');
+        expect(calls).not.toContain('worker.claim');
+    });
+    it('standby is only a display state until the server has reported one', () => {
+        const sharing = useSharingStore();
+        expect(sharing.standby).toBe(false);
+        expect(sharing.broadcastKnown).toBe(false);
+        sharing.setBroadcast(false, 'Pixel 8 (app)');
+        expect(sharing.broadcastKnown).toBe(true);
+        expect(sharing.standby).toBe(true);
+        expect(sharing.standbyBy).toBe('Pixel 8 (app)');
+        sharing.setBroadcast(true, null);
+        expect(sharing.standby).toBe(false);
+        expect(sharing.standbyBy).toBeNull();
+    });
+    it('takeOver asks the worker, and reports a failure instead of throwing', async () => {
+        const sharing = useSharingStore();
+        await sharing.takeOver();
+        expect(calls).toContain('worker.claim');
+        map.worker.claimBroadcast.mockRejectedValueOnce(new Error('worker gone'));
+        await sharing.takeOver();
+        expect(sharing.error).toBe('worker gone');
     });
 });

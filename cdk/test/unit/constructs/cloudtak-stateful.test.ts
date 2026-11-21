@@ -9,7 +9,7 @@ import { CloudTakStateful } from '../../../lib/constructs/cloudtak-stateful';
 import { HubLoadBalancer } from '../../../lib/constructs/hub-load-balancer';
 import { MOCK_CONFIGS } from '../../__fixtures__/mock-configs';
 
-function scaffold(stackId: string) {
+function scaffold(stackId: string, locationArbitration?: 'off' | 'observe' | 'enforce') {
   const app = new App();
   const stack = new Stack(app, stackId, { env: { account: '123456789012', region: 'us-east-1' } });
   const vpc = new ec2.Vpc(stack, 'Vpc');
@@ -38,8 +38,11 @@ function scaffold(stackId: string) {
     assumedBy: new cdk.aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com')
   });
 
+  const envConfig = locationArbitration
+    ? { ...MOCK_CONFIGS.DEV_TEST, cloudtak: { ...MOCK_CONFIGS.DEV_TEST.cloudtak, locationArbitration } }
+    : MOCK_CONFIGS.DEV_TEST;
   const stateful = new CloudTakStateful(stack, 'Stateful', {
-    envConfig: MOCK_CONFIGS.DEV_TEST,
+    envConfig,
     vpc,
     ecsCluster,
     statefulSecurityGroup,
@@ -91,6 +94,19 @@ describe('CloudTakStateful Construct', () => {
     expect(env).not.toHaveProperty('PORT');
   });
 
+  it('passes the location arbitration mode to the hub only when configured', () => {
+    const envOf = (stackId: string, mode?: 'off' | 'observe' | 'enforce') => {
+      const defs = Template.fromStack(scaffold(stackId, mode).stack).findResources('AWS::ECS::TaskDefinition');
+      const container = Object.values(defs)[0].Properties.ContainerDefinitions[0];
+      return Object.fromEntries(
+        container.Environment.map((e: { Name: string; Value: string }) => [e.Name, e.Value])
+      ) as Record<string, string>;
+    };
+    expect(envOf('L1', 'enforce')['CLOUDTAK_Location_Arbitration']).toBe('enforce');
+    expect(envOf('L2', 'off')['CLOUDTAK_Location_Arbitration']).toBe('off');
+    // Unset leaves the application default (observe), it is not forced from here
+    expect(envOf('L3')).not.toHaveProperty('CLOUDTAK_Location_Arbitration');
+  });
   it('exposes 5000 for nginx/WebSocket and 5002 for hub RPC', () => {
     const { stack } = scaffold('S3');
     const defs = Template.fromStack(stack).findResources('AWS::ECS::TaskDefinition');
