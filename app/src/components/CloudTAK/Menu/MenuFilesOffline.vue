@@ -105,7 +105,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { Subscription } from 'dexie';
 import type { DBProfileFile } from '../../../database.ts';
 import ProfileFileManager from '../../../base/profile-file.ts';
-import { useMapStore } from '../../../stores/map.ts';
+import { removeOfflineTiles } from '../../../stores/modules/offline-tiles.ts';
+import { pmtilesSize } from '../../../utils/offline-tiles.ts';
 import StandardItem from '../util/StandardItem.vue';
 import OfflineBadge from '../util/OfflineBadge.vue';
 import {
@@ -128,8 +129,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     'create-overlay': [asset: DBProfileFile];
 }>();
-
-const mapStore = useMapStore();
 
 const filter = ref('');
 const loading = ref(true);
@@ -157,13 +156,13 @@ const files = computed(() => {
     const term = filter.value.trim().toLowerCase();
 
     return records.value.filter((file) => {
-        if (!mapStore.offlineTiles.has(file.id)) return false;
+        if (file.offline?.state !== 'complete') return false;
         return !term || file.name.toLowerCase().includes(term);
     });
 });
 
 function offlineSize(file: DBProfileFile): number {
-    return file.artifacts.find((artifact) => artifact.ext === '.pmtiles')?.size ?? file.size;
+    return file.offline?.size || pmtilesSize(file) || file.size;
 }
 
 function overlayExists(file: DBProfileFile): boolean {
@@ -181,6 +180,6 @@ function overlayTitle(file: DBProfileFile): string {
 }
 
 async function remove(file: DBProfileFile) {
-    await mapStore.worker.tiles.remove(file.id);
+    await removeOfflineTiles(file.id);
 }
 </script>

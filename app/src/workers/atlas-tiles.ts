@@ -1,19 +1,11 @@
 /*
-* AtlasTiles - Download PMTiles assets into OPFS for offline use
+* AtlasTiles - Stream PMTiles archives into OPFS, which only allows
+* synchronous writes from a worker
 */
 
 import type Atlas from './atlas.ts';
 import { stdurl } from '../std.ts';
-import KV from '../base/kv.ts';
-import ProfileFileManager from '../base/profile-file.ts';
-import type { DBProfileFile } from '../database.ts';
-import { WorkerMessageType } from '../utils/events.ts';
-import {
-    offlineTilesDirectory,
-    offlineTilesFileName,
-    offlineTilesSizeKey,
-    hasCompleteOfflineTiles,
-} from '../utils/offline-tiles.ts';
+import { offlineTilesDirectory, offlineTilesFileName } from '../utils/offline-tiles.ts';
 
 export type TilesProgress = (percent: number) => void;
 
@@ -24,43 +16,11 @@ export default class AtlasTiles {
         this.atlas = atlas;
     }
 
-    async has(assetId: string): Promise<boolean> {
-        return await hasCompleteOfflineTiles(assetId);
-    }
-
-    async list(): Promise<string[]> {
-        const dir = await offlineTilesDirectory();
-        const ids: string[] = [];
-
-        for await (const name of dir.keys()) {
-            if (!name.endsWith('.pmtiles')) continue;
-
-            const id = name.slice(0, -'.pmtiles'.length);
-            if (await hasCompleteOfflineTiles(id)) ids.push(id);
-        }
-
-        return ids;
-    }
-
-    async remove(assetId: string): Promise<void> {
-        await KV.delete(offlineTilesSizeKey(assetId));
-        await ProfileFileManager.delete(assetId);
-
-        const dir = await offlineTilesDirectory();
-        await dir.removeEntry(offlineTilesFileName(assetId)).catch(() => undefined);
-
-        await this.atlas.postMessage({
-            type: WorkerMessageType.Tiles_Removed,
-            body: { asset: assetId }
-        });
-    }
-
-    async download(asset: DBProfileFile, onProgress?: TilesProgress): Promise<void> {
-        const assetId = asset.id;
-        const expectedSize = asset.artifacts.find((artifact) => artifact.ext === '.pmtiles')?.size;
-        const url = stdurl(`/api/profile/asset/${assetId}.pmtiles`);
-
-        const res = await fetch(url, {
+    /**
+     * Resolves with the number of bytes written
+     */
+    async download(assetId: string, expectedSize?: number, onProgress?: TilesProgress): Promise<number> {
+        const res = await fetch(stdurl(`/api/profile/asset/${assetId}.pmtiles`), {
             headers: this.atlas.token ? { Authorization: `Bearer ${this.atlas.token}` } : {}
         });
 
@@ -69,8 +29,6 @@ export default class AtlasTiles {
         }
 
         const total = Number(res.headers.get('Content-Length')) || expectedSize || 0;
-
-        await KV.delete(offlineTilesSizeKey(assetId));
 
         const dir = await offlineTilesDirectory();
         const name = offlineTilesFileName(assetId);
@@ -102,13 +60,6 @@ export default class AtlasTiles {
 
         access.close();
 
-        await KV.generate(offlineTilesSizeKey(assetId), String(received));
-        await ProfileFileManager.generate(asset);
-        if (onProgress) onProgress(1);
-
-        await this.atlas.postMessage({
-            type: WorkerMessageType.Tiles_Downloaded,
-            body: { asset: assetId }
-        });
+        return received;
     }
 }
