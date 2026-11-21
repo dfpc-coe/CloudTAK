@@ -970,6 +970,48 @@ fire before it was populated.
 
 ---
 
+## One location broadcaster per user
+
+`api/stateful/lib/location-arbiter.ts`, `api/stateful/lib/hub/local.ts`,
+`api/stateful/lib/connection-web.ts`, `api/stateful/lib/connection-pool.ts`,
+`api/stateless/routes/profile-location.ts`, `app/src/workers/atlas-profile.ts`,
+`app/src/workers/atlas-connection.ts`, `app/src/stores/sharing.ts`,
+`app/src/components/CloudTAK/GPSPanel/`
+
+Every session of a user (browser, iOS app, Android app) builds the same self uid,
+`ANDROID-CloudTAK-<username>`, and each one sent a position every 5 seconds. With
+two sessions the marker jumped between them. A session with no GPS and no manual
+location also sent 0,0, which is what usually fought a phone's real fix.
+
+The design is in [README-MULTI-SESSION-HANDOVER.md](README-MULTI-SESSION-HANDOVER.md).
+In short: one uid and one TAK Server connection are kept (chat, missions and packages
+all key on that uid), and the server picks one session as the broadcaster. Fixes from
+the others are dropped before they reach TAK Server. Sessions are identified by the JWT
+`s` claim, which both the WebSocket and the native location POST carry.
+
+Where the check lives matters. The native plugin POSTs `/api/profile/location` itself
+because iOS suspends the WebView, so that route bypasses the WebSocket handler. Both
+paths therefore call the same `LocationArbiter` in the stateful hub (`submitCots`
+takes an optional `selfLocation`, so the other callers of `submitCots` are untouched).
+The arbiter is in memory because the stateful service is fixed at one task.
+
+It fails open: no session, a sole session and a restart all forward. The mode comes from
+`CLOUDTAK_Location_Arbitration` (CDK `cloudtak.locationArbitration`): `off`, `observe`
+(the application default, logs what it would drop and drops nothing) or `enforce`. Both
+`dev-test` and `prod` set `enforce` in `cdk/cdk.json`. Clients are only
+told their state, and the relay of the broadcaster's position to the user's other
+sessions only runs, when enforcing, so observing changes nothing for users.
+
+Client side, a session on standby keeps reporting a position (the server needs fresh
+fixes to promote it when the broadcaster goes quiet) but does not write it into its own
+self marker, which comes from the server's relay. No session sends 0,0 any more.
+Native Pause is unchanged and separate: Standby keeps the connection, push registration,
+wake lock and location watch, and is never persisted.
+The Android foreground-service notification text is fixed when the watch starts, so it
+no longer claims the team can see you.
+
+---
+
 ## Web compass heading
 
 `app/src/stores/device/{orientation,web-compass,heading,declination,heading-reference}.ts`
