@@ -1,28 +1,25 @@
 <template>
     <div>
-        <div class='card-header'>
-            <h1 class='card-title'>
-                Plugins
-            </h1>
-
-            <div class='ms-auto btn-list'>
-                <TablerIconButton
-                    :title='creating ? "Cancel" : "Create Plugin"'
-                    @click='creating = !creating'
-                >
-                    <IconPlus
-                        :size='32'
-                        stroke='1'
-                    />
-                </TablerIconButton>
-                <TablerRefreshButton
-                    title='Refresh'
+        <Teleport
+            defer
+            to='#admin-config-actions'
+        >
+            <TablerIconButton
+                :title='creating ? "Cancel" : "Create Plugin"'
+                @click='creating = !creating'
+            >
+                <IconPlus
                     :size='32'
-                    :loading='loading'
-                    @click='fetchList'
+                    stroke='1'
                 />
-            </div>
-        </div>
+            </TablerIconButton>
+            <TablerRefreshButton
+                title='Refresh'
+                :size='32'
+                :loading='loading'
+                @click='fetchList'
+            />
+        </Teleport>
 
         <TablerAlert
             v-if='error'
