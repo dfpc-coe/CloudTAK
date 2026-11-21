@@ -6,7 +6,6 @@ Not filed. To file it:
   2. GitHub does not resolve the relative image paths. Drag the three PNGs from
      docs/fork/mockups/ into the issue editor and replace the three ![...](...) lines
      with the links GitHub generates.
-  3. Replace [PR LINK] once the pull request is open.
 -->
 
 # Title
@@ -137,7 +136,7 @@ field cannot both appear. Per-device markers would need the larger change above,
 ## References
 
 Implementation (AGPL-3.0): https://github.com/TAK-NZ/CloudTAK, branch `feat/multi-session-location-handover`
-([PR LINK]). The decision logic is in `api/stateful/lib/location-arbiter.ts` and is a pure class with an
+(pull request #252: https://github.com/TAK-NZ/CloudTAK/pull/252). The decision logic is in `api/stateful/lib/location-arbiter.ts` and is a pure class with an
 injectable clock. It is wired in at `LocalHub.submitCots` (a new optional `selfLocation` on
 `SubmitCotsRequest`, so other callers are untouched) and in `ConnectionWebSocket`. The client side is in
 `app/src/workers/atlas-profile.ts`, `atlas-connection.ts`, `app/src/stores/sharing.ts` and
