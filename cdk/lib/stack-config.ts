@@ -41,6 +41,12 @@ export interface ContextEnvironmentConfig {
     oidcEnabled?: boolean;
     oidcForced?: boolean;
     /**
+     * One location broadcaster per user (stateful service, CLOUDTAK_Location_Arbitration).
+     * `observe` (the default when unset) logs which fixes would be dropped and drops nothing,
+     * `enforce` drops fixes from sessions that are not the user's broadcaster, `off` disables it.
+     */
+    locationArbitration?: 'off' | 'observe' | 'enforce';
+    /**
      * Provision Authentik users into CloudTAK over SCIM. Creates a generated bearer token in Secrets
      * Manager, hands it to the CloudTAK API (`SCIM_ENABLED` / `SCIM_TOKEN`) and creates the matching
      * Authentik SCIM provider on the CloudTAK application. Requires `oidcEnabled`. Defaults to false.

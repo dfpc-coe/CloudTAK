@@ -102,6 +102,7 @@ export class CloudTakStateful extends Construct {
         // blanked - it would otherwise point the hub at itself.
         ...statefulEnvironment,
         'CLOUDTAK_Server_Mode': 'hub',
+        ...(envConfig.cloudtak.locationArbitration ? { 'CLOUDTAK_Location_Arbitration': envConfig.cloudtak.locationArbitration } : {}),
         // Explicit for documentation; 5002 is also the app's default.
         'HUB_RPC_PORT': '5002'
         // NOTE: deliberately no PORT override. The image runs nginx on 5000
