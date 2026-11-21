@@ -51,6 +51,12 @@
                     {{ dragHintCopy }}
                 </p>
 
+                <TablerAlert
+                    v-for='entry in mapStore.overlayErrors'
+                    :key='entry.id'
+                    :title='`Overlay "${entry.name}" failed to load`'
+                    :err='entry.error'
+                />
                 <TablerLoading
                     v-if='loading || !mapStore.isMapLoadedFully'
                     :desc='mapStore.isMapLoadedFully ? "Loading Overlays" : "Loading Map Overlays"'
@@ -306,6 +312,7 @@ import type { Subscription } from 'dexie';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import OfflineBadge from '../util/OfflineBadge.vue';
 import {
+    TablerAlert,
     TablerDelete,
     TablerIconButton,
     TablerInput,
