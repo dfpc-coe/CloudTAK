@@ -40,13 +40,29 @@ vi.mock('../../../stores/device.ts', () => ({
     useDeviceStore: () => device
 }));
 
+const sharing = reactive({
+    paused: false,
+    standby: false,
+    standbyBy: null as string | null,
+    broadcastKnown: false,
+    busy: false
+});
+vi.mock('../../../stores/sharing.ts', () => ({
+    useSharingStore: () => sharing
+}));
+
+let native = false;
+vi.mock('../../../utils/capacitor.ts', () => ({
+    isNativePlatform: () => native
+}));
+
 import GPSPanel from './GPSPanel.vue';
 
 function mountPanel(mode = 'Default') {
     return mount(GPSPanel, {
         props: { mode },
         global: {
-            stubs: { GPSPanelCoordinates: true }
+            stubs: { GPSPanelCoordinates: true, SharingToggle: true, BroadcastChip: true }
         }
     });
 }
@@ -189,5 +205,50 @@ describe('GPSPanel', () => {
         expect(mountPanel('Default').find('.gps-panel').exists()).toBe(true);
 
         store.draw.mode = DrawToolMode.STATIC;
+    });
+    describe('broadcast state', () => {
+        it('shows nothing about broadcasting until the server reports a state', () => {
+            sharing.broadcastKnown = false;
+            native = false;
+            const wrapper = mountPanel();
+            expect(wrapper.find('[data-test="broadcast-status"]').exists()).toBe(false);
+        });
+
+        it('web: shows a status icon, live then standby', async () => {
+            native = false;
+            sharing.broadcastKnown = true;
+            sharing.standby = false;
+            const wrapper = mountPanel();
+            const icon = wrapper.find('[data-test="broadcast-status"]');
+            expect(icon.exists()).toBe(true);
+            expect(icon.attributes('title')).toBe('This browser is sharing your location');
+            sharing.standby = true;
+            await wrapper.vm.$nextTick();
+            expect(wrapper.find('[data-test="broadcast-status"]').attributes('title')).toBe('Another device is sharing your location');
+            sharing.broadcastKnown = false;
+            sharing.standby = false;
+        });
+
+        it('web: says nothing about sharing when there is no position to share', () => {
+            native = false;
+            sharing.broadcastKnown = true;
+            sharing.standby = false;
+            const previous = store.location;
+            store.location = LocationState.Disabled;
+            const wrapper = mountPanel();
+            expect(wrapper.find('[data-test="broadcast-status"]').exists()).toBe(false);
+            store.location = previous;
+            sharing.broadcastKnown = false;
+        });
+
+        it('native: the status icon is left to the pause toggle', () => {
+            native = true;
+            sharing.broadcastKnown = true;
+            const wrapper = mountPanel();
+            expect(wrapper.find('[data-test="broadcast-status"]').exists()).toBe(false);
+            expect(wrapper.find('[data-test="sharing-toggle"]').exists()).toBe(true);
+            sharing.broadcastKnown = false;
+            native = false;
+        });
     });
 });

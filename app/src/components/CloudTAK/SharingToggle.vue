@@ -16,13 +16,21 @@
         >
             <IconBroadcastOff
                 v-if='sharing.paused'
-                :size='32'
+                :size='size'
                 stroke='1'
                 class='text-warning'
             />
+            <!-- Standby: connected, but another session of the user is broadcasting -->
+            <IconBroadcast
+                v-else-if='sharing.standby && sharing.broadcastKnown'
+                :size='size'
+                stroke='1'
+                class='text-info'
+                data-test='sharing-standby'
+            />
             <IconBroadcast
                 v-else
-                :size='32'
+                :size='size'
                 stroke='1'
                 class='text-green'
             />
@@ -54,6 +62,13 @@
                         <li>Disconnect from the TAK server</li>
                         <li>Not receive alerts or notifications</li>
                     </ul>
+                    <p
+                        v-if='sharing.broadcastKnown'
+                        class='text-info mb-2'
+                        data-test='sharing-handover-note'
+                    >
+                        Another signed-in device of yours that has a location will take over sharing.
+                    </p>
                     <p class='text-muted mb-0'>
                         You stay paused, even after the app restarts, until you tap Resume.
                     </p>
@@ -98,9 +113,19 @@ import { useSharingStore } from '../../stores/sharing.ts';
 // Native app only: the web app has no use for it
 const available = isNativePlatform();
 const sharing = useSharingStore();
+
+const props = withDefaults(defineProps<{
+    // Icon size in px. The main menu uses the default, the GPS panel a smaller one
+    size?: number;
+}>(), { size: 32 });
+const size = computed(() => props.size);
 const confirming = ref(false);
 
-const label = computed(() => sharing.paused ? 'Resume sharing' : 'Pause sharing');
+const label = computed(() => {
+    if (sharing.paused) return 'Resume sharing';
+    if (sharing.standby && sharing.broadcastKnown) return 'Pause sharing (another device is sharing your location)';
+    return 'Pause sharing';
+});
 
 async function toggle(): Promise<void> {
     if (sharing.busy) return;

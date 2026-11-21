@@ -34,8 +34,31 @@ export const useSharingStore = defineStore('sharing', {
         busy: false,
         // Set when a step of the last pause or resume failed
         error: null as string | null,
+        // Another of the user's sessions is broadcasting their location. This session
+        // stays connected and receives everything, it just does not set the position
+        standby: false,
+        // What that session is called, for the "Shared from ..." chip
+        standbyBy: null as string | null,
+        // The server has reported a broadcaster state at least once. It only does when
+        // location arbitration is enforced, and the UI stays as it was until then
+        broadcastKnown: false,
     }),
     actions: {
+        /** The server says whether this session is the user's location broadcaster */
+        setBroadcast(active: boolean, by: string | null): void {
+            this.broadcastKnown = true;
+            this.standby = !active;
+            this.standbyBy = active ? null : by;
+        },
+        /** Take over: make this session the broadcaster. Another session goes to standby */
+        async takeOver(): Promise<void> {
+            try {
+                await useMapStore().worker.claimBroadcast();
+            } catch (err) {
+                console.error('Failed to take over location sharing', err);
+                this.error = err instanceof Error ? err.message : 'Failed to take over';
+            }
+        },
         /**
          * Read whether `username` left this device paused. Call before the
          * worker connects. A pause belonging to anyone else is discarded
@@ -132,6 +155,9 @@ export const useSharingStore = defineStore('sharing', {
                     await device.wakeLock.applyPreference(mode);
                 });
                 await step('notifications', () => syncPushToken(device.getMessagingToken()));
+                // Coming back is a choice to share from this device: ask for the broadcaster role.
+                // The server grants it with this session's next position
+                await step('the broadcaster role', () => map.worker.claimBroadcast());
 
                 if (failed.length) {
                     this.error = `Resumed, but could not restart ${failed.join(', ')}.`;

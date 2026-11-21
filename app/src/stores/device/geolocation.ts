@@ -297,9 +297,12 @@ export class GeolocationPermission {
     ): Promise<void> {
         await BackgroundGeolocation.start({
             // Android shows the app name (TAK.NZ) above these two lines, so neither repeats it.
-            // They say plainly what is happening and how to stop it (the Pause button).
-            backgroundTitle: 'Sharing your location',
-            backgroundMessage: 'Your team can see you. Tap to open TAK.NZ and pause.',
+            // They say plainly what is happening and how to stop it (the Pause button). The
+            // text is fixed when the watch starts and must hold in every state: a session
+            // on standby, while another of the user's devices is the broadcaster, is still
+            // using the location, but is not what the team sees
+            backgroundTitle: 'Using your location',
+            backgroundMessage: 'Tap to open TAK.NZ and pause sharing.',
             requestPermissions: false,
             // Reject fixes cached from before the watcher started - stale
             // positions are seeded explicitly by seedImmediateFix() instead,

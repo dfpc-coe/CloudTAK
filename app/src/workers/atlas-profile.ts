@@ -253,29 +253,40 @@ export default class AtlasProfile {
         if (this.atlas.sharingPaused) return;
 
         this.timerSelf = setInterval(async () => {
-            // Always send CoT - use GPS coordinates if available, manual location if set, otherwise default to 0,0
+            // TAK.NZ: only a position the device really has is sent - a GPS fix or a
+            // manual location. 0,0 is not a position, and sending it made a session
+            // with no GPS fight a phone that had one for the user's single marker
+            let gps = false;
             if (this.location.accuracy) {
-                await this.CoT(this.location.coordinates, this.location.accuracy, this.location.altitude);
-            } else if (this.profile_loc && this.profile_loc.value) {
-                await this.CoT();
-            } else {
-                // Send 0,0 location when no valid location is available
-                await this.CoT([0, 0]);
+                gps = true;
+            } else if (!this.manualCoordinates()) {
+                return;
             }
-
+            if (this.atlas.broadcastStandby) {
+                // Another of the user's sessions is the broadcaster. Keep reporting so
+                // the server can promote this one if the broadcaster goes quiet, but
+                // leave the local self marker to the position the server relays back
+                const feat = gps
+                    ? this.selfFeature(this.location.coordinates, this.location.accuracy, this.location.altitude)
+                    : this.selfFeature();
+                feat.properties.archived = false;
+                this.atlas.conn.sendCOT(feat);
+                return;
+            }
+            if (gps) {
+                await this.CoT(this.location.coordinates, this.location.accuracy, this.location.altitude);
+            } else {
+                await this.CoT();
+            }
             const me = await this.atlas.db.get(this.uid());
-
             if (me) {
                 // Clone - as_feature() hands out live references and the
                 // local copy must keep its skittle styling
                 const feat = me.as_feature({ clone: true });
-
                 feat.properties.archived = false;
-
                 for (const prop of SELF_STYLE_PROPERTIES) {
                     delete feat.properties[prop];
                 }
-
                 this.atlas.conn.sendCOT(feat)
             }
         }, (this.profile_loc_freq && this.profile_loc_freq.value) ? Number(this.profile_loc_freq.value) : 5000);
@@ -557,7 +568,16 @@ export default class AtlasProfile {
         return uid;
     }
 
+    /** The manual location, when the user has set one */
+    manualCoordinates(): number[] | null {
+        const value = this.profile_loc && this.profile_loc.value as { coordinates?: number[] } | undefined;
+        if (value && Array.isArray(value.coordinates) && value.coordinates.length >= 2) return value.coordinates;
+        return null;
+    }
     async CoT(coords?: number[], accuracy?: number, altitude?: number | null): Promise<void> {
+        await this.atlas.db.add(this.selfFeature(coords, accuracy, altitude));
+    }
+    selfFeature(coords?: number[], accuracy?: number, altitude?: number | null): Feature {
         if (!this.server) throw new Error('Profile must be loaded before CoT is called');
 
         let coordinates: number[] | null = coords || null;
@@ -623,6 +643,6 @@ export default class AtlasProfile {
             geometry: { type: 'Point', coordinates: [...coordinates, hae] }
         }
 
-        await this.atlas.db.add(feat);
+        return feat;
     }
 }

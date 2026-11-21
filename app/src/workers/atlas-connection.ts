@@ -44,6 +44,8 @@ export default class AtlasConnection {
     private syncTimer: ReturnType<typeof setTimeout> | undefined;
     private syncReason: SyncTriggerReason | undefined;
     private syncListeners: Set<(reason: SyncTriggerReason) => void>;
+    // A Take over asked for while the socket was closed, sent as soon as it opens
+    private pendingClaim = false;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
@@ -151,6 +153,8 @@ export default class AtlasConnection {
         url.searchParams.set('format', 'geojson');
         url.searchParams.set('connection', connection);
         url.searchParams.set('token', this.atlas.token);
+        // TAK.NZ: what the user's other sessions call this one when it is the location broadcaster
+        if (this.atlas.sessionLabel) url.searchParams.set('label', this.atlas.sessionLabel);
 
         if (self.location.protocol === 'http:') {
             url.protocol = 'ws:';
@@ -177,6 +181,10 @@ export default class AtlasConnection {
 
             this.atlas.postMessage({ type: WorkerMessageType.Connection_Open });
             this.isOpen = true;
+            if (this.pendingClaim) {
+                this.pendingClaim = false;
+                this.sendCOT({}, 'broadcast:claim');
+            }
             this.triggerSync('connection');
 
             // Sync events broadcast while this client was disconnected are
@@ -437,7 +445,9 @@ export default class AtlasConnection {
                         .modify(progress);
                 }
             } else if (body.type === 'status') {
-                const status = body.data as { version: string };
+                const status = body.data as { version: string; broadcast?: { active: boolean; by?: string } };
+
+                if (status.broadcast) this.setBroadcast(status.broadcast.active, status.broadcast.by);
 
                 if (this.version !== status.version) {
                     console.log(`Version change detected: ${this.version} -> ${status.version}`);
@@ -589,6 +599,26 @@ export default class AtlasConnection {
     }
 
 
+    /**
+     * The server says whether this session is the user's location broadcaster.
+     * Forwarded every time (it arrives with each status message), so the main
+     * thread catches up even if it missed an earlier one while starting
+     */
+    private setBroadcast(active: boolean, by?: string): void {
+        this.atlas.broadcastStandby = !active;
+        this.atlas.postMessage({
+            type: WorkerMessageType.Broadcast_State,
+            body: { active, by: by || null }
+        });
+    }
+    /** Ask to be the broadcaster. Held until the socket is open if it is not yet */
+    claimBroadcast(): void {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            this.pendingClaim = true;
+            return;
+        }
+        this.sendCOT({}, 'broadcast:claim');
+    }
     sendCOT(data: object, type = 'cot') {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
         this.ws.send(JSON.stringify({ type, data }));
