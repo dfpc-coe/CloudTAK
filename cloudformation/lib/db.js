@@ -122,6 +122,13 @@ export default {
         DBEndpoint: {
             Description: 'Postgres Aurora Cluster Endpoint',
             Value: cf.getAtt('DBCluster', 'Endpoint.Address')
+        },
+        DBSecurityGroup: {
+            Description: 'Postgres Aurora Cluster Security Group',
+            Export: {
+                Name: cf.join([cf.stackName, '-db-sg'])
+            },
+            Value: cf.getAtt('DBVPCSecurityGroup', 'GroupId')
         }
     }
 };
