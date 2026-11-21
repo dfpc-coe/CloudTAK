@@ -282,7 +282,6 @@
                 style='z-index: 4;'
             >
                 <div class='d-flex flex-column align-items-end gap-2'>
-                    <SharingPausedPill />
                     <ServerStatus :size='38' />
                 </div>
             </div>
@@ -381,7 +380,6 @@ import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
 import MainMenu from './MainMenu.vue';
 import ServerStatus from './ServerStatus.vue';
-import SharingPausedPill from './SharingPausedPill.vue';
 import {
     TablerIconButton,
     TablerModal,
