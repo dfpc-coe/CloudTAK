@@ -60,7 +60,7 @@ describe('DrawOverlay point mode', () => {
         expect(wrapper.findAll('.card-header input[name="point-type"]')).toHaveLength(5);
         expect(wrapper.find('.card-body').exists()).toBe(false);
         expect(wrapper.find('.card-header .icon-select-stub').exists()).toBe(true);
-        expect(wrapper.find('[title="Drop Multiple Points"]').exists()).toBe(true);
+        expect(wrapper.find('[title="Drop Multiple Points"]').exists()).toBe(!mobile);
         expect(wrapper.find('[title="Open Settings"]').exists()).toBe(false);
         expect(wrapper.find('[title="Finish Drawing"]').exists()).toBe(true);
         expect(wrapper.find('[title="Cancel Editing"]').exists()).toBe(true);

@@ -25,6 +25,7 @@
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
+                        v-if='!appStore.isMobileDetected'
                         :title='mapStore.draw.point.drop === "multiple" ? "Dropping Multiple Points" : "Drop Multiple Points"'
                         :class='{ "point-toggle--active": mapStore.draw.point.drop === "multiple" }'
                         :aria-pressed='mapStore.draw.point.drop === "multiple"'
