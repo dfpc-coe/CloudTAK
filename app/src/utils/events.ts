@@ -25,6 +25,8 @@ export enum WorkerMessageType {
 
     Feature_Archived_Added = 'cloudtak:feature:archived:added',
     Feature_Archived_Removed = 'cloudtak:feature:archived:removed',
+    // The set of contacts with a live marker changed - body is ContactOnlineChangeBody
+    Contact_Online_Change = 'cloudtak:contact:online:change',
 
     Channels_None = 'channels:none',
     Channels_List = 'channels:list',
@@ -98,6 +100,9 @@ export type MissionChangePropertyBody = {
     }>;
 };
 
+export type ContactOnlineChangeBody = {
+    count: number;
+};
 export type SyncTriggerReason = 'network' | 'connection';
 
 export type SyncTriggerBody = {

@@ -31,7 +31,7 @@ import type { NavigationState, NavigationDirection, NavigationMode } from '../li
 import { syncPushToken } from '../base/push.ts';
 import { normalizePointType } from '../utils/point-type.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts';
-import type { WorkerMessage, SyncTriggerReason, MissionRenderFeatureBody } from '../utils/events.ts';
+import type { WorkerMessage, SyncTriggerReason, MissionRenderFeatureBody, ContactOnlineChangeBody } from '../utils/events.ts';
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
@@ -1376,6 +1376,10 @@ export const useMapStore = defineStore('cloudtak', {
                     void ssoLogoutRedirect();
                 } else if (msg.type === WorkerMessageType.Channel_Change) {
                     this.channelChange = true;
+                } else if (msg.type === WorkerMessageType.Contact_Online_Change) {
+                    if (this._menu) {
+                        (this._menu as MenuManager).onlineContactsCount.value = (msg.body as ContactOnlineChangeBody).count;
+                    }
                 } else if (msg.type === WorkerMessageType.Feature_Render) {
                     if (!cotRenderQueued) {
                         cotRenderQueued = true;

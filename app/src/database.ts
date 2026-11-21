@@ -8,7 +8,7 @@ import type {
     MissionChange,
     MissionLayer,
     MissionLog,
-    Contact,
+    ContactRecord,
     Server,
     ProfileFile,
     ProfileOverlayList
@@ -339,7 +339,7 @@ export type DatabaseType = Dexie & {
     profile_file: EntityTable<DBProfileFile, 'id'>,
     config: EntityTable<DBConfig, 'key'>,
     cache: EntityTable<DBCache, 'key'>,
-    contact: EntityTable<Contact, 'uid'>,
+    contact: EntityTable<ContactRecord, 'uid'>,
     taxonomy: EntityTable<DBTaxonomy, 'type'>
 };
 

@@ -18,12 +18,12 @@ import ContactManager from '../base/contact.ts';
 import TAKNotification, { NotificationType } from '../base/notification.ts';
 import { WorkerMessageType } from '../utils/events.ts';
 import { entityLink, entityLabel } from '../utils/core-entity.ts';
-import type { MissionChangePropertyBody, MissionPendingEdits } from '../utils/events.ts';
+import type { ContactOnlineChangeBody, MissionChangePropertyBody, MissionPendingEdits } from '../utils/events.ts';
 import type { GeoJSONSourceDiff, LngLatLike } from 'maplibre-gl';
 import { booleanWithin } from '@turf/boolean-within';
 import { isEqual } from '@ver0/deep-equal';
 import type { Polygon } from 'geojson';
-import type { InputFeature, Feature, Contact } from '../types.ts';
+import type { InputFeature, Feature, ContactRecord } from '../types.ts';
 import type {
     Feature as GeoJSONFeature,
     Geometry as GeoJSONGeometry,
@@ -32,6 +32,8 @@ import * as Comlink from 'comlink';
 import AtlasBreadcrumb from './atlas-breadcrumb.ts';
 
 const STALE_OPACITY = 0.5;
+// How often contacts that are neither online nor recent are deleted
+const CONTACT_PRUNE_INTERVAL_MS = 5 * 60 * 1000;
 
 type NestedArray = {
     path: string;
@@ -94,11 +96,16 @@ export default class AtlasDatabase {
     missionRemoves: Map<string, string>;
 
     breadcrumb: AtlasBreadcrumb & Comlink.ProxyMarked;
+    // Contacts with a live marker as of the last Contact_Online_Change broadcast
+    publishedContacts: Set<string>;
+    lastContactPrune: number;
 
     constructor(atlas: Atlas) {
         this.atlas = atlas;
 
         this.cots = new Map();
+        this.publishedContacts = new Set();
+        this.lastContactPrune = 0;
         this.isInitialized = false;
         this.archiveIds = new Set();
 
@@ -361,6 +368,51 @@ export default class AtlasDatabase {
         this.persistRemoval(removed);
 
         return diff;
+    }
+
+    /**
+     * UIDs of the contacts with a live marker in memory, excluding the user
+     */
+    onlineContacts(): Set<string> {
+        const online = new Set<string>();
+        for (const cot of this.cots.values()) {
+            if (cot.is_skittle && !cot.is_self) online.add(cot.id);
+        }
+        return online;
+    }
+
+    onlineContactCount(): number {
+        return this.onlineContacts().size;
+    }
+
+    /**
+     * Broadcast when the set of online contacts changes, and periodically
+     * delete contacts that are neither online nor recently seen.
+     */
+    private trackContacts(now: number): void {
+        const online = this.onlineContacts();
+        let changed = online.size !== this.publishedContacts.size;
+        if (!changed) {
+            for (const uid of online) {
+                if (!this.publishedContacts.has(uid)) {
+                    changed = true;
+                    break;
+                }
+            }
+        }
+        if (changed) {
+            this.publishedContacts = online;
+            this.atlas.postMessage({
+                type: WorkerMessageType.Contact_Online_Change,
+                body: { count: online.size } satisfies ContactOnlineChangeBody
+            });
+        }
+        if (now - this.lastContactPrune >= CONTACT_PRUNE_INTERVAL_MS && !isDatabaseSuspended()) {
+            this.lastContactPrune = now;
+            ContactManager.prune(online, now).catch((err) => {
+                console.error('Failed to prune contacts', err);
+            });
+        }
     }
 
     /**
@@ -1366,15 +1418,18 @@ export default class AtlasDatabase {
         if (this.atlas.profile.uid() !== exists.id) {
                     const entry = await ContactManager.from(exists.id);
 
-                    if (!entry) {
-                        const contact: Contact = {
+                    if (entry) {
+                        await ContactManager.touch(entry);
+                    } else {
+                        const contact: ContactRecord = {
                             uid: exists.id,
                             notes: '',
                             filterGroups: null,
                             callsign: exists.properties.callsign,
                             team: exists.properties.group.name,
                             role: exists.properties.group.role,
-                            takv: ''
+                            takv: '',
+                            lastSeen: Date.now()
                         }
 
                         await ContactManager.put(contact);
