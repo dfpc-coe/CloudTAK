@@ -92,6 +92,9 @@ export default class DrawTool {
 
     public point: {
         type: string,
+        /** Iconset icon as `<iconset uid>:<path>`, empty to use the type symbol */
+        icon: string,
+        drop: 'single' | 'multiple',
     };
 
     public lasso: {
@@ -463,11 +466,14 @@ export default class DrawTool {
                         if (this.point.type === 'u-d-p') {
                             feat.properties["marker-color"] = '#00FF00';
                         }
+
+                        this.applyPointIcon(feat);
                     }
 
                     this.removeFeature(id);
 
-                    await this.stop();
+                    const keepDropping = this.mode === DrawToolMode.POINT && this.point.drop === 'multiple';
+                    if (!keepDropping) await this.stop();
 
                     await this.mapStore.worker.db.add(feat, {
                         authored: true,
@@ -477,7 +483,7 @@ export default class DrawTool {
 
                     await this.mapStore.refresh();
 
-                    router.push(`/cot/${feat.properties.id}`);
+                    if (!keepDropping) router.push(`/cot/${feat.properties.id}`);
                 }
             }
         })
@@ -519,7 +525,9 @@ export default class DrawTool {
         this.editing = null;
 
         this.point = reactive({
-            type: this.mapStore.defaultPointType
+            type: this.mapStore.defaultPointType,
+            icon: '',
+            drop: 'single'
         })
 
         this.lasso = reactive({
@@ -701,12 +709,14 @@ export default class DrawTool {
     }
 
 
-    async start(mode: DrawToolMode): Promise<void> {
+    async start(mode: DrawToolMode, opts: { icon?: string } = {}): Promise<void> {
         if (mode !== DrawToolMode.SNAPPING) {
             await this.removeNetwork();
         }
 
         this.point.type = this.mapStore.defaultPointType;
+        this.point.icon = opts.icon ?? '';
+        this.point.drop = 'single';
 
         if (mode === DrawToolMode.LINESTRING && this.route.layer !== 'No Snapping') {
             this.route.layer = 'No Snapping';
@@ -804,6 +814,7 @@ export default class DrawTool {
                     feat.properties.type = this.point.type;
                     feat.properties["marker-opacity"] = 1;
                     feat.properties["marker-color"] = this.point.type === 'u-d-p' ? '#00FF00' : '#FFFFFF';
+                    this.applyPointIcon(feat);
                 }
 
                 this.removeFeature(drawn.id as string);
@@ -815,6 +826,13 @@ export default class DrawTool {
                 await this.stop();
             }
         }
+    }
+
+    private applyPointIcon(feat: Feature): void {
+        if (!this.point.icon) return;
+
+        feat.properties.icon = this.point.icon;
+        feat.properties["marker-color"] = '#FFFFFF';
     }
 
     async stop(refresh = true): Promise<void> {

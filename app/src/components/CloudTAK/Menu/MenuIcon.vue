@@ -133,6 +133,27 @@
                                 </div>
                             </TablerBorder>
                         </div>
+
+                        <div class='col-12'>
+                            <TablerBorder class='cloudtak-accent'>
+                                <template #label>
+                                    <p class='text-uppercase text-secondary small mb-0'>
+                                        Quick Actions
+                                    </p>
+                                </template>
+
+                                <button
+                                    class='btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2'
+                                    @click='dropPoint'
+                                >
+                                    <IconMapPinPlus
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Drop Point</span>
+                                </button>
+                            </TablerBorder>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -157,7 +178,9 @@ import {
     TablerInput,
     TablerUploadLogo
 } from '@tak-ps/vue-tabler';
-import { IconPencil } from '@tabler/icons-vue';
+import { IconPencil, IconMapPinPlus } from '@tabler/icons-vue';
+import { DrawToolMode } from '../../../stores/modules/draw.ts';
+import { useAppStore } from '../../../stores/app.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import type { Iconset } from '../../../types.ts';
@@ -174,6 +197,7 @@ interface IconDraft {
 const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const loading = ref(true);
 const isSystemAdmin = ref(false);
@@ -397,6 +421,14 @@ function normalizeRemoteIcon(remote: IconDraft): IconDraft {
 
 function stripExt(name: string): string {
     return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
+}
+
+async function dropPoint(): Promise<void> {
+    await mapStore.draw.start(DrawToolMode.POINT, {
+        icon: `${String(route.params.iconset)}:${stripExt(icon.value.name)}`
+    });
+
+    if (appStore.isMobileDetected) await router.push('/');
 }
 
 function newIconFolder(): string {
