@@ -53,6 +53,14 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).CapacitorDownloader.continuedProcessing.*</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

@@ -38,6 +38,18 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!-- Offline overlays in the system Files app (UIFileSharingEnabled) -->
+        <provider
+            android:name=".OverlaysProvider"
+            android:authorities="${applicationId}.overlays"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
     </application>
 
     <!-- Permissions -->

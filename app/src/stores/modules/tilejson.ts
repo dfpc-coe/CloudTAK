@@ -10,7 +10,7 @@ import KV from '../../base/kv.ts';
 import { std, server, serverUrl, getRuntimeToken } from '../../std.ts';
 import { applyTileArgs, authorizeTileJSON } from '../../utils/tilejson.ts';
 import type { TileArgs } from '../../utils/tilejson.ts';
-import { profileAssetIdFromUrl, hasCompleteOfflineTiles } from '../../utils/offline-tiles.ts';
+import { profileAssetIdFromUrl } from '../../utils/offline-tiles.ts';
 import { registerPMTilesProtocol, offlineTileJSON, offlineTileTemplate, isOfflineTileJSON, setNetworkTileTemplate } from './pmtiles.ts';
 import type { OverlayTileJSON } from '../../types.ts';
 
@@ -114,16 +114,14 @@ export function registerTileJSONProtocol(): void {
         };
 
         // Profile assets always tile through the PMTiles protocol, which picks
-        // the OPFS archive or the hosted server per request
+        // the stored archive or the hosted server per request
         const assetId = profileAssetIdFromUrl(entry.url);
         if (assetId) {
             registerPMTilesProtocol();
 
             let tilejson = entry.tilejson;
             if (!tilejson) {
-                tilejson = await hasCompleteOfflineTiles(assetId)
-                    ? await offlineTileJSON(assetId)
-                    : await std(entry.url) as OverlayTileJSON;
+                tilejson = await offlineTileJSON(assetId) ?? await std(entry.url) as OverlayTileJSON;
                 await cache(tilejson);
             }
 
