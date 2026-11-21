@@ -27,6 +27,11 @@
 
 ### Pending Release
 
+### v13.126.0 - 2026-11-21
+
+- :tada: Introduce Initial Plugin Management APIs for future stand-alone plugins
+- :rocket: Redesign Admin Overview page to allow linking to a specific CloudTAK server setting section
+
 ### v13.125.0 - 2026-11-17
 
 - :rocket: Add background downloading on iOS and Android w/ Download Notifications
