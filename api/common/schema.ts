@@ -876,3 +876,17 @@ export const ProfileOverlay = pgTable('profile_overlays', {
 }, t => ({
     unq: unique().on(t.username, t.url),
 }));
+
+export const Plugin = pgTable('plugin', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    name: text().notNull(),
+    description: text().notNull().default(''),
+    enabled: boolean().notNull().default(false),
+    api_version: integer().notNull().default(1),
+    version: text(),
+    sha256: text(),
+    size: integer(),
+    username: text().references(() => Profile.username, { onDelete: 'set null' }),
+});

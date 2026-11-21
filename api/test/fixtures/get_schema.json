@@ -1,14 +1,4 @@
 {
-    "GET /schema": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /openapi": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /agency": {
         "body": false,
         "query": true,
@@ -1389,6 +1379,41 @@
         "query": false,
         "res": true
     },
+    "GET /plugin": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /plugin/:plugin": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /plugin": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /plugin/:plugin": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /plugin/:plugin": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /plugin/:plugin/bundle": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /plugin/:plugin/bundle": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /profile/asset": {
         "body": false,
         "query": true,
@@ -1751,6 +1776,16 @@
     },
     "PATCH /server": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /schema": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /openapi": {
+        "body": false,
         "query": false,
         "res": true
     },

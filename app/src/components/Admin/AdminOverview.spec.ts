@@ -111,6 +111,25 @@ async function mountOverview(overrides: Record<string, unknown> = {}) {
     return wrapper;
 }
 
+const SETTINGS = [
+    'Login Page',
+    'Search Providers',
+    'Routing Providers',
+    'Media Server',
+    'Plugins',
+    'Plugin Proxy',
+    'Retention',
+    'Notifications',
+    'Display Defaults',
+    'External Applications',
+    'Core Events',
+    'TAK User Groups',
+    'Map Settings',
+    'COTAK OAuth Provider',
+    'SCIM User Provisioning',
+    'CoTURN Server'
+];
+
 describe('Admin/AdminOverview', () => {
     afterEach(() => {
         GET.mockReset();
@@ -159,6 +178,56 @@ describe('Admin/AdminOverview', () => {
 
         await wrapper.findAll('[data-overview="service"]')[2].trigger('click');
         expect(push).toHaveBeenCalledWith('/admin/geofence');
+    });
+
+    it('links services straight to their setting', async () => {
+        const wrapper = await mountOverview();
+        const services = wrapper.findAll('[data-overview="service"]');
+
+        await services[1].trigger('click');
+        expect(push).toHaveBeenLastCalledWith('/admin/config/scim');
+
+        await services[3].trigger('click');
+        expect(push).toHaveBeenLastCalledWith('/admin/config/search');
+
+        await services[4].trigger('click');
+        expect(push).toHaveBeenLastCalledWith('/admin/config/routing');
+    });
+
+    it('lists every setting as a tile below the totals', async () => {
+        const wrapper = await mountOverview();
+        const settings = wrapper.findAll('[data-overview="setting"]');
+
+        expect(settings.map(setting => setting.text())).toEqual(SETTINGS);
+
+        for (const setting of settings) {
+            expect(setting.element.firstElementChild?.tagName.toLowerCase(), setting.text()).toBe('svg');
+        }
+
+        await settings[4].trigger('click');
+        expect(push).toHaveBeenLastCalledWith('/admin/config/plugins');
+    });
+
+    it('filters settings by name and by what they contain', async () => {
+        const wrapper = await mountOverview();
+        const visible = () => wrapper.findAll('[data-overview="setting"]').map(setting => setting.text());
+
+        await wrapper.find('input').setValue('providers');
+        expect(visible()).toEqual(['Search Providers', 'Routing Providers']);
+
+        await wrapper.find('input').setValue('FIREBASE');
+        expect(visible()).toEqual(['Notifications']);
+
+        await wrapper.find('input').setValue('arcgis routing');
+        expect(visible()).toEqual(['Routing Providers']);
+
+        await wrapper.find('input').setValue('nothing matches this');
+        expect(visible()).toEqual([]);
+        expect(wrapper.text()).toContain('No Matching Settings');
+
+        await wrapper.find('input').setValue('   ');
+        expect(visible()).toEqual(SETTINGS);
+        expect(wrapper.text()).not.toContain('No Matching Settings');
     });
 
     it('renders configured services with a green border', async () => {

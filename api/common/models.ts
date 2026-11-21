@@ -52,6 +52,8 @@ export default class Models {
     MissionTemplate: MissionTemplate;
     MissionTemplateLog: MissionTemplateLog;
 
+    Plugin: Modeler<typeof pgtypes.Plugin>;
+
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileConfig: ProfileConfig;
     ProfileChat: ProfileChat;
@@ -106,6 +108,8 @@ export default class Models {
 
         this.MissionTemplate = new MissionTemplate(pg);
         this.MissionTemplateLog = new MissionTemplateLog(pg);
+
+        this.Plugin = new Modeler(pg, pgtypes.Plugin);
 
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileConfig = new ProfileConfig(pg);

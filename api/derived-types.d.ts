@@ -20493,7 +20493,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry" | "stale";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Devices shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -25630,7 +25630,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry" | "stale";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -37752,20 +37752,83 @@ export interface paths {
                                     /** @description The UID of the COT */
                                     data: string;
                                     timestamp: string;
-                                    creatorUid: string;
+                                    creatorUid?: string;
                                     keywords?: string[];
                                     details?: {
                                         type: string;
-                                        callsign: string;
+                                        callsign?: string;
+                                        title?: string;
+                                        iconsetPath?: string;
                                         color?: string;
-                                        location: {
+                                        attachments?: string[];
+                                        name?: string;
+                                        category?: string;
+                                        location?: {
                                             lat: number;
                                             lon: number;
                                         };
                                     };
                                 }[];
-                                contents?: unknown[];
-                                maplayers?: unknown[];
+                                contents?: {
+                                    data: {
+                                        filename?: string;
+                                        keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
+                                        name?: string;
+                                        submissionTime?: string;
+                                        submitter?: string;
+                                        uid?: string;
+                                        hash: string;
+                                        size?: number;
+                                        creatorUid?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
+                                        expiration?: number;
+                                        groups?: string[];
+                                    };
+                                    timestamp: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
+                                maplayers?: {
+                                    data: {
+                                        uid: string;
+                                        name: string;
+                                        type: string;
+                                        url: string;
+                                        description?: string;
+                                        creatorUid?: string;
+                                        createTime?: string;
+                                        modifiedTime?: string;
+                                        enabled: boolean;
+                                        defaultLayer: boolean;
+                                        ignoreErrors: boolean;
+                                        invertYCoordinate: boolean;
+                                        minZoom?: number;
+                                        maxZoom?: number;
+                                        tileType?: string;
+                                        serverParts?: string;
+                                        backgroundColor?: string;
+                                        tileUpdate?: string;
+                                        north?: number;
+                                        south?: number;
+                                        east?: number;
+                                        west?: number;
+                                        additionalParameters?: string;
+                                        coordinateSystem?: string;
+                                        layers?: string;
+                                        version?: string;
+                                        opacity?: number;
+                                        path?: string;
+                                        after?: string;
+                                    };
+                                    timestamp?: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
                             }[];
                             messages?: string[];
                             nodeId?: string;
@@ -37888,20 +37951,83 @@ export interface paths {
                                     /** @description The UID of the COT */
                                     data: string;
                                     timestamp: string;
-                                    creatorUid: string;
+                                    creatorUid?: string;
                                     keywords?: string[];
                                     details?: {
                                         type: string;
-                                        callsign: string;
+                                        callsign?: string;
+                                        title?: string;
+                                        iconsetPath?: string;
                                         color?: string;
-                                        location: {
+                                        attachments?: string[];
+                                        name?: string;
+                                        category?: string;
+                                        location?: {
                                             lat: number;
                                             lon: number;
                                         };
                                     };
                                 }[];
-                                contents?: unknown[];
-                                maplayers?: unknown[];
+                                contents?: {
+                                    data: {
+                                        filename?: string;
+                                        keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
+                                        name?: string;
+                                        submissionTime?: string;
+                                        submitter?: string;
+                                        uid?: string;
+                                        hash: string;
+                                        size?: number;
+                                        creatorUid?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
+                                        expiration?: number;
+                                        groups?: string[];
+                                    };
+                                    timestamp: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
+                                maplayers?: {
+                                    data: {
+                                        uid: string;
+                                        name: string;
+                                        type: string;
+                                        url: string;
+                                        description?: string;
+                                        creatorUid?: string;
+                                        createTime?: string;
+                                        modifiedTime?: string;
+                                        enabled: boolean;
+                                        defaultLayer: boolean;
+                                        ignoreErrors: boolean;
+                                        invertYCoordinate: boolean;
+                                        minZoom?: number;
+                                        maxZoom?: number;
+                                        tileType?: string;
+                                        serverParts?: string;
+                                        backgroundColor?: string;
+                                        tileUpdate?: string;
+                                        north?: number;
+                                        south?: number;
+                                        east?: number;
+                                        west?: number;
+                                        additionalParameters?: string;
+                                        coordinateSystem?: string;
+                                        layers?: string;
+                                        version?: string;
+                                        opacity?: number;
+                                        path?: string;
+                                        after?: string;
+                                    };
+                                    timestamp?: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
                             };
                             messages?: string[];
                             nodeId?: string;
@@ -38027,20 +38153,83 @@ export interface paths {
                                     /** @description The UID of the COT */
                                     data: string;
                                     timestamp: string;
-                                    creatorUid: string;
+                                    creatorUid?: string;
                                     keywords?: string[];
                                     details?: {
                                         type: string;
-                                        callsign: string;
+                                        callsign?: string;
+                                        title?: string;
+                                        iconsetPath?: string;
                                         color?: string;
-                                        location: {
+                                        attachments?: string[];
+                                        name?: string;
+                                        category?: string;
+                                        location?: {
                                             lat: number;
                                             lon: number;
                                         };
                                     };
                                 }[];
-                                contents?: unknown[];
-                                maplayers?: unknown[];
+                                contents?: {
+                                    data: {
+                                        filename?: string;
+                                        keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
+                                        name?: string;
+                                        submissionTime?: string;
+                                        submitter?: string;
+                                        uid?: string;
+                                        hash: string;
+                                        size?: number;
+                                        creatorUid?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
+                                        expiration?: number;
+                                        groups?: string[];
+                                    };
+                                    timestamp: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
+                                maplayers?: {
+                                    data: {
+                                        uid: string;
+                                        name: string;
+                                        type: string;
+                                        url: string;
+                                        description?: string;
+                                        creatorUid?: string;
+                                        createTime?: string;
+                                        modifiedTime?: string;
+                                        enabled: boolean;
+                                        defaultLayer: boolean;
+                                        ignoreErrors: boolean;
+                                        invertYCoordinate: boolean;
+                                        minZoom?: number;
+                                        maxZoom?: number;
+                                        tileType?: string;
+                                        serverParts?: string;
+                                        backgroundColor?: string;
+                                        tileUpdate?: string;
+                                        north?: number;
+                                        south?: number;
+                                        east?: number;
+                                        west?: number;
+                                        additionalParameters?: string;
+                                        coordinateSystem?: string;
+                                        layers?: string;
+                                        version?: string;
+                                        opacity?: number;
+                                        path?: string;
+                                        after?: string;
+                                    };
+                                    timestamp?: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
                             };
                             messages?: string[];
                             nodeId?: string;
@@ -39711,16 +39900,23 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -39755,16 +39951,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                         };
@@ -40023,16 +40226,23 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -40067,16 +40277,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                         };
@@ -41761,16 +41978,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             messages?: string[];
@@ -41951,16 +42175,23 @@ export interface paths {
                                     timestamp: string;
                                     creatorUid?: string;
                                     data: {
+                                        filename?: string;
                                         keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
                                         name?: string;
-                                        hash: string;
                                         submissionTime?: string;
+                                        submitter?: string;
                                         uid?: string;
+                                        hash: string;
                                         size?: number;
                                         creatorUid?: string;
-                                        mimeType?: string;
-                                        submitter?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
                                         expiration?: number;
+                                        groups?: string[];
                                     };
                                 }[];
                                 passwordProtected: boolean;
@@ -41995,16 +42226,23 @@ export interface paths {
                                         };
                                     };
                                     contentResource?: {
+                                        filename?: string;
                                         keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
                                         name?: string;
-                                        hash: string;
                                         submissionTime?: string;
+                                        submitter?: string;
                                         uid?: string;
+                                        hash: string;
                                         size?: number;
                                         creatorUid?: string;
-                                        mimeType?: string;
-                                        submitter?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
                                         expiration?: number;
+                                        groups?: string[];
                                     };
                                 }[];
                             }[];
@@ -42180,16 +42418,23 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -42224,16 +42469,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                         };
@@ -47941,6 +48193,818 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/plugin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Plugins. Only System Administrators are shown disabled Plugins */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "name" | "description" | "enabled" | "api_version" | "version" | "sha256" | "size" | "username" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description Filter by enabled state */
+                    enabled?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                /** Format: uuid */
+                                id: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                description: string;
+                                enabled: boolean;
+                                api_version: number;
+                                version: null | string;
+                                sha256: null | string;
+                                size: null | number;
+                                username: null | string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a Plugin. It stays disabled until a bundle is uploaded and it is enabled */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description Version of the CloudTAK Plugin API the bundle was built against */
+                        api_version?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plugin/{:plugin}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a Plugin */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a Plugin and its bundles */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a Plugin */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description Version of the CloudTAK Plugin API the bundle was built against */
+                        api_version?: number;
+                        enabled?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/plugin/{:plugin}/bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the ES module bundle of a Plugin. Passing the current sha256 makes the response immutably cacheable */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    sha256?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Upload a new version of the Plugin bundle as a single ES module */
+        post: {
+            parameters: {
+                query: {
+                    /** @description Version of the Plugin bundle */
+                    version: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": unknown;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/profile/asset": {

@@ -25,7 +25,6 @@ async function mountRouting(search: unknown, config: Record<string, unknown> = {
 
     const wrapper = mount(ConfigRouting);
 
-    await wrapper.find('.slidedown__header').trigger('click');
     await flushPromises();
 
     return wrapper;
@@ -50,9 +49,7 @@ describe('Admin/AdminConfig/ConfigRouting', () => {
             error: undefined
         });
 
-        expect(wrapper.find('label').text()).toBe('Routing Providers');
-
-        const providers = wrapper.findAll('.slidedown .slidedown');
+        const providers = wrapper.findAll('.slidedown');
         expect(providers).toHaveLength(1);
 
         expect(providers[0].find('label').text()).toBe('ArcGIS Online');
@@ -71,7 +68,7 @@ describe('Admin/AdminConfig/ConfigRouting', () => {
             error: undefined
         });
 
-        const providers = wrapper.findAll('.slidedown .slidedown');
+        const providers = wrapper.findAll('.slidedown');
 
         expect(providers[0].findAll('.badge').map(badge => badge.text())).toEqual(['Inactive']);
     });
@@ -79,7 +76,7 @@ describe('Admin/AdminConfig/ConfigRouting', () => {
     it('still lists providers when the status cannot be loaded', async () => {
         const wrapper = await mountRouting({ data: undefined, error: { message: 'Routing unavailable' } });
 
-        expect(wrapper.findAll('.slidedown .slidedown')).toHaveLength(1);
+        expect(wrapper.findAll('.slidedown')).toHaveLength(1);
         expect(wrapper.findAll('.badge')).toHaveLength(0);
         expect(wrapper.text()).toContain('Routing unavailable');
     });
@@ -98,7 +95,7 @@ describe('Admin/AdminConfig/ConfigRouting', () => {
             'routing::agol::token': 'routing-token'
         });
 
-        const provider = wrapper.find('.slidedown .slidedown');
+        const provider = wrapper.find('.slidedown');
 
         await provider.find('.slidedown__header').trigger('click');
         await flushPromises();
