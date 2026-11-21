@@ -151,6 +151,47 @@
                     </StandardItem>
                 </div>
             </div>
+
+            <div class='d-flex align-items-center mt-4 mb-2'>
+                <label class='subheader m-0'>Settings</label>
+                <div class='ms-auto'>
+                    <TablerInput
+                        v-model='filter'
+                        icon='search'
+                        placeholder='Filter settings...'
+                    />
+                </div>
+            </div>
+
+            <div class='row g-2'>
+                <div
+                    v-for='section in sections.filter(section => matchesSection(section, filter))'
+                    :key='section.slug'
+                    class='col-12 col-sm-6 col-lg-4'
+                >
+                    <StandardItem
+                        class='user-select-none d-flex align-items-center px-3 py-3'
+                        data-overview='setting'
+                        @click='router.push(`/admin/config/${section.slug}`)'
+                    >
+                        <component
+                            :is='section.icon'
+                            :size='32'
+                            stroke='1'
+                        />
+                        <div
+                            class='ms-3 fw-bold'
+                            v-text='section.label'
+                        />
+                    </StandardItem>
+                </div>
+            </div>
+
+            <TablerNone
+                v-if='!sections.some(section => matchesSection(section, filter))'
+                label='No Matching Settings'
+                :create='false'
+            />
         </div>
     </div>
 </template>
@@ -164,7 +205,10 @@ import type { Server } from '../../types.ts';
 import StatusDot from '../util/StatusDot.vue';
 import CertificateChannelsBadge from '../util/CertificateChannelsBadge.vue';
 import StandardItem from '../CloudTAK/util/StandardItem.vue';
+import { sections, matchesSection } from './AdminConfig/sections.ts';
 import {
+    TablerNone,
+    TablerInput,
     TablerLoading,
     TablerRefreshButton,
 } from '@tak-ps/vue-tabler';
@@ -216,6 +260,7 @@ const geofenceStates: Record<string, string> = {
 };
 
 const loading = ref(true);
+const filter = ref('');
 const takserver = ref<Server | undefined>(undefined);
 const takserverError = ref<Error | undefined>(undefined);
 
@@ -242,7 +287,7 @@ const services = ref<Service[]>([{
     }
 }, {
     label: 'SCIM',
-    to: '/admin/config',
+    to: '/admin/config/scim',
     icon: markRaw(IconUsersGroup),
     fetch: async () => {
         const config = await fetchConfig(['scim::enabled', 'scim::token']);
@@ -264,7 +309,7 @@ const services = ref<Service[]>([{
     }
 }, {
     label: 'Search & Geocoding',
-    to: '/admin/config',
+    to: '/admin/config/search',
     icon: markRaw(IconMapSearch),
     fetch: async () => {
         const res = await server.GET('/api/search');
@@ -282,7 +327,7 @@ const services = ref<Service[]>([{
     }
 }, {
     label: 'Routing',
-    to: '/admin/config',
+    to: '/admin/config/routing',
     icon: markRaw(IconRoute),
     fetch: async () => {
         const res = await server.GET('/api/search');

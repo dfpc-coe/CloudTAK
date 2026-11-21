@@ -1611,6 +1611,13 @@
       "when": 1794848431879,
       "tag": "0230_core_entity_stale",
       "breakpoints": true
+    },
+    {
+      "idx": 231,
+      "version": "7",
+      "when": 1795276515313,
+      "tag": "0231_plugin",
+      "breakpoints": true
     }
   ]
 }
