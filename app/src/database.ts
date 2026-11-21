@@ -17,6 +17,8 @@ import type {
 export interface DBIcon {
     /** Maplibre image id, e.g. "<iconsetUid>:<icon-path-without-extension>" */
     name: string;
+    /** Server row id, absent on rows cached before it was mirrored */
+    id?: number;
     iconset: string;
     path: string;
     type2525b: string | null;

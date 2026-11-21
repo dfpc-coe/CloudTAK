@@ -44,6 +44,69 @@ export default class Icon {
         return await db.icon.where('iconset').equals(iconsetUid).sortBy('path');
     }
 
+    /** Folder portion of an icon path, '' when the icon sits at the iconset root */
+    static folder(path: string): string {
+        const idx = path.lastIndexOf('/');
+        return idx === -1 ? '' : path.slice(0, idx);
+    }
+
+    /** Final path segment of an icon path */
+    static leaf(path: string): string {
+        return path.slice(path.lastIndexOf('/') + 1);
+    }
+
+    /** Server row id of a cached icon, resolved by path when the cached row predates it */
+    static async remoteId(icon: Pick<DBIcon, 'id' | 'iconset' | 'path'>): Promise<number> {
+        if (icon.id !== undefined) return icon.id;
+
+        const { data, error } = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
+            params: { path: { ':iconset': icon.iconset, ':icon': icon.path } }
+        });
+
+        if (error) throw new Error(error.message);
+
+        return data.id;
+    }
+
+    /**
+     * Rename an icon on the server, moving it between folders when the
+     * folder portion of `path` changes. The caller resyncs the iconset.
+     */
+    static async rename(icon: Pick<DBIcon, 'id' | 'iconset' | 'path'>, path: string): Promise<void> {
+        const { error } = await server.PATCH('/api/iconset/{:iconset}/icon/{:icon}', {
+            params: { path: { ':iconset': icon.iconset, ':icon': await Icon.remoteId(icon) } },
+            body: { name: path }
+        });
+
+        if (error) throw new Error(error.message);
+    }
+
+    /**
+     * Upload an image file as `<folder>/<file name>`. The caller regenerates
+     * the spritesheet and resyncs the iconset once the batch is done.
+     */
+    static async upload(iconset: string, file: File, folder = ''): Promise<void> {
+        const data = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = () => reject(reader.error ?? new Error(`Failed to read ${file.name}`));
+            reader.readAsDataURL(file);
+        });
+
+        const { error } = await server.POST('/api/iconset/{:iconset}/icon', {
+            params: {
+                path: { ':iconset': iconset },
+                query: { regen: false }
+            },
+            body: {
+                name: folder ? `${folder}/${file.name}` : file.name,
+                data
+            }
+        });
+
+        if (error) throw new Error(error.message);
+    }
+
     /**
      * True when the icons cached for an iconset don't match `remote`
      * (defaults to the cached metadata itself).
@@ -221,6 +284,7 @@ async function syncIconset(iconset: Iconset): Promise<void> {
 
         rows.push({
             name: `${iconset.uid}:${path}`,
+            id: icon.id,
             iconset: iconset.uid,
             path,
             type2525b: icon.type2525b ?? null,

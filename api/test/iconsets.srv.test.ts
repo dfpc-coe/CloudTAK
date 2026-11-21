@@ -445,6 +445,47 @@ test('PATCH: /api/iconset/:iconset/icon/:icon - rejects unsafe name', async () =
     }
 });
 
+test('PATCH: /api/iconset/:iconset/icon/:icon - move between folders', async () => {
+    try {
+        const icon = await flight.fetch('/api/iconset/test-iconset/icon/car', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        const moved = await flight.fetch(`/api/iconset/test-iconset/icon/${icon.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'vehicles/car',
+            },
+        }, true);
+
+        assert.equal(moved.body.name, 'vehicles/car');
+        assert.equal(moved.body.format, '.png');
+        assert.equal(moved.body.path, 'test-iconset/vehicles/car');
+
+        const restored = await flight.fetch(`/api/iconset/test-iconset/icon/${icon.body.id}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'car.png',
+            },
+        }, true);
+
+        assert.equal(restored.body.name, 'car');
+        assert.equal(restored.body.format, '.png');
+        assert.equal(restored.body.path, 'test-iconset/car');
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: /api/iconset/:iconset/icon/:icon - path lookup with seeded leaf-only name', async () => {
     try {
         if (!flight.config) throw new Error('Flight config not initialized');

@@ -215,7 +215,7 @@ async function refresh(): Promise<void> {
         } else {
             disabled.value = false;
             revokeIconObjectUrl();
-            icon.value = { name: '', data: '', type2525b: null, iconset: String(route.params.iconset) };
+            icon.value = { name: newIconFolder(), data: '', type2525b: null, iconset: String(route.params.iconset) };
         }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -235,7 +235,7 @@ async function submit(): Promise<void> {
             },
             body: {
                 name: icon.value.name,
-                data: icon.value.data,
+                ...(icon.value.data.startsWith('data:') ? { data: icon.value.data } : {}),
                 type2525b: icon.value.type2525b
             }
         });
@@ -374,6 +374,7 @@ function toIconDraft(iconRow: DBIcon): IconDraft {
     iconObjectUrl.value = URL.createObjectURL(iconRow.data);
 
     return {
+        id: iconRow.id,
         name: iconRow.path,
         data: iconObjectUrl.value,
         iconset: iconRow.iconset,
@@ -398,7 +399,11 @@ function stripExt(name: string): string {
     return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
 }
 
+function newIconFolder(): string {
+    return route.params.icon === 'new' && route.query.folder ? `${String(route.query.folder)}/` : '';
+}
+
 function updateName(name: string): void {
-    icon.value.name = name;
+    icon.value.name = `${newIconFolder()}${name}`;
 }
 </script>
