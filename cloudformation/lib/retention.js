@@ -40,28 +40,11 @@ export default {
                     PolicyDocument: {
                         Statement: [{
                             Effect: 'Allow',
-                            Action: [
-                                'kms:Decrypt',
-                                'kms:GenerateDataKey'
-                            ],
-                            Resource: [cf.getAtt('KMS', 'Arn')]
-                        }, {
-                            Effect: 'Allow',
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
                             Action: [
                                 's3:DeleteObject'
-                            ]
-                        }, {
-                            Effect: 'Allow',
-                            Action: [
-                                'secretsmanager:Describe*',
-                                'secretsmanager:Get*',
-                                'secretsmanager:List*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
                             ]
                         }]
                     }

@@ -82,6 +82,14 @@ export default cf.merge({
                                 ])
                             ]
                         }
+                    },{
+                        TlsExpression: {
+                            Evaluate: {
+                                Attribute: 'TLS_PROTOCOL'
+                            },
+                            Operator: 'MINIMUM_TLS_VERSION',
+                            Value: 'TLS1_2'
+                        }
                     }]
                 }]
             }
@@ -332,7 +340,8 @@ export default cf.merge({
         },
 
         /**
-         * Rule set — every message is archived, then written to S3 and
+         * Rule set — every message is archived, messages that pass neither
+         * SPF nor DKIM are dropped, and the rest are written to S3 and
          * handed to the router for delivery to ETL Layers.
          */
         PagingRuleSet: {
@@ -346,6 +355,24 @@ export default cf.merge({
                         Archive: {
                             TargetArchive: cf.getAtt('PagingArchive', 'ArchiveId')
                         }
+                    }]
+                },{
+                    Name: 'DropUnauthenticated',
+                    Conditions: [{
+                        VerdictExpression: {
+                            Evaluate: { Attribute: 'SPF' },
+                            Operator: 'NOT_EQUALS',
+                            Values: ['PASS']
+                        }
+                    },{
+                        VerdictExpression: {
+                            Evaluate: { Attribute: 'DKIM' },
+                            Operator: 'NOT_EQUALS',
+                            Values: ['PASS']
+                        }
+                    }],
+                    Actions: [{
+                        Drop: {}
                     }]
                 },{
                     Name: 'DeliverLayers',
@@ -377,7 +404,7 @@ export default cf.merge({
             Properties: {
                 IngressPointName: cf.stackName,
                 Type: 'OPEN',
-                TlsPolicy: 'OPTIONAL',
+                TlsPolicy: 'REQUIRED',
                 RuleSetId: cf.getAtt('PagingRuleSet', 'RuleSetId'),
                 TrafficPolicyId: cf.getAtt('PagingTrafficPolicy', 'TrafficPolicyId')
             }
@@ -406,8 +433,30 @@ export default cf.merge({
         },
 
         /**
-         * DMARC TXT record — minimal policy to prevent spoofing of the
-         * inbound mail subdomain.  Reports are sent to the same address.
+         * SPF TXT record — the mail subdomain is receive-only, so no
+         * host is authorised to send as it.
+         */
+        PagingSPFRecord: {
+            Type: 'AWS::Route53::RecordSet',
+            Properties: {
+                HostedZoneId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-id'])),
+                Name: cf.join([
+                    cf.ref('SubdomainPrefix'),
+                    '.',
+                    cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-hosted-zone-name']))
+                ]),
+                Type: 'TXT',
+                TTL: '300',
+                ResourceRecords: [
+                    '"v=spf1 -all"'
+                ],
+                Comment: cf.join(' ', [cf.stackName, 'SPF Record'])
+            }
+        },
+
+        /**
+         * DMARC TXT record — reject mail claiming to be sent from the
+         * receive-only mail subdomain.
          */
         PagingDMARCRecord: {
             Type: 'AWS::Route53::RecordSet',
@@ -422,7 +471,7 @@ export default cf.merge({
                 Type: 'TXT',
                 TTL: '300',
                 ResourceRecords: [
-                    '"v=DMARC1; p=none;"'
+                    '"v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s;"'
                 ],
                 Comment: cf.join(' ', [cf.stackName, 'DMARC Record'])
             }
