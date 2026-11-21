@@ -27,6 +27,17 @@
 
 ### Pending Release
 
+### v13.125.0 - 2026-11-17
+
+- :rocket: Add background downloading on iOS and Android w/ Download Notifications
+- :rocket: Add British National Grid to supported coordinates
+- :rocket: Restrict database ingress to the API & Stateful services and export the database Security Group
+- :rocket: Retain database backups for 14 days, export PostgreSQL logs & snapshot on delete/replace
+- :rocket: Pin ELB HTTPS listener to a TLS 1.2+ policy and drop invalid header fields
+- :rocket: Scope API Task Role & ETL Role IAM permissions to Layer resources
+- :rocket: Remove unused Secrets Manager & KMS permissions from the Events & Retention Task Roles
+- :rocket: Mail: require TLS, drop mail failing both SPF & DKIM, publish SPF & `p=reject` DMARC records
+
 ### v13.124.0 - 2026-11-17
 
 - :arrow_up: Migrate to TS7 for blazing build times - `tsc` is TypeScript 7.0 via `@typescript/native`, tools that need the compiler API (ESLint, `vue-tsc`, TypeDoc) stay on the TypeScript 6 API
