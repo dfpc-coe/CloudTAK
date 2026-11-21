@@ -211,6 +211,8 @@ export const useMapStore = defineStore('cloudtak', {
         isMapLoadedFully: boolean;
         // Human-readable description of the current map loading step
         loadingStage: string;
+        // Overlays the server lists for this user that could not be put on the map
+        overlayErrors: Array<{ id: number; name: string; error: Error }>;
         isOpen: boolean;
         // When the server connection closed. Null while it is open, or before it has closed once
         connectionClosedAt: number | null;
@@ -285,6 +287,7 @@ export const useMapStore = defineStore('cloudtak', {
             isMapLoaded: false,
             isMapLoadedFully: false,
             loadingStage: '',
+            overlayErrors: [],
             userOrientationMode: false,
             pitch: 0,
             bearing: 0,
@@ -1354,6 +1357,17 @@ export const useMapStore = defineStore('cloudtak', {
                     this.isOnline = msg.body.online === true;
                 } else if (msg.type === WorkerMessageType.Sync_Trigger) {
                     this.syncTrigger = { reason: msg.body.reason, at: Date.now() };
+                } else if (msg.type === WorkerMessageType.Sync_Complete) {
+                    // The full sync rewrites the overlay table. The overlay
+                    // subscription normally follows that on its own; this
+                    // pass retries anything that failed to load before the
+                    // sync landed, so a missing overlay (e.g. the basemap)
+                    // does not stay missing until the app is refreshed
+                    if (this.isMapLoaded) {
+                        this.reconcileOverlays().catch((err: unknown) => {
+                            console.error('Failed to reconcile overlays after sync', err);
+                        });
+                    }
                 } else if (msg.type === WorkerMessageType.Channels_None) {
                     this.hasNoChannels = true;
                 } else if (msg.type === WorkerMessageType.Channels_List) {
@@ -1823,6 +1837,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             OverlayManager.clearLoaded();
+            this.overlayErrors = [];
             const profileOverlays = await OverlayManager.list({ localFirst: true });
 
             await FeatureVisibility.load();
@@ -1847,6 +1862,7 @@ export const useMapStore = defineStore('cloudtak', {
                 } else {
                     const item = profileOverlays[i];
                     console.error(`Failed to create overlay ${item?.id} (${item?.name}):`, result.reason);
+                    if (item) this.recordOverlayError(item, result.reason);
                 }
             }
 
@@ -1925,6 +1941,22 @@ export const useMapStore = defineStore('cloudtak', {
         },
 
         /**
+         * Remember an overlay the server lists for the user that never made it
+         * onto the map. Such an overlay is absent from OverlayManager.loaded, so
+         * nothing else would surface the failure to the user.
+         */
+        recordOverlayError: function(item: { id: number; name: string }, err: unknown): void {
+            const error = err instanceof Error ? err : new Error(String(err));
+            this.overlayErrors = [
+                ...this.overlayErrors.filter((entry) => entry.id !== item.id),
+                { id: item.id, name: item.name, error }
+            ];
+        },
+        clearOverlayError: function(id: number): void {
+            if (!this.overlayErrors.some((entry) => entry.id === id)) return;
+            this.overlayErrors = this.overlayErrors.filter((entry) => entry.id !== id);
+        },
+        /**
          * Reconcile the loaded map overlays against the local overlay
          * database: add new overlays, remove deleted ones and apply field
          * changes. Runs serially - a change landing mid-reconcile queues one
@@ -1971,6 +2003,11 @@ export const useMapStore = defineStore('cloudtak', {
                 .sort(OverlayManager.compareStack);
             const desiredIds = new Set(desired.map((item) => item.id));
 
+            // An overlay that is gone from the database has nothing left to report
+            if (this.overlayErrors.some((entry) => !desiredIds.has(entry.id))) {
+                this.overlayErrors = this.overlayErrors.filter((entry) => desiredIds.has(entry.id));
+            }
+
             for (const overlay of [...OverlayManager.loaded]) {
                 if (overlay._internal) continue;
                 if (desiredIds.has(overlay.id)) continue;
@@ -2004,6 +2041,8 @@ export const useMapStore = defineStore('cloudtak', {
                         await loaded.applyRecord(item);
                     } catch (err) {
                         console.error(`Failed to reconcile overlay ${item.id} (${item.name}):`, err);
+                        // The overlay is on the map, so the Overlays menu reports it through _error
+                        loaded._error = err instanceof Error ? err : new Error(String(err));
                     }
 
                     continue;
@@ -2013,12 +2052,14 @@ export const useMapStore = defineStore('cloudtak', {
                     const overlay = await Overlay.create(item as ProfileOverlay);
                     if (!this._map) return;
                     OverlayManager.appendLoaded(overlay);
+                    this.clearOverlayError(item.id);
 
                     if (overlay.mode === 'mission' && overlay.mode_id) {
                         this.startMissionLoad(overlay);
                     }
                 } catch (err) {
                     console.error(`Failed to load synced overlay ${item.id} (${item.name}):`, err);
+                    this.recordOverlayError(item, err);
                 }
             }
 

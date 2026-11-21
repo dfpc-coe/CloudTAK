@@ -239,9 +239,16 @@ export default class OverlayManager extends BaseInterface {
         const cache = await this.hydrated();
 
         if (!cache || opts.sync) {
-            const localCount = await db.overlay.count();
-            if (opts.sync || !opts.localFirst || localCount === 0) {
+            // A missing cache stamp means the full list has never been synced,
+            // however many overlays are stored: single-overlay writes from
+            // other clients (AtlasSync events) can leave a partial table behind,
+            // and trusting it would hide the rest (e.g. the basemap). Local
+            // data is only a fallback when that first sync cannot be reached.
+            try {
                 await this.sync();
+            } catch (err) {
+                if (opts.sync || !opts.localFirst || await db.overlay.count() === 0) throw err;
+                console.warn('Overlay sync failed, using the partial local overlay list', err);
             }
         }
 

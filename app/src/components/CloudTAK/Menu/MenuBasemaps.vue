@@ -49,6 +49,12 @@
                 </div>
             </div>
 
+            <TablerAlert
+                v-for='entry in mapStore.overlayErrors'
+                :key='entry.id'
+                :title='`Overlay "${entry.name}" failed to load`'
+                :err='entry.error'
+            />
             <TablerLoading v-if='loading' />
             <TablerAlert
                 v-else-if='error'
@@ -218,6 +224,7 @@ import ProfileConfig from '../../../base/profile.ts';
 import Config from '../../../base/config.ts';
 import type { FullConfig } from '../../../base/config.ts';
 import { server, stdurl } from '../../../std.ts';
+import { db } from '../../../database.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import OverlayManager from '../../../base/overlay.ts';
 import type { Subscription } from 'dexie';
@@ -326,11 +333,25 @@ watch(sort, async () => {
     await fetchList();
 });
 
-async function setBasemap(basemap: Basemap) {
-    const current = OverlayManager.loaded.find((overlay) => overlay.mode === 'basemap');
+// The server allows a single basemap overlay per user, so it is looked up in
+// the local database as well as on the map: a record that never made it onto
+// the map (or has not been synced to this device yet) must be patched, as
+// creating a second one is rejected
+async function existingBasemapId(): Promise<number | undefined> {
+    const loaded = OverlayManager.loaded.find((overlay) => overlay.mode === 'basemap');
+    if (loaded) return loaded.id;
+    return (await db.overlay.where('mode').equals('basemap').first())?.id;
+}
 
-    if (current) {
-        await OverlayManager.update(String(current.id), {
+async function setBasemap(basemap: Basemap) {
+    let currentId = await existingBasemapId();
+    if (currentId === undefined) {
+        await OverlayManager.sync();
+        currentId = await existingBasemapId();
+    }
+
+    if (currentId !== undefined) {
+        await OverlayManager.update(String(currentId), {
             name: basemap.name,
             type: basemap.type,
             opacity: 1,
@@ -341,7 +362,6 @@ async function setBasemap(basemap: Basemap) {
             styles: basemap.styles,
             args: basemap.args
         });
-
         await mapStore.reconcileOverlays();
     } else {
         await OverlayManager.createLoaded({
