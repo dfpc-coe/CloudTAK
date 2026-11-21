@@ -22,7 +22,6 @@ import {
     IconHistory,
 } from '@tabler/icons-vue';
 import ProfileConfig from '../../base/profile.ts';
-import ContactManager from '../../base/contact.ts';
 import Chatroom from '../../base/chatroom.ts';
 import Config from '../../base/config.ts';
 import TAKNZ_NAV_ICONS from '../../base/taknz-nav-icons.ts';
@@ -99,9 +98,13 @@ export default class MenuManager {
             console.error('Failed to load menu order', e);
         }
 
-        ContactManager.liveCount().subscribe((count) => {
-            this.onlineContactsCount.value = count;
-        });
+        // Online contacts live in the worker's memory, not IndexedDB. Later
+        // changes arrive as Contact_Online_Change messages handled in mapStore.
+        try {
+            this.onlineContactsCount.value = await this.mapStore.worker.db.onlineContactCount();
+        } catch (e) {
+            console.error('Failed to load online contact count', e);
+        }
 
         Chatroom.liveUnreadCount().subscribe((count) => {
             this.unreadChatsCount.value = count;

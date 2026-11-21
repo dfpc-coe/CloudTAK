@@ -93,6 +93,12 @@ export type CoreEntityTimelineEntry = CoreEntityTimelineList["items"][0];
 export type CoreEntityTimelineType = CoreEntityTimelineEntry["type"];
 
 export type Contact = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"][0];
+/**
+ * A contact as stored in IndexedDB. `lastSeen` (epoch ms) is local only - the
+ * TAK Server contact list has no such field - and is not indexed, so adding it
+ * needs no Dexie schema change.
+ */
+export type ContactRecord = Contact & { lastSeen?: number };
 export type ContactList = paths["/api/marti/api/contacts/all"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type Content = paths["/api/marti/package"]["put"]["responses"]["200"]["content"]["application/json"];

@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import type { Ref } from 'vue';
 import { liveQuery } from '../../../database.ts';
@@ -130,6 +130,8 @@ import { from } from 'rxjs';
 import Config from '../../../base/config.ts';
 import type { FullConfig } from '../../../base/config.ts';
 import ContactManager from '../../../base/contact.ts';
+import { WorkerMessageType } from '../../../utils/events.ts';
+import type { WorkerMessage } from '../../../utils/events.ts';
 import type { Contact as ContactType, ContactList } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
 const mapStore = useMapStore();
@@ -168,6 +170,17 @@ const contacts: Ref<ContactType[] | undefined> = useObservable(
     }))
 );
 
+// Contacts going on or offline changes worker memory, not IndexedDB, so the
+// live query above does not fire. Re-split the list when the worker says so.
+const channel = new BroadcastChannel('cloudtak');
+channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
+    if (event.data?.type === WorkerMessageType.Contact_Online_Change) {
+        await updateContacts();
+    }
+};
+onBeforeUnmount(() => {
+    channel.close();
+});
 onMounted(async () => {
     self.value = await mapStore.worker.profile.uid();
     await fetchConfig();
@@ -224,7 +237,7 @@ async function updateContacts() {
             }
 
             newVisibleActive.push(contact);
-        } else {
+        } else if (ContactManager.isRecent(contact)) {
             newVisibleOffline.push(contact);
         }
     }
