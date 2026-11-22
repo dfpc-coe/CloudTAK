@@ -96,6 +96,8 @@
 import { computed, ref, onMounted } from 'vue';
 import { Preferences } from '@capacitor/preferences';
 import { server, std, stdurl } from '../../../../std.ts';
+import { fetchBasemapTileJSON } from '../../../../utils/tilejson.ts';
+import type { TileJSON } from '../../../../types.ts';
 import ProfileConfig from '../../../../base/profile.ts';
 import BasemapTypeSelector from './TypeSelector.vue';
 import {
@@ -199,14 +201,9 @@ async function fetchBasemap(basemapId: number): Promise<void> {
 
         vectorLayers.value = [];
         if (editing.value.type === 'vector') {
-            const tileRes = await server.GET('/api/basemap/{:basemapid}/tiles', {
-                params: { path: { ':basemapid': basemapId } },
-            });
-
-            if (tileRes.error) throw new Error(tileRes.error.message);
-
-            vectorLayers.value = Array.isArray(tileRes.data.vector_layers)
-                ? tileRes.data.vector_layers as VectorLayerDescriptor[]
+            const tileData = await fetchBasemapTileJSON<TileJSON>(basemapId);
+            vectorLayers.value = Array.isArray(tileData.vector_layers)
+                ? tileData.vector_layers as VectorLayerDescriptor[]
                 : [];
         }
     } finally {
