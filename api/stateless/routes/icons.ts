@@ -549,20 +549,31 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 AND id = ${req.params.icon}
             `);
 
+            let rename: { name: string; format: string; path: string } | undefined;
+            if (req.body.name) {
+                const parsed = path.posix.parse(req.body.name);
+                const ext = parsed.ext.toLowerCase();
+                const hasExt = Sprites.supportedExt(ext);
+                const format = hasExt ? ext : icon.format;
+                const leaf = hasExt ? parsed.name : parsed.base;
+                const name = parsed.dir ? `${parsed.dir}/${leaf}` : leaf;
+
+                rename = { name, format, path: `${icon.iconset}/${name}` };
+            }
+
             await Sprites.validate({
-                name: req.body.name,
+                name: rename ? `${rename.name}${rename.format}` : undefined,
                 data: req.body.data,
             });
-
-            if (req.body.name) {
-                await config.models.Icon.commit(icon.id, { path: `${icon.iconset}/${req.body.name}` });
-            }
 
             if (req.body.type2525b === '') {
                 req.body.type2525b = null;
             }
 
-            icon = await config.models.Icon.commit(icon.id, req.body);
+            icon = await config.models.Icon.commit(icon.id, {
+                ...req.body,
+                ...rename,
+            });
 
             await config.models.Iconset.commit(iconset.uid, {
                 updated: sql`Now()`,

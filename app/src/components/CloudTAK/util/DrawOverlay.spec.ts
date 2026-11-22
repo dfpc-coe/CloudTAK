@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { reactive } from 'vue';
+import { h, reactive } from 'vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 
 const appStore = reactive({ isMobileDetected: false });
@@ -11,7 +11,7 @@ vi.mock('../../../stores/app.ts', () => ({
 
 const draw = reactive({
     mode: DrawToolMode.POINT,
-    point: { type: 'u-d-p' },
+    point: { type: 'u-d-p', icon: '', drop: 'single' },
     canFinish: false,
     snappingLayer: '',
     snappingOptions: [],
@@ -33,6 +33,14 @@ vi.mock('../../../utils/milsymbol.ts', () => ({
     symbolDataURL: () => 'data:image/svg+xml,'
 }));
 
+vi.mock('./IconSelectOffline.vue', () => ({
+    default: {
+        render(this: { $slots: { default?: () => unknown } }) {
+            return h('div', { class: 'icon-select-stub' }, this.$slots.default?.() as never);
+        }
+    }
+}));
+
 import DrawOverlay from './DrawOverlay.vue';
 
 describe('DrawOverlay point mode', () => {
@@ -51,6 +59,8 @@ describe('DrawOverlay point mode', () => {
         expect(wrapper.find('.card-header .flex-column .point-label').text()).toBe('Draw Point');
         expect(wrapper.findAll('.card-header input[name="point-type"]')).toHaveLength(5);
         expect(wrapper.find('.card-body').exists()).toBe(false);
+        expect(wrapper.find('.card-header .icon-select-stub').exists()).toBe(true);
+        expect(wrapper.find('[title="Drop Multiple Points"]').exists()).toBe(!mobile);
         expect(wrapper.find('[title="Open Settings"]').exists()).toBe(false);
         expect(wrapper.find('[title="Finish Drawing"]').exists()).toBe(true);
         expect(wrapper.find('[title="Cancel Editing"]').exists()).toBe(true);

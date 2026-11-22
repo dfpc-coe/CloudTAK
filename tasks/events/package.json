@@ -27,7 +27,7 @@
         "node-stream-zip": "^1.15.0",
         "rimraf": "^6.0.1",
         "sharp": "^0.35.5",
-        "undici": "8.9.0",
+        "undici": "^8.12.4",
         "vinyl": "^3.0.0"
     },
     "devDependencies": {

@@ -133,6 +133,27 @@
                                 </div>
                             </TablerBorder>
                         </div>
+
+                        <div class='col-12'>
+                            <TablerBorder class='cloudtak-accent'>
+                                <template #label>
+                                    <p class='text-uppercase text-secondary small mb-0'>
+                                        Quick Actions
+                                    </p>
+                                </template>
+
+                                <button
+                                    class='btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2'
+                                    @click='dropPoint'
+                                >
+                                    <IconMapPinPlus
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Drop Point</span>
+                                </button>
+                            </TablerBorder>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -157,7 +178,9 @@ import {
     TablerInput,
     TablerUploadLogo
 } from '@tak-ps/vue-tabler';
-import { IconPencil } from '@tabler/icons-vue';
+import { IconPencil, IconMapPinPlus } from '@tabler/icons-vue';
+import { DrawToolMode } from '../../../stores/modules/draw.ts';
+import { useAppStore } from '../../../stores/app.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import type { Iconset } from '../../../types.ts';
@@ -174,6 +197,7 @@ interface IconDraft {
 const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const loading = ref(true);
 const isSystemAdmin = ref(false);
@@ -215,7 +239,7 @@ async function refresh(): Promise<void> {
         } else {
             disabled.value = false;
             revokeIconObjectUrl();
-            icon.value = { name: '', data: '', type2525b: null, iconset: String(route.params.iconset) };
+            icon.value = { name: newIconFolder(), data: '', type2525b: null, iconset: String(route.params.iconset) };
         }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -235,7 +259,7 @@ async function submit(): Promise<void> {
             },
             body: {
                 name: icon.value.name,
-                data: icon.value.data,
+                ...(icon.value.data.startsWith('data:') ? { data: icon.value.data } : {}),
                 type2525b: icon.value.type2525b
             }
         });
@@ -374,6 +398,7 @@ function toIconDraft(iconRow: DBIcon): IconDraft {
     iconObjectUrl.value = URL.createObjectURL(iconRow.data);
 
     return {
+        id: iconRow.id,
         name: iconRow.path,
         data: iconObjectUrl.value,
         iconset: iconRow.iconset,
@@ -398,7 +423,19 @@ function stripExt(name: string): string {
     return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
 }
 
+async function dropPoint(): Promise<void> {
+    await mapStore.draw.start(DrawToolMode.POINT, {
+        icon: `${String(route.params.iconset)}:${stripExt(icon.value.name)}`
+    });
+
+    if (appStore.isMobileDetected) await router.push('/');
+}
+
+function newIconFolder(): string {
+    return route.params.icon === 'new' && route.query.folder ? `${String(route.query.folder)}/` : '';
+}
+
 function updateName(name: string): void {
-    icon.value.name = name;
+    icon.value.name = `${newIconFolder()}${name}`;
 }
 </script>

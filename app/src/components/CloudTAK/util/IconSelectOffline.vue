@@ -1,8 +1,26 @@
 <template>
-    <div
-        class='row'
-    >
-        <div class='col-12 d-flex my-1'>
+    <div :class='compact ? "d-inline-flex" : "row"'>
+        <TablerIconButton
+            v-if='compact'
+            :title='selected ? `Icon: ${selectedDisplayName}` : "Select Icon"'
+            :disabled='disabled'
+            @click='modal = true'
+        >
+            <img
+                v-if='selected'
+                :src='selectedUrl'
+                style='width: 24px; height: 24px; object-fit: contain;'
+            >
+            <IconPhotoSearch
+                v-else
+                :size='24'
+                stroke='1'
+            />
+        </TablerIconButton>
+        <div
+            v-if='!compact'
+            class='col-12 d-flex my-1'
+        >
             <span
                 v-if='description'
                 class='align-self-center'
@@ -31,16 +49,16 @@
         </div>
 
         <TablerLoading
-            v-if='loading.iconset'
+            v-if='!compact && loading.iconset'
             desc='Loading Iconsets'
         />
         <TablerNone
-            v-else-if='sets.length === 0'
+            v-else-if='!compact && sets.length === 0'
             label='No Iconsets Loaded'
             :compact='true'
             :create='false'
         />
-        <template v-else>
+        <template v-else-if='!compact'>
             <TablerInlineAlert
                 v-if='err'
                 severity='danger'
@@ -106,6 +124,14 @@
                     <h3 class='modal-title'>
                         Select Icon
                     </h3>
+                    <button
+                        v-if='compact && selected'
+                        type='button'
+                        class='btn btn-sm ms-auto me-3'
+                        @click='removeIcon(); modal = false'
+                    >
+                        No Icon
+                    </button>
                     <button
                         type='button'
                         class='btn-close'
@@ -208,6 +234,8 @@ interface Props {
     required?: boolean;
     disabled?: boolean;
     label?: string;
+    /** Render only a small button that opens the picker */
+    compact?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -215,6 +243,7 @@ const props = withDefaults(defineProps<Props>(), {
     required: false,
     disabled: false,
     label: 'Icon Select',
+    compact: false,
 });
 
 const emit = defineEmits<{

@@ -1572,7 +1572,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             map.on('contextmenu', (e) => {
-                if (this.draw.editing) return;
+                if (this.draw.editing || this.draw.mode !== DrawToolMode.STATIC) return;
 
                 const lngLat = e.lngLat.wrap();
                 const id = randomUUID();
