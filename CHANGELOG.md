@@ -27,6 +27,16 @@
 
 ### Pending Release
 
+### Context
+
+### v13.127.0 - 2026-11-21
+
+- :tada: Redesign Iconset List UX to be combined into a single searchable menu instead of two seperate tabs
+- :tada: Redesigned iconset view that supports folder editing
+- :tada: Allow dropping multiple points via the native point dropper tool
+- :tada: Allow setting an icon from the point dropper
+- :tada: Support dropping a point from a single icon menu page
+
 ### v13.126.0 - 2026-11-21
 
 - :tada: Introduce Initial Plugin Management APIs for future stand-alone plugins
