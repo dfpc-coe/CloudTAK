@@ -27,7 +27,22 @@
 
 ### Pending Release
 
-### Context
+### v13.128.0 - 2026-11-22
+
+- :tada: Add a `variant` query parameter to the `GET /api/iconset/:iconset?format=zip` export: `tak` (default) converts every icon to PNG for TAK clients, `cloudtak` keeps the original files including SVGs
+- :tada: Iconset download button is now a dropdown offering "TAK Compatible" or "Full CloudTAK" exports
+- :bug: Iconset zip exports are no longer truncated at 1,000 icons
+- :bug: Icons referenced with an `.svg` extension now resolve from the offline icon cache instead of relying on a network fallback
+- :rocket: Consolidate icon key normalisation, icon API calls, built-in sprite caching and iconset resync behind the `Icon`, `Sprite` and `IconManager` modules
+- :rocket: Share iconset and icon listing between the icon pickers via a `useIconsetIcons` composable
+- :white_check_mark: Add tests for the full CloudTAK iconset export and icon key normalisation
+- :bug: Fix the Data Sync Invite QR Code showing a broken image for password protected Data Syncs (#2032)
+- :bug: Fix a newly created Data Sync occasionally reporting "Overlay was created but could not be loaded"
+- :rocket: Move Data Sync creation from a modal to a `New Data Sync` menu sidebar
+- :rocket: Allow retrying the map load of a newly created Data Sync without creating it a second time
+- :rocket: The login token is no longer included in the Invite QR Code image URL
+- :rocket: Migrate the PMTiles, Events & Retention tasks from ESLint to OXLint to match the API
+- :arrow_up: Update PMTiles `@maplibre/geojson-vt` to v7
 
 ### v13.127.0 - 2026-11-21
 

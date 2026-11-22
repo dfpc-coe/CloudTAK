@@ -16,6 +16,8 @@ const SAMPLE_TILES = [
     { label: 'Kentucky foothills', z: 8, x: 66, y: 98 },
 ];
 
+const MOCK_TILE = Buffer.from([0xFF, 0xD8, 0xFF, 0xD9]);
+
 function assertBoundsIn4326(bounds: Array<number>): void {
     assert.equal(bounds.length, 4);
     assert.ok(bounds[0] >= -180 && bounds[0] <= 180, `Unexpected minLon: ${bounds[0]}`);
@@ -51,6 +53,15 @@ test('Mock ArcGIS ImageServer Metadata', () => {
             headers: { 'content-type': 'application/json' },
         }).persist();
     }
+
+    const { origin, pathname } = new URL(ARCGIS_IMAGERY_URL);
+
+    agent.get(origin).intercept({
+        path: path => path.split('?')[0] === `${pathname}/exportImage`,
+        method: 'GET',
+    }).reply(200, MOCK_TILE, {
+        headers: { 'content-type': 'image/jpeg' },
+    }).persist();
 });
 
 test('POST: api/basemap - ArcGIS Imagery Source', async () => {
@@ -198,11 +209,12 @@ for (const { label, z, x, y } of SAMPLE_TILES) {
             }, {
                 verify: false,
                 json: false,
+                binary: true,
             });
 
             assert.equal(res.status, 200);
             assert.equal(res.headers.get('content-type'), 'image/jpeg');
-            assert.ok(res.body.length > 0, 'tile payload received');
+            assert.deepEqual(Buffer.from(res.body), MOCK_TILE);
         } catch (err) {
             assert.ifError(err);
         }
