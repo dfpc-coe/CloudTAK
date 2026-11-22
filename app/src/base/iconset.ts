@@ -2,7 +2,7 @@ import type { Observable } from 'dexie';
 import { db, type DBIconset, liveQuery } from '../database.ts';
 import type { paths } from '@cloudtak/api-types';
 import type { Iconset, IconsetList } from '../types.ts';
-import { downloadUrl, getRuntimeToken, server } from '../std.ts';
+import { downloadUrl, server } from '../std.ts';
 import BaseInterface from './interface.ts';
 import type {
     BaseInterface_ListOptions,
@@ -82,14 +82,12 @@ export default class IconsetManager extends BaseInterface {
     }
 
     static async get(uid: string): Promise<Iconset> {
-        const token = await getRuntimeToken();
         const res = await server.GET('/api/iconset/{:iconset}', {
             params: {
                 path: {
                     ':iconset': uid,
                 }
-            },
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined
+            }
         });
 
         if (res.error) throw new Error(res.error.message);
@@ -103,9 +101,7 @@ export default class IconsetManager extends BaseInterface {
     static async generate(
         body: paths['/api/iconset']['post']['requestBody']['content']['application/json']
     ): Promise<Iconset> {
-        const token = await getRuntimeToken();
         const res = await server.POST('/api/iconset', {
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             body
         });
 
@@ -121,15 +117,12 @@ export default class IconsetManager extends BaseInterface {
         uid: string,
         body: paths['/api/iconset/{:iconset}']['patch']['requestBody']['content']['application/json']
     ): Promise<void> {
-        const token = await getRuntimeToken();
-
         const res = await server.PATCH('/api/iconset/{:iconset}', {
             params: {
                 path: {
                     ':iconset': uid,
                 }
             },
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
             body
         });
 
@@ -140,28 +133,26 @@ export default class IconsetManager extends BaseInterface {
     }
 
     static async regenerate(uid: string): Promise<void> {
-        const token = await getRuntimeToken();
         const res = await server.POST('/api/iconset/{:iconset}/regen', {
             params: {
                 path: {
                     ':iconset': uid,
                 }
-            },
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined
+            }
         });
 
         if (res.error) throw new Error(res.error.message);
     }
 
-    static async download(uid: string): Promise<void> {
-        await downloadUrl(`/api/iconset/${encodeURIComponent(uid)}?format=zip&download=true`, {
+    /** `tak` converts every icon to PNG for TAK clients, `cloudtak` keeps the original files including SVGs */
+    static async download(uid: string, variant: 'tak' | 'cloudtak' = 'tak'): Promise<void> {
+        await downloadUrl(`/api/iconset/${encodeURIComponent(uid)}?format=zip&variant=${variant}&download=true`, {
             filename: `${uid}.zip`,
             token: true
         });
     }
 
     static async sync(): Promise<void> {
-        const token = await getRuntimeToken();
         const res = await server.GET('/api/iconset', {
             params: {
                 query: {
@@ -171,8 +162,7 @@ export default class IconsetManager extends BaseInterface {
                     sort: 'name',
                     filter: ''
                 }
-            },
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined
+            }
         });
 
         if (res.error) throw new Error(res.error.message);
@@ -197,14 +187,12 @@ export default class IconsetManager extends BaseInterface {
 
     static async delete(uid: string, opts: Iconset_DeleteOptions = {}): Promise<void> {
         if (!opts.localOnly) {
-            const token = await getRuntimeToken();
             const { error, response } = await server.DELETE('/api/iconset/{:iconset}', {
                 params: {
                     path: {
                         ':iconset': uid,
                     }
-                },
-                headers: token ? { Authorization: `Bearer ${token}` } : undefined
+                }
             });
 
             if (error && response.status !== 404) throw new Error(error.message);

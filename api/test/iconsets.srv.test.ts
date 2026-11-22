@@ -250,6 +250,44 @@ test('GET: /api/iconset/:iconset?format=zip', async () => {
     }
 });
 
+test('GET: /api/iconset/:iconset?format=zip&variant=cloudtak', async () => {
+    try {
+        const res = await flight.fetch('/api/iconset/test-iconset?format=zip&variant=cloudtak&resize=true', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, {
+            json: false,
+            binary: true,
+        });
+
+        assert.equal(res.status, 200);
+
+        fs.rmSync('/tmp/test-iconset-cloudtak', { recursive: true, force: true });
+        fs.writeFileSync('/tmp/test-iconset-cloudtak.zip', Buffer.from(res.body));
+        cp.execSync('unzip -o /tmp/test-iconset-cloudtak.zip -d /tmp/test-iconset-cloudtak');
+
+        const camera = await sharp('/tmp/test-iconset-cloudtak/google/camera.png').metadata();
+        assert.equal(camera.format, 'png');
+
+        assert.ok(fs.readFileSync('/tmp/test-iconset-cloudtak/google/marker.svg', 'utf8').startsWith('<svg'));
+        assert.ok(fs.readFileSync('/tmp/test-iconset-cloudtak/truck.svg', 'utf8').startsWith('<svg'));
+        assert.ok(!fs.existsSync('/tmp/test-iconset-cloudtak/truck.png'));
+
+        const xml = fs.readFileSync('/tmp/test-iconset-cloudtak/iconset.xml', 'utf8');
+        assert.equal(xml, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<iconset version="1" defaultFriendly="test" defaultHostile="test" defaultNeutral="test" defaultUnknown="test" name="Test Iconset" defaultGroup="test" skipResize="false" uid="test-iconset">
+  <icon name="google/camera.png"/>
+  <icon name="car.png"/>
+  <icon name="google/marker.svg"/>
+  <icon name="truck.svg"/>
+</iconset>`);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
 test('GET: /api/iconset/:iconset/sprite.json and sprite.png', async () => {
     try {
         await flight.fetch('/api/iconset/test-iconset/regen', {

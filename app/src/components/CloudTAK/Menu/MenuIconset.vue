@@ -26,15 +26,45 @@
                 />
             </TablerIconButton>
 
-            <TablerIconButton
-                title='Download TAK Zip'
-                @click='IconsetCache.download(iconset.uid)'
-            >
-                <IconDownload
-                    :size='32'
-                    stroke='1'
-                />
-            </TablerIconButton>
+            <TablerDropdown>
+                <TablerIconButton title='Download Zip'>
+                    <IconDownload
+                        :size='32'
+                        stroke='1'
+                    />
+                </TablerIconButton>
+
+                <template #dropdown>
+                    <div class='col-12'>
+                        <div
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='IconsetCache.download(iconset.uid, "tak")'
+                        >
+                            <IconDownload
+                                :size='20'
+                                stroke='1.5'
+                            />
+                            <div class='mx-2 d-flex flex-column'>
+                                <span>TAK Compatible</span>
+                                <span class='iconset-muted small'>Every icon as PNG</span>
+                            </div>
+                        </div>
+                        <div
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='IconsetCache.download(iconset.uid, "cloudtak")'
+                        >
+                            <IconDownload
+                                :size='20'
+                                stroke='1.5'
+                            />
+                            <div class='mx-2 d-flex flex-column'>
+                                <span>Full CloudTAK</span>
+                                <span class='iconset-muted small'>Original files, including SVGs</span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </TablerDropdown>
 
             <TablerRefreshButton
                 :loading='loading || !!busy'
@@ -606,13 +636,7 @@ async function uploadFiles(files: File[], folder: string): Promise<void> {
     }
 
     await mutate(`Adding ${plural(images.length, 'icon')}`, async () => {
-        try {
-            for (const file of images) {
-                await IconCache.upload(uid, file, folder);
-            }
-        } finally {
-            await IconsetCache.regenerate(uid);
-        }
+        await IconCache.upload(uid, images, folder);
     });
 
     pending.value = pending.value.filter((name) => name !== folder);
@@ -630,7 +654,7 @@ async function mutate(desc: string, fn: () => Promise<void>): Promise<void> {
     }
 
     try {
-        await mapStore.worker.sync.syncIconset(uid);
+        await mapStore.icons.refresh(uid);
         await load();
     } catch (err) {
         actionError.value ??= err instanceof Error ? err : new Error(String(err));
@@ -688,7 +712,7 @@ async function refresh(opts: { autoSync?: boolean } = {}): Promise<void> {
         const missingIds = (await IconCache.list(uid)).some((icon) => icon.id === undefined);
         if (opts.autoSync && (missingIds || IconCache.stale(await IconsetCache.from(uid)))) {
             try {
-                await mapStore.worker.sync.syncIconset(uid);
+                await mapStore.icons.refresh(uid);
             } catch (err) {
                 syncError.value = err instanceof Error ? err : new Error(String(err));
             }
@@ -730,7 +754,7 @@ async function syncIconset(): Promise<void> {
     actionError.value = undefined;
 
     try {
-        await mapStore.worker.sync.syncIconset(uid);
+        await mapStore.icons.refresh(uid);
     } catch (err) {
         syncError.value = err instanceof Error ? err : new Error(String(err));
     }
