@@ -197,6 +197,7 @@ import {
     TablerToggle,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
+import IconCache from '../../base/icon.ts';
 import type { Iconset, Icon, IconList } from '../../types.ts';
 
 interface Props {
@@ -237,8 +238,6 @@ const selected = ref<Partial<Icon>>({});
 const sets = ref<Iconset[]>([]);
 const list = ref<IconList>({ total: 0, items: [] });
 
-const ICON_FILE_SUFFIX = /\.(png|svg)$/i;
-
 const setsName = computed<string[]>(() => {
     return sets.value.map((set) => set.name);
 });
@@ -267,17 +266,6 @@ function removeIcon(): void {
     emit('update:modelValue', '');
 }
 
-function normalizeIconPath(path: string): string {
-    let normalized = path;
-
-    if (normalized.includes(':')) {
-        const splitAt = normalized.indexOf(':');
-        normalized = `${normalized.slice(0, splitAt)}/${normalized.slice(splitAt + 1)}`;
-    }
-
-    return normalized.replace(ICON_FILE_SUFFIX, '');
-}
-
 async function fetchSelected(): Promise<void> {
     if (
         props.modelValue
@@ -287,16 +275,14 @@ async function fetchSelected(): Promise<void> {
             || props.modelValue.split('/').length === 3
         )
     ) {
-        const path = normalizeIconPath(props.modelValue);
-
-        const iconset = path.split('/')[0];
-        const icon = path.split('/').splice(1).join('/');
+        const ref = IconCache.parse(props.modelValue);
+        if (!ref) return;
 
         const { data, error } = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
             params: {
                 path: {
-                    ':iconset': iconset,
-                    ':icon': icon
+                    ':iconset': ref.iconset,
+                    ':icon': ref.path
                 }
             }
         });

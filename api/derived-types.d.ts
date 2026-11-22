@@ -65870,9 +65870,11 @@ export interface paths {
                 query?: {
                     /** @description No Description */
                     format?: "json" | "zip";
+                    /** @description Zip contents: `tak` (default) converts every icon to PNG for TAK clients, `cloudtak` keeps the original files including SVGs */
+                    variant?: "tak" | "cloudtak";
                     /** @description No Description */
                     download?: boolean;
-                    /** @description Resize Images to 32x32px */
+                    /** @description Resize Images to 32x32px - ignored by the `cloudtak` variant */
                     resize?: boolean;
                     /** @description No Description */
                     token?: string;
