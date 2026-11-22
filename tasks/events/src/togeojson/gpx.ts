@@ -215,7 +215,7 @@ function getTrack(ns: NamespaceList, node: XmlElement): Feature<LineString | Mul
         for (const [name, val] of Object.entries(line.extendedValues)) {
             if (multi) {
                 if (!props[name]) {
-                    props[name] = extractedLines.map(l => new Array(l.line.length).fill(null));
+                    props[name] = extractedLines.map(l => Array.from({ length: l.line.length }, () => null));
                 }
                 (props[name] as unknown[])[i] = val;
             } else {

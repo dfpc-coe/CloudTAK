@@ -20,7 +20,7 @@ test(`Worker DataPackage Import: Corrupt Inner Zip`, async (t) => {
     t.after(() => {
         Sinon.restore();
         setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
+        void mockAgent.close();
     });
 
     Sinon.stub(S3Client.prototype, 'send').callsFake(async (command) => {

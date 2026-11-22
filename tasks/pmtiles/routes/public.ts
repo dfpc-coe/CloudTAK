@@ -12,7 +12,7 @@ import auth from '../lib/auth.js';
 import s3client from '../lib/s3.js';
 
 export default async function router(schema: Schema) {
-    schema.get('/tiles/public', {
+    await schema.get('/tiles/public', {
         name: 'Get Sources',
         group: 'PublicTiles',
         description: 'Return a list of public tile sources',
@@ -74,7 +74,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/public/:name', {
+    await schema.get('/tiles/public/:name', {
         name: 'Get TileJSON',
         group: 'PublicTiles',
         description: 'Return TileJSON for a given file',
@@ -96,7 +96,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/public/:name/query', {
+    await schema.get('/tiles/public/:name/query', {
         name: 'Query',
         group: 'PublicTiles',
         description: 'Return features for a given query',
@@ -124,7 +124,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/public/:name/tiles/:z/:x/:y/features', {
+    await schema.get('/tiles/public/:name/tiles/:z/:x/:y/features', {
         name: 'Get Features',
         group: 'PublicTiles',
         description: 'Return features for a given zxy',
@@ -157,7 +157,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/public/:name/features', {
+    await schema.get('/tiles/public/:name/features', {
         name: 'Get Features by BBOX',
         group: 'PublicTiles',
         description: 'Return features for a given bbox',
@@ -193,7 +193,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.post('/tiles/public/:name/elevation', {
+    await schema.post('/tiles/public/:name/elevation', {
         name: 'Get Elevation Profile',
         group: 'PublicTiles',
         description: 'Return sampled elevation values for a LineString against a public raster-dem PMTiles source',
@@ -243,7 +243,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/public/:name/tiles/:z/:x/:y.:ext', {
+    await schema.get('/tiles/public/:name/tiles/:z/:x/:y.:ext', {
         name: 'Get Tile',
         group: 'PublicTiles',
         description: 'Return tile for a given zxy',

@@ -1703,21 +1703,25 @@ export const useMapStore = defineStore('cloudtak', {
          * originating client's change is not echoed back to the API.
          */
         reconcileOverlays: async function(): Promise<void> {
-            if (this._overlayReconcile) {
-                this._overlayReconcileQueued = true;
-                return this._overlayReconcile;
-            }
+            this._overlayReconcileQueued = true;
+            if (this._overlayReconcile) return this._overlayReconcile;
 
-            this._overlayReconcile = (async () => {
-                do {
-                    this._overlayReconcileQueued = false;
-                    await this.reconcileOverlaysOnce();
-                } while (this._overlayReconcileQueued);
-            })().finally(() => {
-                this._overlayReconcile = undefined;
-            });
+            let settled = false;
+            const run = (async () => {
+                try {
+                    while (this._overlayReconcileQueued) {
+                        this._overlayReconcileQueued = false;
+                        await this.reconcileOverlaysOnce();
+                    }
+                } finally {
+                    settled = true;
+                    this._overlayReconcile = undefined;
+                }
+            })();
 
-            return this._overlayReconcile;
+            if (!settled) this._overlayReconcile = run;
+
+            return run;
         },
         /**
          * Mark a mission subscription as unsubscribed when its overlay no

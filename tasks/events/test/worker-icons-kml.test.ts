@@ -28,7 +28,7 @@ test(`Worker Import: KML-Samples.kml`, async (t) => {
     t.after(() => {
         Sinon.restore();
         setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
+        void mockAgent.close();
     });
 
     const mockPool = mockAgent.get('http://localhost:5001');

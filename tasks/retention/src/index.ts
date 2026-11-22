@@ -69,11 +69,11 @@ if (process.argv.includes('--run-once')) {
     }, { timezone: process.env.TZ || 'UTC' });
 
     process.on('SIGTERM', () => {
-        task.stop();
+        void task.stop();
         process.exit(0);
     });
     process.on('SIGINT', () => {
-        task.stop();
+        void task.stop();
         process.exit(0);
     });
 

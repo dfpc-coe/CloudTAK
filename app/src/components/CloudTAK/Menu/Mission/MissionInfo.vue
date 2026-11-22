@@ -328,7 +328,7 @@
 
                         <button
                             class='btn w-100 d-flex align-items-center justify-content-center gap-2 invite-qr-btn'
-                            @click='showQR = true'
+                            @click='openQR'
                         >
                             <IconQrcode
                                 :size='20'
@@ -365,7 +365,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='showQR = false'
+            @click='closeQR'
         />
         <div class='modal-header invite-qr-header'>
             <div class='d-flex align-items-center'>
@@ -380,7 +380,18 @@
             </div>
         </div>
         <div class='modal-body invite-qr-body'>
-            <div class='col-12 text-center'>
+            <TablerAlert
+                v-if='qrError'
+                :err='qrError'
+            />
+            <TablerLoading
+                v-else-if='!missionQRURL'
+                desc='Loading QR Code...'
+            />
+            <div
+                v-else
+                class='col-12 text-center'
+            >
                 <img
                     :src='missionQRURL'
                     class='invite-qr-image img-fluid'
@@ -444,11 +455,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, computed } from 'vue';
-import { Preferences } from '@capacitor/preferences';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import type { MissionRoleType, MissionSubscriptions } from '../../../../types.ts';
 import { useRoute, useRouter } from 'vue-router';
-import { stdurl } from '../../../../std.ts'
+import { std, stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import MissionTemplate from '../../../../base/mission-template.ts';
 import CopyField from '../../util/CopyField.vue';
@@ -492,16 +502,48 @@ const emit = defineEmits(['subscribed']);
 const props = defineProps<{
     subscription: Subscription
 }>();
-const token = ref<string | null>(null);
 const error = ref<Error | undefined>(undefined);
 
 function fail(err: unknown): void {
     error.value = err instanceof Error ? err : new Error(String(err));
 }
 
-const missionQRURL = computed(() => {
-    return String(stdurl(`/api/marti/missions/${props.subscription.guid}/qr${token.value ? `?token=${encodeURIComponent(token.value)}` : ''}`));
-});
+const missionQRURL = ref<string | undefined>(undefined);
+const qrError = ref<Error | undefined>(undefined);
+
+let qrSeq = 0;
+
+async function openQR(): Promise<void> {
+    const seq = ++qrSeq;
+
+    qrError.value = undefined;
+    showQR.value = true;
+
+    try {
+        const res = await std(`/api/marti/missions/${encodeURIComponent(props.subscription.guid)}/qr`, {
+            headers: props.subscription.headers()
+        }) as Response;
+
+        const url = URL.createObjectURL(await res.blob());
+
+        if (seq === qrSeq) {
+            missionQRURL.value = url;
+        } else {
+            URL.revokeObjectURL(url);
+        }
+    } catch (err) {
+        if (seq === qrSeq) qrError.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
+
+function closeQR(): void {
+    qrSeq++;
+    showQR.value = false;
+    if (missionQRURL.value) URL.revokeObjectURL(missionQRURL.value);
+    missionQRURL.value = undefined;
+}
+
+onBeforeUnmount(closeQR);
 
 const keywords = computed(() => {
     if (!Array.isArray(props.subscription.meta.keywords)) return [];
@@ -681,8 +723,6 @@ const subscriptions = ref<MissionSubscriptions>([]);
 const missionTemplate = ref<MissionTemplate>();
 
 onMounted(async () => {
-    token.value = (await Preferences.get({ key: 'token' })).value;
-
     loading.value.users = true;
     await fetchSubscriptions();
     loading.value.users = false;
