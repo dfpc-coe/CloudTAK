@@ -1,12 +1,30 @@
 import UIKit
 import Capacitor
+import CapacitorDownloaderPlugin
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        excludeOfflineTilesFromBackup()
+        CapacitorDownloaderLifecycle.warmUpBackgroundSessions()
         return true
+    }
+
+    func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+        CapacitorDownloaderLifecycle.handleEventsForBackgroundURLSession(identifier: identifier, completionHandler: completionHandler)
+    }
+
+    // Offline overlays are browsable in Files but can be re-downloaded, so they stay out of backups
+    private func excludeOfflineTilesFromBackup() {
+        guard let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+
+        var directory = documents.appendingPathComponent("Overlays", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        var values = URLResourceValues()
+        values.isExcludedFromBackup = true
+        try? directory.setResourceValues(values)
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

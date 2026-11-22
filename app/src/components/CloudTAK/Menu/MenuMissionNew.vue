@@ -1,32 +1,45 @@
 <template>
-    <div class='col-12'>
-        <div class='modal-header'>
-            <div class='row'>
-                <div class='col-auto'>
-                    <IconLock
-                        v-if='mission.passwordProtected'
-                        :size='32'
-                        stroke='1'
-                    />
-                    <IconLockOpen
-                        v-else
-                        :size='32'
-                        stroke='1'
+    <MenuTemplate
+        name='New Data Sync'
+    >
+        <template #default>
+            <TablerLoading
+                v-if='loading'
+                desc='Creating Data Sync'
+            />
+            <div
+                v-else-if='created'
+                class='row g-2 my-2'
+            >
+                <div class='col-12'>
+                    <TablerAlert
+                        v-if='error'
+                        :err='error'
                     />
                 </div>
-                <div class='col-auto row'>
-                    <div class='col-12'>
-                        <span>Create Mission</span>
-                    </div>
+                <div class='col-12'>
+                    The Data Sync was created but could not be added to the map.
+                </div>
+                <div class='col-12 my-3'>
+                    <button
+                        class='btn btn-primary w-100'
+                        @click='loadMission'
+                    >
+                        Retry
+                    </button>
                 </div>
             </div>
-        </div>
-        <TablerLoading
-            v-if='loading'
-            desc='Saving Mission'
-        />
-        <template v-else>
-            <div class='modal-body row g-2'>
+            <div
+                v-else
+                class='row g-2 my-2'
+            >
+                <div
+                    v-if='error'
+                    class='col-12'
+                >
+                    <TablerAlert :err='error' />
+                </div>
+
                 <div class='col-12'>
                     <TablerInput
                         v-model='mission.name'
@@ -87,7 +100,7 @@
                         <div
                             v-for='template in templates'
                             :key='template.id'
-                            class='col-3'
+                            class='col-4'
                             @click='selectedTemplate = template.id'
                         >
                             <div
@@ -122,9 +135,11 @@
                 </div>
 
                 <div class='col-12'>
+                    <small class='text-uppercase text-secondary d-block mb-1'>Description</small>
                     <TablerInput
                         v-model='mission.description'
-                        label='Description'
+                        :rows='5'
+                        placeholder='No Description'
                     />
                 </div>
 
@@ -195,49 +210,50 @@
                     </div>
                 </div>
 
-                <div class='col-12 d-flex'>
-                    <div class='ms-auto'>
-                        <button
-                            class='btn btn-primary'
-                            @click='createMission'
-                        >
-                            Create Mission
-                        </button>
-                    </div>
+                <div class='col-12 my-3'>
+                    <button
+                        class='btn btn-primary w-100'
+                        @click='createMission'
+                    >
+                        Create Data Sync
+                    </button>
                 </div>
             </div>
         </template>
-    </div>
+    </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, watch, onMounted } from 'vue';
-import { server } from '../../../../std.ts';
-import type { Mission_Create, MissionTemplateList } from '../../../../types.ts';
+import { useRouter } from 'vue-router';
+import { server } from '../../../std.ts';
+import type { Mission, Mission_Create, MissionTemplateList } from '../../../types.ts';
 import {
-    IconLock,
-    IconLockOpen,
     IconSquareChevronRight,
     IconChevronDown,
     IconSearch,
     IconX,
     IconLayout
 } from '@tabler/icons-vue';
-import GroupSelect from '../../util/GroupSelect.vue';
-import Keywords from '../../util/Keywords.vue';
-import OverlayManager from '../../../../base/overlay.ts';
+import MenuTemplate from '../util/MenuTemplate.vue';
+import GroupSelect from '../util/GroupSelect.vue';
+import Keywords from '../util/Keywords.vue';
+import OverlayManager from '../../../base/overlay.ts';
 import {
     TablerInput,
     TablerEnum,
     TablerToggle,
+    TablerAlert,
     TablerLoading,
     TablerIconButton
 } from '@tak-ps/vue-tabler';
 
-const emit = defineEmits(['mission']);
+const router = useRouter();
 
 const attempted = ref(false);
 const loading = ref(false);
+const error = ref<Error | undefined>(undefined);
+const created = ref<Mission | undefined>(undefined);
 const advanced = ref(false);
 
 const templates = ref<MissionTemplateList['items']>([]);
@@ -337,9 +353,9 @@ async function createMission() {
     if (missionNameValidity.value) return;
 
     loading.value = true;
-    try {
-        loading.value = true;
+    error.value = undefined;
 
+    try {
         const body: Mission_Create = {
             name: mission.value.name,
             group: mission.value.groups,
@@ -364,21 +380,36 @@ async function createMission() {
 
         if (res.error) throw new Error(res.error.message);
 
+        created.value = res.data;
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+        loading.value = false;
+        return;
+    }
+
+    await loadMission();
+}
+
+async function loadMission() {
+    if (!created.value) return;
+
+    loading.value = true;
+    error.value = undefined;
+
+    try {
         await OverlayManager.createLoaded({
-            name: res.data.name,
-            url: `/mission/${encodeURIComponent(res.data.guid)}`,
+            name: created.value.name,
+            url: `/mission/${encodeURIComponent(created.value.guid)}`,
             type: 'geojson',
             mode: 'mission',
-            token: res.data.token,
-            mode_id: res.data.guid,
+            token: created.value.token,
+            mode_id: created.value.guid,
         })
 
-        emit('mission', res.data);
-
-        loading.value = false;
+        await router.replace(`/menu/missions/${created.value.guid}`);
     } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
         loading.value = false;
-        throw err;
     }
 }
 </script>

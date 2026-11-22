@@ -9,7 +9,7 @@ const url = new URL(process.env.API_URL);
 const csp = {
     'default-src': [`'self'`],
     'img-src': [`'self'`, 'data:', 'blob:'],
-    'media-src': [`'self'`, 'blob:'],
+    'media-src': [`'self'`, 'data:', 'blob:'],
     'font-src': [`'self'`, 'data:'],
     'worker-src': [`'self'`, 'blob:'],
     'style-src-elem': [`'self'`, `'unsafe-inline'`],

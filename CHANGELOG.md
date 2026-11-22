@@ -27,6 +27,47 @@
 - :rocket: **Breaking** Task Capabilities must declare Named Output schemas - a Task returning a single unnamed Output schema is rejected with a 400
 - :rocket: **Breaking** Remove the legacy MinIO store - the `minio-legacy` & `migrate` Docker Compose services and `./cloudtak.sh migrate-store` are gone, `start` & `update` refuse to run while `.docker-store` exists until it is migrated with a v13 checkout
 
+### v13.128.0 - 2026-11-22
+
+- :tada: Add a `variant` query parameter to the `GET /api/iconset/:iconset?format=zip` export: `tak` (default) converts every icon to PNG for TAK clients, `cloudtak` keeps the original files including SVGs
+- :tada: Iconset download button is now a dropdown offering "TAK Compatible" or "Full CloudTAK" exports
+- :bug: Iconset zip exports are no longer truncated at 1,000 icons
+- :bug: Icons referenced with an `.svg` extension now resolve from the offline icon cache instead of relying on a network fallback
+- :rocket: Consolidate icon key normalisation, icon API calls, built-in sprite caching and iconset resync behind the `Icon`, `Sprite` and `IconManager` modules
+- :rocket: Share iconset and icon listing between the icon pickers via a `useIconsetIcons` composable
+- :white_check_mark: Add tests for the full CloudTAK iconset export and icon key normalisation
+- :bug: Fix the Data Sync Invite QR Code showing a broken image for password protected Data Syncs (#2032)
+- :bug: Fix a newly created Data Sync occasionally reporting "Overlay was created but could not be loaded"
+- :rocket: Move Data Sync creation from a modal to a `New Data Sync` menu sidebar
+- :rocket: Allow retrying the map load of a newly created Data Sync without creating it a second time
+- :rocket: The login token is no longer included in the Invite QR Code image URL
+- :rocket: Migrate the PMTiles, Events & Retention tasks from ESLint to OXLint to match the API
+- :arrow_up: Update PMTiles `@maplibre/geojson-vt` to v7
+
+### v13.127.0 - 2026-11-21
+
+- :tada: Redesign Iconset List UX to be combined into a single searchable menu instead of two seperate tabs
+- :tada: Redesigned iconset view that supports folder editing
+- :tada: Allow dropping multiple points via the native point dropper tool
+- :tada: Allow setting an icon from the point dropper
+- :tada: Support dropping a point from a single icon menu page
+
+### v13.126.0 - 2026-11-21
+
+- :tada: Introduce Initial Plugin Management APIs for future stand-alone plugins
+- :rocket: Redesign Admin Overview page to allow linking to a specific CloudTAK server setting section
+
+### v13.125.0 - 2026-11-17
+
+- :rocket: Add background downloading on iOS and Android w/ Download Notifications
+- :rocket: Add British National Grid to supported coordinates
+- :rocket: Restrict database ingress to the API & Stateful services and export the database Security Group
+- :rocket: Retain database backups for 14 days, export PostgreSQL logs & snapshot on delete/replace
+- :rocket: Pin ELB HTTPS listener to a TLS 1.2+ policy and drop invalid header fields
+- :rocket: Scope API Task Role & ETL Role IAM permissions to Layer resources
+- :rocket: Remove unused Secrets Manager & KMS permissions from the Events & Retention Task Roles
+- :rocket: Mail: require TLS, drop mail failing both SPF & DKIM, publish SPF & `p=reject` DMARC records
+
 ### v13.124.0 - 2026-11-17
 
 - :arrow_up: Migrate to TS7 for blazing build times - `tsc` is TypeScript 7.0 via `@typescript/native`, tools that need the compiler API (ESLint, `vue-tsc`, TypeDoc) stay on the TypeScript 6 API

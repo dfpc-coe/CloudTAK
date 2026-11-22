@@ -57,6 +57,9 @@ export default {
                     Key: 'idle_timeout.timeout_seconds',
                     Value: 4000
                 },{
+                    Key: 'routing.http.drop_invalid_header_fields.enabled',
+                    Value: true
+                },{
                     Key: 'connection_logs.s3.enabled',
                     Value: true
                 },{
@@ -116,7 +119,8 @@ export default {
                 }],
                 LoadBalancerArn: cf.ref('ELB'),
                 Port: 443,
-                Protocol: 'HTTPS'
+                Protocol: 'HTTPS',
+                SslPolicy: 'ELBSecurityPolicy-TLS13-1-2-2021-06'
             }
         },
         HttpListener: {
@@ -283,9 +287,26 @@ export default {
                                 'iam:PassRole'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName]),
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName])
+                            ],
+                            Condition: {
+                                StringEquals: {
+                                    'iam:PassedToService': 'lambda.amazonaws.com'
+                                }
+                            }
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'iam:PassRole'
+                            ],
+                            Resource: [
                                 cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/tak-cloudtak-webhooks-', cf.ref('Environment')])
-                            ]
+                            ],
+                            Condition: {
+                                StringEquals: {
+                                    'iam:PassedToService': 'apigateway.amazonaws.com'
+                                }
+                            }
                         },{
                             Effect: 'Allow',
                             Action: [
@@ -321,7 +342,6 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'cloudwatch:PutMetricData',
                                 'cloudwatch:GetMetricData'
                             ],
                             Resource: [
@@ -397,9 +417,20 @@ export default {
                             Action: [
                                 'lambda:CreateEventSourceMapping',
                                 'lambda:UpdateEventSourceMapping',
-                                'lambda:GetEventSourceMapping',
-                                'lambda:DeleteEventSourceMapping',
-                                'logs:GetLogEvents'
+                                'lambda:DeleteEventSourceMapping'
+                            ],
+                            Resource: [
+                                '*'
+                            ],
+                            Condition: {
+                                ArnLike: {
+                                    'lambda:FunctionArn': cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:', cf.stackName, '-layer-*'])
+                                }
+                            }
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'lambda:GetEventSourceMapping'
                             ],
                             Resource: [
                                 '*'
@@ -631,6 +662,7 @@ export default {
                             Effect: 'Allow',
                             Action: [
                                 'sqs:SendMessage',
+                                'sqs:ReceiveMessage',
                                 'sqs:ChangeMessageVisibility',
                                 'sqs:DeleteMessage',
                                 'sqs:GetQueueUrl',
@@ -643,7 +675,6 @@ export default {
                     }
                 }],
                 ManagedPolicyArns: [
-                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole']),
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole']),
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole'])
                 ]

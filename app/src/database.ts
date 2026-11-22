@@ -17,6 +17,8 @@ import type {
 export interface DBIcon {
     /** Maplibre image id, e.g. "<iconsetUid>:<icon-path-without-extension>" */
     name: string;
+    /** Server row id, absent on rows cached before it was mirrored */
+    id?: number;
     iconset: string;
     path: string;
     type2525b: string | null;
@@ -140,8 +142,18 @@ export interface DBIconset {
 
 export type DBOverlay = ProfileOverlayList["items"][number];
 
+export type DBProfileFileOffline = {
+    backend: 'opfs' | 'native';
+    state: 'pending' | 'complete';
+    /** Bytes on disk once complete */
+    size: number;
+    started: number;
+};
+
 /** Profile asset metadata retained for files downloaded for offline use */
-export type DBProfileFile = ProfileFile;
+export type DBProfileFile = ProfileFile & {
+    offline?: DBProfileFileOffline;
+};
 
 export interface DBFilter {
     id: string;
@@ -398,6 +410,29 @@ db.version(5).stores({
 
 db.version(6).stores({
     feature_history: 'id, uid, time, [uid+time]',
+});
+
+db.version(7).upgrade(async (tx) => {
+    const kv = tx.table<DBKV, string>('kv');
+    const files = tx.table<DBProfileFile, string>('profile_file');
+
+    for (const file of await files.toArray()) {
+        const size = Number((await kv.get(`pmtiles::size::${file.id}`))?.value);
+
+        if (!size) {
+            await files.delete(file.id);
+            continue;
+        }
+
+        const native = !!await kv.get(`pmtiles::native::${file.id}`);
+
+        await files.put({
+            ...file,
+            offline: { backend: native ? 'native' : 'opfs', state: 'complete', size, started: 0 }
+        });
+    }
+
+    await kv.where('key').startsWith('pmtiles::').delete();
 });
 
 let reopenPromise: Promise<void> | null = null;

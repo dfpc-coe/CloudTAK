@@ -20,18 +20,16 @@
  * content changed purge their MapLibre images, while first-time cached
  * iconsets merely retry fallback placeholders.
  */
-import { Preferences } from '@capacitor/preferences';
 import * as mapgl from 'maplibre-gl'
 import Icon from '../../base/icon.ts'
 import type { DBIcon } from '../../database.ts';
 import IconsetManager from '../../base/iconset.ts';
+import Sprite from '../../base/sprite.ts';
 import type { Map as MapLibreMap } from 'maplibre-gl';
-import { stdurl } from '../../std.ts';
-import { db, type DBSprite } from '../../database.ts';
 import { isMilsymIcon, symbolCanvas } from '../../utils/milsymbol.ts';
 
-/** Target render width (px) used when rasterizing SVG iconset icons; height preserves the source aspect ratio. */
-const SVG_RENDER_WIDTH = 32;
+/** Longest edge (px) of a rasterized SVG iconset icon; the source aspect ratio is preserved. */
+const SVG_RENDER_SIZE = 32;
 
 /**
  * Custom MapLibre protocol used to serve built-in spritesheets out of Dexie
@@ -42,8 +40,15 @@ const SVG_RENDER_WIDTH = 32;
 const SPRITE_PROTOCOL = 'cloudtak-sprite';
 let spriteProtocolRegistered = false;
 
+/** Atlas worker calls that rehydrate the Dexie icon cache and report what changed */
+export interface IconSync {
+    syncIcons(): Promise<void>;
+    syncIconset(uid: string): Promise<void>;
+}
+
 export default class IconManager {
     private map: MapLibreMap;
+    private sync?: IconSync;
     private inflight = new Map<string, Promise<void>>();
     private remote = new Map<string, Promise<void>>();
     private loggedErrors = new Set<string>();
@@ -55,8 +60,9 @@ export default class IconManager {
      */
     private fallbackIds = new Set<string>();
 
-    constructor(map: MapLibreMap) {
+    constructor(map: MapLibreMap, sync?: IconSync) {
         this.map = map;
+        this.sync = sync;
 
         map.setMissingStyleImageResolver((id) => this.resolve(id));
     }
@@ -117,8 +123,7 @@ export default class IconManager {
 
             const [, id, ext] = match;
 
-            let row = await db.sprite.get(id);
-            if (!row) row = await fetchAndCacheSprite(id);
+            const row = await Sprite.get(id);
 
             if (ext === 'json') {
                 return { data: row.json };
@@ -314,6 +319,17 @@ export default class IconManager {
         }
     }
 
+    /**
+     * Resync one iconset (or all of them) from the server. The worker reports
+     * the changed iconsets back so their map images are purged and re-resolved.
+     */
+    async refresh(uid?: string): Promise<void> {
+        if (!this.sync) throw new Error('Icon sync is not available');
+
+        if (uid) await this.sync.syncIconset(uid);
+        else await this.sync.syncIcons();
+    }
+
     async deleteIconset(uid: string): Promise<void> {
         await IconsetManager.delete(uid);
         this.purgeIconsets([uid]);
@@ -375,13 +391,12 @@ export default class IconManager {
         }
 
         if (!(width > 0) || !(height > 0)) {
-            width = SVG_RENDER_WIDTH;
-            height = SVG_RENDER_WIDTH;
+            width = SVG_RENDER_SIZE;
+            height = SVG_RENDER_SIZE;
         }
 
-        // Rasterize at a fixed 32px width so icons render consistently, while
-        // preserving the source aspect ratio.
-        const scale = SVG_RENDER_WIDTH / width;
+        // Fit the longest edge so tall icons match the footprint of raster icons
+        const scale = SVG_RENDER_SIZE / Math.max(width, height);
         const renderWidth = Math.max(1, Math.round(width * scale));
         const renderHeight = Math.max(1, Math.round(height * scale));
 
@@ -508,35 +523,4 @@ export default class IconManager {
             parseInt(result[3], 16)
         ] : [0, 255, 0]; // Default to green if parsing fails
     }
-}
-
-/**
- * Fallback path for the sprite protocol: when Dexie has no row for the
- * requested built-in sprite (typically only on a brand-new install where icon
- * hydration hasn't completed yet) fetch it from the API and persist it so the
- * next request is served from disk.
- */
-async function fetchAndCacheSprite(id: string): Promise<DBSprite> {
-    const token = await getToken();
-    const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json`);
-    const pngUrl = stdurl(`/api/iconset/${id}/sprite.png`);
-    if (token) jsonUrl.searchParams.set('token', token);
-    if (token) pngUrl.searchParams.set('token', token);
-
-    const [jsonRes, pngRes] = await Promise.all([fetch(jsonUrl), fetch(pngUrl)]);
-    if (!jsonRes.ok) throw new Error(`Failed to load sprite '${id}' json (${jsonRes.status})`);
-    if (!pngRes.ok) throw new Error(`Failed to load sprite '${id}' png (${pngRes.status})`);
-
-    const json = await jsonRes.json() as Record<string, unknown>;
-    const image = await pngRes.blob();
-
-    const row: DBSprite = { id, updated: Date.now(), json, image };
-    await db.sprite.put(row);
-    return row;
-}
-
-async function getToken(): Promise<string> {
-    const { value } = await Preferences.get({ key: 'token' });
-    if (!value) throw new Error('No authentication token available');
-    return value;
 }

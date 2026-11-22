@@ -26,6 +26,6 @@ export async function dimensions(image: Buffer): Promise<[number, number]> {
 export function near(actual: number[], expected: number[], tolerance = 2): void {
     assert.equal(actual.length, expected.length, `channel count ${actual.length} vs ${expected.length}`);
     actual.forEach((value, i) => {
-        assert.ok(Math.abs(value - expected[i]) <= tolerance, `channel ${i}: ${value} vs ${expected[i]} in [${actual}]`);
+        assert.ok(Math.abs(value - expected[i]) <= tolerance, `channel ${i}: ${value} vs ${expected[i]} in [${actual.join(",")}]`);
     });
 }

@@ -48,13 +48,6 @@ export default {
                             Resource: '*'
                         },{
                             Effect: 'Allow',
-                            Action: [
-                                'kms:Decrypt',
-                                'kms:GenerateDataKey'
-                            ],
-                            Resource: [cf.getAtt('KMS', 'Arn')]
-                        },{
-                            Effect: 'Allow',
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
@@ -63,16 +56,6 @@ export default {
                                 's3:PutObject',
                                 's3:AbortMultipartUpload',
                                 's3:ListMultipartUploadParts'
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'secretsmanager:Describe*',
-                                'secretsmanager:Get*',
-                                'secretsmanager:List*'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
                             ]
                         }]
                     }

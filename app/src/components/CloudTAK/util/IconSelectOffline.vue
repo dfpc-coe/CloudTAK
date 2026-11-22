@@ -1,8 +1,26 @@
 <template>
-    <div
-        class='row'
-    >
-        <div class='col-12 d-flex my-1'>
+    <div :class='compact ? "d-inline-flex" : "row"'>
+        <TablerIconButton
+            v-if='compact'
+            :title='selected ? `Icon: ${selectedDisplayName}` : "Select Icon"'
+            :disabled='disabled'
+            @click='modal = true'
+        >
+            <img
+                v-if='selected'
+                :src='selectedUrl'
+                style='width: 24px; height: 24px; object-fit: contain;'
+            >
+            <IconPhotoSearch
+                v-else
+                :size='24'
+                stroke='1'
+            />
+        </TablerIconButton>
+        <div
+            v-if='!compact'
+            class='col-12 d-flex my-1'
+        >
             <span
                 v-if='description'
                 class='align-self-center'
@@ -31,16 +49,16 @@
         </div>
 
         <TablerLoading
-            v-if='loading.iconset'
+            v-if='!compact && loading.sets'
             desc='Loading Iconsets'
         />
         <TablerNone
-            v-else-if='sets.length === 0'
+            v-else-if='!compact && sets.length === 0'
             label='No Iconsets Loaded'
             :compact='true'
             :create='false'
         />
-        <template v-else>
+        <template v-else-if='!compact'>
             <TablerInlineAlert
                 v-if='err'
                 severity='danger'
@@ -107,6 +125,14 @@
                         Select Icon
                     </h3>
                     <button
+                        v-if='compact && selected'
+                        type='button'
+                        class='btn btn-sm ms-auto me-3'
+                        @click='removeIcon(); modal = false'
+                    >
+                        No Icon
+                    </button>
+                    <button
                         type='button'
                         class='btn-close'
                         @click='modal = false'
@@ -115,14 +141,15 @@
                 <div class='row g-2'>
                     <div class='col-12'>
                         <TablerEnum
-                            v-model='params.iconset'
-                            :options='setsName'
+                            :model-value='setName'
+                            :options='setNames'
+                            @update:model-value='selectSet($event)'
                             @click.stop
                         />
                     </div>
                     <div class='col-12'>
                         <TablerInput
-                            v-model='params.filter'
+                            v-model='filter'
                             placeholder='Icon Search'
                             :icon='IconSearch'
                             @click.stop
@@ -182,8 +209,8 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import Icon from '../../../base/icon.ts';
-import Iconset from '../../../base/iconset.ts';
-import type { DBIcon, DBIconset } from '../../../database.ts';
+import { useIconsetIcons } from '../../../utils/iconset-icons.ts';
+import type { DBIcon } from '../../../database.ts';
 import {
     IconInfoSquare,
     IconTrash,
@@ -208,6 +235,8 @@ interface Props {
     required?: boolean;
     disabled?: boolean;
     label?: string;
+    /** Render only a small button that opens the picker */
+    compact?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -215,6 +244,7 @@ const props = withDefaults(defineProps<Props>(), {
     required: false,
     disabled: false,
     label: 'Icon Select',
+    compact: false,
 });
 
 const emit = defineEmits<{
@@ -224,47 +254,21 @@ const emit = defineEmits<{
 const help = ref(false);
 const err = ref<Error | null>(null);
 
-const loading = ref({
-    iconset: true,
-    icons: true,
-});
-
 const modal = ref(false);
 const params = ref({
-    iconset: '',
-    filter: '',
     showNames: false,
 });
 
-const sets = ref<DBIconset[]>([]);
-const icons = ref<DBIcon[]>([]);
-const iconUrls = ref<Map<string, string>>(new Map());
+const {
+    loading, sets, setName, setNames, filter, filtered: filteredIcons, urls: iconUrls, load, selectSet
+} = useIconsetIcons();
 
 const selected = ref<DBIcon | null>(null);
 const selectedUrl = ref<string>('');
 
-const setsName = computed<string[]>(() => {
-    return sets.value.map((set) => set.name);
-});
-
-const filteredIcons = computed<DBIcon[]>(() => {
-    if (!params.value.filter) return icons.value;
-    const f = params.value.filter.toLowerCase();
-    return icons.value.filter((icon) => icon.path.toLowerCase().includes(f));
-});
-
 const selectedDisplayName = computed<string>(() => {
     if (!selected.value) return '';
-    const parts = selected.value.path.split('/');
-    return parts[parts.length - 1];
-});
-
-watch(() => params.value.iconset, async () => {
-    await fetchIcons();
-});
-
-watch(() => params.value.filter, async () => {
-    await fetchIcons();
+    return Icon.leaf(selected.value.path);
 });
 
 watch(() => props.modelValue, async () => {
@@ -272,22 +276,11 @@ watch(() => props.modelValue, async () => {
 });
 
 onMounted(async () => {
-    await fetchIconsets();
+    await load();
     await fetchSelected();
-    await fetchIcons();
 });
 
-onUnmounted(() => {
-    revokeGridUrls();
-    revokeSelectedUrl();
-});
-
-function revokeGridUrls(): void {
-    for (const url of iconUrls.value.values()) {
-        URL.revokeObjectURL(url);
-    }
-    iconUrls.value = new Map();
-}
+onUnmounted(revokeSelectedUrl);
 
 function revokeSelectedUrl(): void {
     if (selectedUrl.value) {
@@ -322,17 +315,7 @@ async function fetchSelected(): Promise<void> {
         return;
     }
 
-    // Normalise to the Dexie key format: "<iconsetUid>:<path-without-ext>"
-    let key = props.modelValue;
-    if (!key.includes(':')) {
-        // slash-separated 3-part path: "<uuid>/<folder>/<name>.png"
-        key = key.replace('/', ':').replace(/\.png$/i, '');
-    } else {
-        // colon-separated – strip any trailing .png just in case
-        key = key.replace(/\.png$/i, '');
-    }
-
-    const icon = await Icon.get(key);
+    const icon = await Icon.get(Icon.key(props.modelValue));
     if (!icon) {
         err.value = new Error(`Icon not found: ${props.modelValue}`);
         return;
@@ -342,38 +325,5 @@ async function fetchSelected(): Promise<void> {
     revokeSelectedUrl();
     selected.value = icon;
     selectedUrl.value = URL.createObjectURL(icon.data);
-}
-
-async function fetchIconsets(): Promise<void> {
-    loading.value.iconset = true;
-    sets.value = await Iconset.list();
-    if (sets.value.length && !params.value.iconset) {
-        params.value.iconset = sets.value[0].name;
-    }
-    loading.value.iconset = false;
-}
-
-async function fetchIcons(): Promise<void> {
-    loading.value.icons = true;
-
-    revokeGridUrls();
-
-    const set = sets.value.find((s) => s.name === params.value.iconset);
-    if (!set) {
-        icons.value = [];
-        loading.value.icons = false;
-        return;
-    }
-
-    const all = await Icon.list(set.uid);
-    icons.value = all;
-
-    const urls = new Map<string, string>();
-    for (const icon of all) {
-        urls.set(icon.name, URL.createObjectURL(icon.data));
-    }
-    iconUrls.value = urls;
-
-    loading.value.icons = false;
 }
 </script>

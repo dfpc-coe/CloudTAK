@@ -1,26 +1,21 @@
 <template>
-    <SlideDownHeader
-        v-model='isOpen'
-        label='Core Events'
-    >
-        <template #icon>
-            <IconCalendarEvent
-                :size='18'
-                stroke='1'
-                color='#6b7990'
-                class='ms-2 me-1'
-            />
-        </template>
-        <template #right>
+    <div>
+        <Teleport
+            defer
+            to='#admin-config-actions'
+        >
             <TablerIconButton
-                v-if='!edit && isOpen'
+                v-if='!edit'
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil stroke='1' />
+                <IconPencil
+                    :size='32'
+                    stroke='1'
+                />
             </TablerIconButton>
             <div
-                v-else-if='edit && isOpen'
+                v-else
                 class='d-flex gap-1'
             >
                 <TablerIconButton
@@ -29,6 +24,7 @@
                     @click.stop='save'
                 >
                     <IconDeviceFloppy
+                        :size='32'
                         color='rgb(var(--tblr-primary-rgb))'
                         stroke='1'
                     />
@@ -37,10 +33,13 @@
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX stroke='1' />
+                    <IconX
+                        :size='32'
+                        stroke='1'
+                    />
                 </TablerIconButton>
             </div>
-        </template>
+        </Teleport>
 
         <div class='col-lg-12 py-2 px-2'>
             <TablerLoading v-if='loading' />
@@ -186,11 +185,10 @@
                 />
             </template>
         </div>
-    </SlideDownHeader>
+    </div>
 </template>
 
 <script setup lang="ts">
-import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import { validateTextNotEmpty } from '../../../utils/validators.ts';
@@ -208,7 +206,6 @@ import {
     IconPlus,
     IconTrash,
     IconX,
-    IconCalendarEvent
 } from '@tabler/icons-vue';
 
 type CoreEntityType = {
@@ -248,7 +245,6 @@ function cloneTypes(types: unknown): CoreEntityType[] {
     });
 }
 
-const isOpen = ref(false);
 const loading = ref(false);
 const edit = ref(false);
 const err = ref<Error | null>(null);
@@ -264,12 +260,8 @@ const config = ref<CoreEntityTypesConfig>({
 });
 
 onMounted(async () => {
-    if (isOpen.value) void fetch();
+    void fetch();
     await fetchSymbols();
-});
-
-watch(isOpen, (newState) => {
-    if (newState && !edit.value) void fetch();
 });
 
 watch(symbolFilter, async () => {

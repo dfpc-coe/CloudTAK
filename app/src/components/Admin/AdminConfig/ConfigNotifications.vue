@@ -1,26 +1,21 @@
 <template>
-    <SlideDownHeader
-        v-model='isOpen'
-        label='Notifications'
-    >
-        <template #icon>
-            <IconBell
-                :size='18'
-                stroke='1'
-                color='#6b7990'
-                class='ms-2 me-1'
-            />
-        </template>
-        <template #right>
+    <div>
+        <Teleport
+            defer
+            to='#admin-config-actions'
+        >
             <TablerIconButton
-                v-if='!edit && isOpen'
+                v-if='!edit'
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil stroke='1' />
+                <IconPencil
+                    :size='32'
+                    stroke='1'
+                />
             </TablerIconButton>
             <div
-                v-else-if='edit && isOpen'
+                v-else
                 class='d-flex gap-1'
             >
                 <TablerIconButton
@@ -29,6 +24,7 @@
                     @click.stop='save'
                 >
                     <IconDeviceFloppy
+                        :size='32'
                         color='rgb(var(--tblr-primary-rgb))'
                         stroke='1'
                     />
@@ -37,10 +33,13 @@
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX stroke='1' />
+                    <IconX
+                        :size='32'
+                        stroke='1'
+                    />
                 </TablerIconButton>
             </div>
-        </template>
+        </Teleport>
 
         <div class='col-lg-12 py-2 px-2'>
             <TablerLoading v-if='loading' />
@@ -157,12 +156,11 @@
                 </div>
             </template>
         </div>
-    </SlideDownHeader>
+    </div>
 </template>
 
 <script setup lang="ts">
-import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { server } from '../../../std.ts';
 import {
     TablerLoading,
@@ -176,7 +174,6 @@ import {
     IconPencil,
     IconDeviceFloppy,
     IconX,
-    IconBell,
 } from '@tabler/icons-vue';
 
 interface NotificationConfig {
@@ -192,7 +189,6 @@ interface NotificationConfig {
     'notification::push::firebase::private_key': string;
 }
 
-const isOpen = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const edit = ref<boolean>(false);
 const err = ref<Error | null>(null);
@@ -211,11 +207,7 @@ const config = ref<NotificationConfig>({
 });
 
 onMounted(() => {
-    if (isOpen.value) void fetch();
-});
-
-watch(isOpen, (newState) => {
-    if (newState && !edit.value) void fetch();
+    void fetch();
 });
 
 async function fetch(): Promise<void> {

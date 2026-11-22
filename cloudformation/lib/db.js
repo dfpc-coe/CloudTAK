@@ -48,6 +48,8 @@ export default {
         },
         DBCluster: {
             Type: 'AWS::RDS::DBCluster',
+            DeletionPolicy: 'Snapshot',
+            UpdateReplacePolicy: 'Snapshot',
             Properties: {
                 Engine: 'aurora-postgresql',
                 EngineVersion: '18.6',
@@ -61,6 +63,8 @@ export default {
                 DBSubnetGroupName: cf.ref('DBSubnet'),
                 PreferredMaintenanceWindow: 'Sun:23:00-Sun:23:30',
                 PreferredBackupWindow: '22:00-23:00',
+                BackupRetentionPeriod: 14,
+                EnableCloudwatchLogsExports: ['postgresql'],
                 PerformanceInsightsEnabled: true,
                 PerformanceInsightsKmsKeyId: cf.ref('KMS'),
                 PerformanceInsightsRetentionPeriod: 7,
@@ -108,14 +112,8 @@ export default {
                     IpProtocol: 'TCP',
                     FromPort: 5432,
                     ToPort: 5432,
-                    CidrIp: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc-cidr'])),
-                    Description: 'Allow Internal network access'
-                },{
-                    IpProtocol: 'TCP',
-                    FromPort: 5432,
-                    ToPort: 5432,
-                    CidrIpv6: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc-cidr-ipv6'])),
-                    Description: 'Allow Internal IPv6 network access'
+                    SourceSecurityGroupId: cf.getAtt('StatefulServiceSecurityGroup', 'GroupId'),
+                    Description: 'Allow CloudTAK Stateful ECS Service Access'
                 }]
             }
         }
@@ -124,6 +122,13 @@ export default {
         DBEndpoint: {
             Description: 'Postgres Aurora Cluster Endpoint',
             Value: cf.getAtt('DBCluster', 'Endpoint.Address')
+        },
+        DBSecurityGroup: {
+            Description: 'Postgres Aurora Cluster Security Group',
+            Export: {
+                Name: cf.join([cf.stackName, '-db-sg'])
+            },
+            Value: cf.getAtt('DBVPCSecurityGroup', 'GroupId')
         }
     }
 };

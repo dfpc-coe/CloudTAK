@@ -622,6 +622,14 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     source_type: Type.Enum(VideoLease_SourceType),
 });
 
+export const PluginResponse = createSelectSchema(schemas.Plugin, {
+    api_version: Type.Integer(),
+    version: Type.Union([Type.Null(), Type.String()]),
+    sha256: Type.Union([Type.Null(), Type.String()]),
+    size: Type.Union([Type.Null(), Type.Integer()]),
+    username: Type.Union([Type.Null(), Type.String()]),
+});
+
 /** Query params appended to tile and TileJSON requests, e.g. slope classes as repeatable `layer` values */
 export const BasemapArgs = Type.Record(
     Type.String({ minLength: 1 }),

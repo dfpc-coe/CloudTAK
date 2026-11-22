@@ -33,6 +33,7 @@ import type { WorkerMessage, SyncTriggerReason, MissionRenderFeatureBody } from 
 import Overlay from '../base/overlay-class.ts';
 import OverlayManager from '../base/overlay.ts';
 import { invalidateOfflinePMTiles } from './modules/pmtiles.ts';
+import { initOfflineTiles } from './modules/offline-tiles.ts';
 import { FeatureVisibility } from './modules/feature-visibility.ts';
 import Subscription from '../base/subscription.ts';
 import { renderMissionFeature } from '../base/subscription-feature.ts';
@@ -67,7 +68,6 @@ let cotRenderQueued = false;
 
 const WORKER_READY_TIMEOUT_MS = 20000;
 const WORKER_INIT_TIMEOUT_MS = 30000;
-const OFFLINE_TILES_LIST_TIMEOUT_MS = 10000;
 const WORKER_LIFECYCLE_TIMEOUT_MS = 5000;
 const COT_REFRESH_INTERVAL_MS = 500;
 
@@ -113,6 +113,7 @@ export const useMapStore = defineStore('cloudtak', {
         _cotResync?: Promise<void>;
         _destroying?: Promise<void>;
         _removePushTokenListener?: () => void;
+        _removeOfflineTiles?: () => void;
         _overlaySubscription?: { unsubscribe: () => void };
         _overlayReconcile?: Promise<void>;
         _overlayReconcileQueued?: boolean;
@@ -680,6 +681,10 @@ export const useMapStore = defineStore('cloudtak', {
                 this._removePushTokenListener();
                 this._removePushTokenListener = undefined;
             }
+            if (this._removeOfflineTiles) {
+                this._removeOfflineTiles();
+                this._removeOfflineTiles = undefined;
+            }
             if (this._overlaySubscription) {
                 this._overlaySubscription.unsubscribe();
                 this._overlaySubscription = undefined;
@@ -1142,15 +1147,11 @@ export const useMapStore = defineStore('cloudtak', {
             await withTimeout(this._workerReady!, WORKER_READY_TIMEOUT_MS, 'Atlas worker startup');
             await withTimeout(this.worker.init(token || ''), WORKER_INIT_TIMEOUT_MS, 'Atlas worker init');
 
-            try {
-                this.offlineTiles = new Set(await withTimeout(
-                    this.worker.tiles.list(),
-                    OFFLINE_TILES_LIST_TIMEOUT_MS,
-                    'Offline tiles list'
-                ));
-            } catch (err) {
-                console.warn('Failed to list offline tiles', err);
-            }
+            this._removeOfflineTiles?.();
+            this._removeOfflineTiles = initOfflineTiles(this.worker.tiles, (ids, changed) => {
+                for (const asset of changed) invalidateOfflinePMTiles(asset);
+                this.offlineTiles = ids;
+            });
 
             this.channel.onmessage = async (event: MessageEvent<WorkerMessage>) => {
                 const msg = event.data;
@@ -1253,17 +1254,6 @@ export const useMapStore = defineStore('cloudtak', {
                         this.icons.purgeIconsets(body.purge);
                         this.icons.purgeFallbacks(body.added);
                     }
-                } else if (msg.type === WorkerMessageType.Tiles_Downloaded || msg.type === WorkerMessageType.Tiles_Removed) {
-                    const asset = String(msg.body.asset);
-                    invalidateOfflinePMTiles(asset);
-
-                    const offline = new Set(this.offlineTiles);
-                    if (msg.type === WorkerMessageType.Tiles_Downloaded) {
-                        offline.add(asset);
-                    } else {
-                        offline.delete(asset);
-                    }
-                    this.offlineTiles = offline;
                 }
             }
 
@@ -1433,7 +1423,10 @@ export const useMapStore = defineStore('cloudtak', {
             // @ts-ignore Don't remove me unless npm run doc passes
             this._map = markRaw(map);
             this._draw = markRaw(new DrawTool(this));
-            this._icons = markRaw(new IconManager(map));
+            this._icons = markRaw(new IconManager(map, {
+                syncIcons: () => this.worker.sync.syncIcons(),
+                syncIconset: (uid) => this.worker.sync.syncIconset(uid)
+            }));
             this._menu = markRaw(new MenuManager(this));
             this.loadingStage = 'Building menus…';
             await (this._menu as MenuManager).init();
@@ -1582,7 +1575,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             map.on('contextmenu', (e) => {
-                if (this.draw.editing) return;
+                if (this.draw.editing || this.draw.mode !== DrawToolMode.STATIC) return;
 
                 const lngLat = e.lngLat.wrap();
                 const id = randomUUID();
@@ -1713,21 +1706,25 @@ export const useMapStore = defineStore('cloudtak', {
          * originating client's change is not echoed back to the API.
          */
         reconcileOverlays: async function(): Promise<void> {
-            if (this._overlayReconcile) {
-                this._overlayReconcileQueued = true;
-                return this._overlayReconcile;
-            }
+            this._overlayReconcileQueued = true;
+            if (this._overlayReconcile) return this._overlayReconcile;
 
-            this._overlayReconcile = (async () => {
-                do {
-                    this._overlayReconcileQueued = false;
-                    await this.reconcileOverlaysOnce();
-                } while (this._overlayReconcileQueued);
-            })().finally(() => {
-                this._overlayReconcile = undefined;
-            });
+            let settled = false;
+            const run = (async () => {
+                try {
+                    while (this._overlayReconcileQueued) {
+                        this._overlayReconcileQueued = false;
+                        await this.reconcileOverlaysOnce();
+                    }
+                } finally {
+                    settled = true;
+                    this._overlayReconcile = undefined;
+                }
+            })();
 
-            return this._overlayReconcile;
+            if (!settled) this._overlayReconcile = run;
+
+            return run;
         },
         /**
          * Mark a mission subscription as unsubscribed when its overlay no

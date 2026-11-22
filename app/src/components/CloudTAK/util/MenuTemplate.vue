@@ -30,10 +30,19 @@
                 </div>
                 <div
                     v-else
-                    class='modal-title flex-grow-1 text-break px-1'
+                    class='flex-grow-1 d-flex flex-column px-1'
                     style='min-width: 0'
-                    v-text='name'
-                />
+                >
+                    <div
+                        class='modal-title text-break'
+                        v-text='name'
+                    />
+                    <div
+                        v-if='subtitle'
+                        class='menu-subtitle small text-truncate'
+                        v-text='subtitle'
+                    />
+                </div>
 
                 <div class='btn-list align-items-center flex-nowrap'>
                     <slot name='buttons' />
@@ -120,9 +129,19 @@
                     </div>
                     <div
                         v-else
-                        class='strong user-select-none text-break px-2'
-                        v-text='name'
-                    />
+                        class='d-flex flex-column user-select-none px-2'
+                        style='min-width: 0'
+                    >
+                        <div
+                            class='strong text-break'
+                            v-text='name'
+                        />
+                        <div
+                            v-if='subtitle'
+                            class='menu-subtitle small text-truncate'
+                            v-text='subtitle'
+                        />
+                    </div>
                 </div>
                 <div class='col-auto btn-list align-items-center menu-header-buttons'>
                     <slot name='buttons' />
@@ -181,6 +200,10 @@ const props = defineProps({
         type: String,
         default: ''
     },
+    subtitle: {
+        type: String,
+        default: ''
+    },
     zindex: {
         type: Number,
         default: 1020
@@ -236,6 +259,10 @@ const isModal = computed(() => props.standalone && appStore.isMobileDetected);
 </script>
 
 <style scoped>
+.menu-subtitle {
+    color: var(--tblr-secondary-color);
+}
+
 /* Matches a 32px TablerIconButton so the header stays the same height when the buttons slot is empty */
 .menu-header-buttons {
     min-height: 34px;

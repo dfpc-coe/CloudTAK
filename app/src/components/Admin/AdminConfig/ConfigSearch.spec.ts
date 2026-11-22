@@ -26,7 +26,6 @@ async function mountSearch(search: unknown, config: Record<string, unknown> = {}
 
     const wrapper = mount(ConfigSearch);
 
-    await wrapper.find('.slidedown__header').trigger('click');
     await flushPromises();
 
     return wrapper;
@@ -48,7 +47,7 @@ describe('Admin/AdminConfig/ConfigSearch', () => {
             error: undefined
         });
 
-        const providers = wrapper.findAll('.slidedown .slidedown');
+        const providers = wrapper.findAll('.slidedown');
         expect(providers).toHaveLength(2);
 
         expect(providers[0].find('label').text()).toBe('ArcGIS Online');
@@ -72,7 +71,7 @@ describe('Admin/AdminConfig/ConfigSearch', () => {
             error: undefined
         });
 
-        const providers = wrapper.findAll('.slidedown .slidedown');
+        const providers = wrapper.findAll('.slidedown');
 
         expect(providers[0].findAll('.badge').map(badge => badge.text())).toEqual(['Inactive']);
         expect(providers[1].findAll('.badge').map(badge => badge.text())).toEqual([
@@ -83,7 +82,7 @@ describe('Admin/AdminConfig/ConfigSearch', () => {
     it('still lists providers when the status cannot be loaded', async () => {
         const wrapper = await mountSearch({ data: undefined, error: { message: 'Search unavailable' } });
 
-        expect(wrapper.findAll('.slidedown .slidedown')).toHaveLength(2);
+        expect(wrapper.findAll('.slidedown')).toHaveLength(2);
         expect(wrapper.findAll('.badge')).toHaveLength(0);
         expect(wrapper.text()).toContain('Search unavailable');
     });
@@ -101,7 +100,7 @@ describe('Admin/AdminConfig/ConfigSearch', () => {
             'osm::url': 'https://photon.example.com'
         });
 
-        const provider = wrapper.findAll('.slidedown .slidedown')[1];
+        const provider = wrapper.findAll('.slidedown')[1];
 
         await provider.find('.slidedown__header').trigger('click');
         await flushPromises();

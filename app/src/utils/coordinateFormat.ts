@@ -1,13 +1,27 @@
 import { convert } from 'geo-coordinates-parser';
 
-export type CoordMode = 'dd' | 'dm' | 'dms' | 'mgrs' | 'utm';
+export type CoordMode = 'dd' | 'dm' | 'dms' | 'mgrs' | 'utm' | 'bng';
 
-export const COORD_MODES: Array<{ value: CoordMode; label: string; title: string }> = [
+export type CoordBounds = [west: number, south: number, east: number, north: number];
+
+export type CoordModeOption = {
+    value: CoordMode;
+    label: string;
+    title: string;
+    /** Extent the scheme is defined over - omitted when it covers the globe */
+    bounds?: CoordBounds;
+};
+
+const UTM_BOUNDS: CoordBounds = [-180, -80, 180, 84];
+const BNG_BOUNDS: CoordBounds = [-9.5, 49.76, 3.64, 61.59];
+
+export const COORD_MODES: Array<CoordModeOption> = [
     { value: 'dd',   label: 'DD',   title: 'Decimal Degrees' },
     { value: 'dm',   label: 'DM',   title: 'Degrees Minutes' },
     { value: 'dms',  label: 'DMS',  title: 'Degrees Minutes Seconds' },
-    { value: 'mgrs', label: 'MGRS', title: 'Military Grid Reference System' },
-    { value: 'utm',  label: 'UTM',  title: 'Universal Transverse Mercator' },
+    { value: 'mgrs', label: 'MGRS', title: 'Military Grid Reference System', bounds: UTM_BOUNDS },
+    { value: 'utm',  label: 'UTM',  title: 'Universal Transverse Mercator', bounds: UTM_BOUNDS },
+    { value: 'bng',  label: 'BNG',  title: 'British National Grid', bounds: BNG_BOUNDS },
 ];
 
 const K0 = 0.9996;
@@ -47,8 +61,35 @@ export function formatCoordPair(lat: number, lng: number, mode: CoordMode, trunc
         return asMGRS(lat, lng);
     } else if (mode === 'utm') {
         return asUTM(lat, lng);
+    } else if (mode === 'bng') {
+        return asBNG(lat, lng);
     }
     return 'UNKNOWN';
+}
+
+/**
+ * List the coordinate modes that are defined at a given location
+ */
+export function coordModesAt(lat: number, lng: number): Array<CoordModeOption> {
+    return COORD_MODES.filter((mode) => {
+        if (mode.bounds && !inBounds(lat, lng, mode.bounds)) return false;
+        if (mode.value === 'bng') return bngGridRef(lat, lng) !== null;
+        return true;
+    });
+}
+
+/**
+ * Resolve the mode to display a location in, falling back to the first
+ * mode defined there when the preferred mode is not
+ */
+export function coordModeAt(preferred: CoordMode, lat: number, lng: number): CoordMode {
+    const modes = coordModesAt(lat, lng);
+    if (modes.some((mode) => mode.value === preferred)) return preferred;
+    return modes[0].value;
+}
+
+function inBounds(lat: number, lng: number, bounds: CoordBounds): boolean {
+    return lng >= bounds[0] && lat >= bounds[1] && lng <= bounds[2] && lat <= bounds[3];
 }
 
 export function parseCoordPair(text: string, mode?: CoordMode): [number, number] {
@@ -62,11 +103,13 @@ export function parseCoordPair(text: string, mode?: CoordMode): [number, number]
         return parseUTM(raw);
     } else if (mode === 'mgrs') {
         return parseMGRS(raw);
+    } else if (mode === 'bng') {
+        return parseBNG(raw);
     } else if (mode === 'dd' || mode === 'dm' || mode === 'dms') {
         return parseDegrees(raw);
     }
 
-    const parsers = [parseDegrees, parseUTM, parseMGRS];
+    const parsers = [parseDegrees, parseUTM, parseMGRS, parseBNG];
 
     for (const parser of parsers) {
         try {
@@ -375,4 +418,225 @@ function pad(val: number): string {
     if (val < 1000) return '00' + val;
     if (val < 10000) return '0' + val;
     return String(val);
+}
+
+type Ellipsoid = { a: number; b: number };
+type Helmert = { tx: number; ty: number; tz: number; s: number; rx: number; ry: number; rz: number };
+
+const WGS84: Ellipsoid = { a: 6378137, b: 6356752.314245 };
+const AIRY1830: Ellipsoid = { a: 6377563.396, b: 6356256.909 };
+
+// WGS84 => OSGB36: metres, ppm and arcseconds
+const OSGB36_HELMERT: Helmert = {
+    tx: -446.448, ty: 125.157, tz: -542.060,
+    s: 20.4894,
+    rx: -0.1502, ry: -0.2470, rz: -0.8421
+};
+
+const BNG_F0 = 0.9996012717;
+const BNG_LAT0 = toRadians(49);
+const BNG_LON0 = toRadians(-2);
+const BNG_E0 = 400000;
+const BNG_N0 = -100000;
+const BNG_EXAMPLE = 'Expected BNG coordinates like "TQ 30080 80396"';
+
+function asBNG(lat: number, lng: number): string {
+    return bngGridRef(lat, lng) ?? 'Outside BNG area';
+}
+
+function bngGridRef(lat: number, lng: number): string | null {
+    if (!inBounds(lat, lng, BNG_BOUNDS)) return null;
+
+    const [osLat, osLng] = shiftDatum(lat, lng, WGS84, AIRY1830, OSGB36_HELMERT);
+    const [easting, northing] = latLngToBNG(osLat, osLng);
+
+    const e100km = Math.floor(easting / 100000);
+    const n100km = Math.floor(northing / 100000);
+
+    if (e100km < 0 || e100km > 6 || n100km < 0 || n100km > 12) return null;
+
+    let l1 = (19 - n100km) - (19 - n100km) % 5 + Math.floor((e100km + 10) / 5);
+    let l2 = (19 - n100km) * 5 % 25 + e100km % 5;
+
+    // The grid lettering skips I
+    if (l1 > 7) l1++;
+    if (l2 > 7) l2++;
+
+    const letters = String.fromCharCode(l1 + 65, l2 + 65);
+
+    return `${letters} ${pad(Math.floor(easting % 100000))} ${pad(Math.floor(northing % 100000))}`;
+}
+
+function parseBNG(text: string): [number, number] {
+    const compact = text.trim().toUpperCase();
+
+    let easting: number;
+    let northing: number;
+
+    const numeric = compact.match(/^(\d{1,6}(?:\.\d+)?)\s*[,\s]\s*(\d{1,7}(?:\.\d+)?)$/);
+    const lettered = compact.replace(/\s+/g, '').match(/^([HJNOST])([A-HJ-Z])(\d*)$/);
+
+    if (numeric) {
+        easting = Number(numeric[1]);
+        northing = Number(numeric[2]);
+    } else if (lettered) {
+        const digits = lettered[3];
+
+        if (digits.length % 2 !== 0 || digits.length > 10) {
+            throw new Error(BNG_EXAMPLE);
+        }
+
+        let l1 = lettered[1].charCodeAt(0) - 65;
+        let l2 = lettered[2].charCodeAt(0) - 65;
+
+        if (l1 > 7) l1--;
+        if (l2 > 7) l2--;
+
+        const e100km = ((l1 - 2) % 5) * 5 + (l2 % 5);
+        const n100km = (19 - Math.floor(l1 / 5) * 5) - Math.floor(l2 / 5);
+
+        const half = digits.length / 2;
+
+        easting = e100km * 100000 + Number(digits.slice(0, half).padEnd(5, '0'));
+        northing = n100km * 100000 + Number(digits.slice(half).padEnd(5, '0'));
+    } else {
+        throw new Error(BNG_EXAMPLE);
+    }
+
+    if (easting < 0 || easting >= 700000 || northing < 0 || northing >= 1300000) {
+        throw new Error('Coordinates are outside the British National Grid');
+    }
+
+    const [osLat, osLng] = bngToLatLng(easting, northing);
+
+    return shiftDatum(osLat, osLng, AIRY1830, WGS84, invertHelmert(OSGB36_HELMERT));
+}
+
+function invertHelmert(t: Helmert): Helmert {
+    return { tx: -t.tx, ty: -t.ty, tz: -t.tz, s: -t.s, rx: -t.rx, ry: -t.ry, rz: -t.rz };
+}
+
+function shiftDatum(lat: number, lng: number, from: Ellipsoid, to: Ellipsoid, t: Helmert): [number, number] {
+    const latRad = toRadians(lat);
+    const lngRad = toRadians(lng);
+
+    const fromE2 = 1 - (from.b * from.b) / (from.a * from.a);
+    const nu = from.a / Math.sqrt(1 - fromE2 * Math.pow(Math.sin(latRad), 2));
+
+    const x1 = nu * Math.cos(latRad) * Math.cos(lngRad);
+    const y1 = nu * Math.cos(latRad) * Math.sin(lngRad);
+    const z1 = nu * (1 - fromE2) * Math.sin(latRad);
+
+    const s = 1 + t.s / 1e6;
+    const rx = toRadians(t.rx / 3600);
+    const ry = toRadians(t.ry / 3600);
+    const rz = toRadians(t.rz / 3600);
+
+    const x2 = t.tx + x1 * s - y1 * rz + z1 * ry;
+    const y2 = t.ty + x1 * rz + y1 * s - z1 * rx;
+    const z2 = t.tz - x1 * ry + y1 * rx + z1 * s;
+
+    const toE2 = 1 - (to.b * to.b) / (to.a * to.a);
+    const p = Math.sqrt(x2 * x2 + y2 * y2);
+
+    let phi = Math.atan2(z2, p * (1 - toE2));
+    let previous = 2 * Math.PI;
+
+    while (Math.abs(phi - previous) > 1e-12) {
+        const toNu = to.a / Math.sqrt(1 - toE2 * Math.pow(Math.sin(phi), 2));
+        previous = phi;
+        phi = Math.atan2(z2 + toE2 * toNu * Math.sin(phi), p);
+    }
+
+    return [toDegrees(phi), toDegrees(Math.atan2(y2, x2))];
+}
+
+function bngMeridionalArc(phi: number): number {
+    const { a, b } = AIRY1830;
+    const n = (a - b) / (a + b);
+    const n2 = n * n;
+    const n3 = n2 * n;
+
+    const dPhi = phi - BNG_LAT0;
+    const sPhi = phi + BNG_LAT0;
+
+    return b * BNG_F0 * (
+        (1 + n + (5 / 4) * n2 + (5 / 4) * n3) * dPhi
+        - (3 * n + 3 * n2 + (21 / 8) * n3) * Math.sin(dPhi) * Math.cos(sPhi)
+        + ((15 / 8) * n2 + (15 / 8) * n3) * Math.sin(2 * dPhi) * Math.cos(2 * sPhi)
+        - (35 / 24) * n3 * Math.sin(3 * dPhi) * Math.cos(3 * sPhi)
+    );
+}
+
+function bngRadii(phi: number): { nu: number; rho: number; eta2: number } {
+    const { a, b } = AIRY1830;
+    const e2 = 1 - (b * b) / (a * a);
+    const sin2 = Math.pow(Math.sin(phi), 2);
+
+    const nu = a * BNG_F0 / Math.sqrt(1 - e2 * sin2);
+    const rho = a * BNG_F0 * (1 - e2) / Math.pow(1 - e2 * sin2, 1.5);
+
+    return { nu, rho, eta2: nu / rho - 1 };
+}
+
+function latLngToBNG(lat: number, lng: number): [number, number] {
+    const phi = toRadians(lat);
+    const { nu, rho, eta2 } = bngRadii(phi);
+
+    const sin = Math.sin(phi);
+    const cos = Math.cos(phi);
+    const cos3 = Math.pow(cos, 3);
+    const cos5 = Math.pow(cos, 5);
+    const tan2 = Math.pow(Math.tan(phi), 2);
+    const tan4 = tan2 * tan2;
+
+    const I = bngMeridionalArc(phi) + BNG_N0;
+    const II = (nu / 2) * sin * cos;
+    const III = (nu / 24) * sin * cos3 * (5 - tan2 + 9 * eta2);
+    const IIIA = (nu / 720) * sin * cos5 * (61 - 58 * tan2 + tan4);
+    const IV = nu * cos;
+    const V = (nu / 6) * cos3 * (nu / rho - tan2);
+    const VI = (nu / 120) * cos5 * (5 - 18 * tan2 + tan4 + 14 * eta2 - 58 * tan2 * eta2);
+
+    const d = toRadians(lng) - BNG_LON0;
+
+    return [
+        BNG_E0 + IV * d + V * Math.pow(d, 3) + VI * Math.pow(d, 5),
+        I + II * Math.pow(d, 2) + III * Math.pow(d, 4) + IIIA * Math.pow(d, 6)
+    ];
+}
+
+function bngToLatLng(easting: number, northing: number): [number, number] {
+    const a = AIRY1830.a;
+
+    let phi = BNG_LAT0;
+    let m = 0;
+
+    do {
+        phi = (northing - BNG_N0 - m) / (a * BNG_F0) + phi;
+        m = bngMeridionalArc(phi);
+    } while (Math.abs(northing - BNG_N0 - m) >= 0.00001);
+
+    const { nu, rho, eta2 } = bngRadii(phi);
+
+    const tan = Math.tan(phi);
+    const tan2 = tan * tan;
+    const tan4 = tan2 * tan2;
+    const tan6 = tan4 * tan2;
+    const sec = 1 / Math.cos(phi);
+
+    const VII = tan / (2 * rho * nu);
+    const VIII = tan / (24 * rho * Math.pow(nu, 3)) * (5 + 3 * tan2 + eta2 - 9 * tan2 * eta2);
+    const IX = tan / (720 * rho * Math.pow(nu, 5)) * (61 + 90 * tan2 + 45 * tan4);
+    const X = sec / nu;
+    const XI = sec / (6 * Math.pow(nu, 3)) * (nu / rho + 2 * tan2);
+    const XII = sec / (120 * Math.pow(nu, 5)) * (5 + 28 * tan2 + 24 * tan4);
+    const XIIA = sec / (5040 * Math.pow(nu, 7)) * (61 + 662 * tan2 + 1320 * tan4 + 720 * tan6);
+
+    const d = easting - BNG_E0;
+
+    return [
+        toDegrees(phi - VII * Math.pow(d, 2) + VIII * Math.pow(d, 4) - IX * Math.pow(d, 6)),
+        toDegrees(BNG_LON0 + X * d - XI * Math.pow(d, 3) + XII * Math.pow(d, 5) - XIIA * Math.pow(d, 7))
+    ];
 }

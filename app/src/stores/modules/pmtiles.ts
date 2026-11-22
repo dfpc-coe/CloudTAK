@@ -1,37 +1,18 @@
 /*
 * cloudtak-pmtiles://<asset id>/{z}/{x}/{y} - the tile source for every
-* profile asset overlay. Tiles are read from the PMTiles archive cached in
-* OPFS when a complete download exists and fetched from the hosted tile
+* profile asset overlay. Tiles are read from the PMTiles archive cached on the
+* device when a complete download exists and fetched from the hosted tile
 * server otherwise, so the MapLibre source never changes as files come and go.
 */
 
 import * as mapgl from 'maplibre-gl';
-import { PMTiles, TileType, type Source, type RangeResponse } from 'pmtiles';
+import { PMTiles, TileType } from 'pmtiles';
 import { std, stdurl } from '../../std.ts';
-import {
-    PMTILES_PROTOCOL,
-    offlineTilesHandle,
-    hasCompleteOfflineTiles,
-    offlineTileJSON as buildTileJSON,
-} from '../../utils/offline-tiles.ts';
+import { PMTILES_PROTOCOL, offlineTileJSON as buildTileJSON } from '../../utils/offline-tiles.ts';
+import { offlineTilesSource } from './offline-tiles.ts';
 import type { OverlayTileJSON } from '../../types.ts';
 
 export { offlineTileTemplate, isOfflineTileJSON } from '../../utils/offline-tiles.ts';
-
-class OPFSSource implements Source {
-    constructor(
-        private readonly key: string,
-        private readonly file: File,
-    ) {}
-
-    getKey(): string {
-        return this.key;
-    }
-
-    async getBytes(offset: number, length: number): Promise<RangeResponse> {
-        return { data: await this.file.slice(offset, offset + length).arrayBuffer() };
-    }
-}
 
 // 1x1 transparent PNG returned for raster tiles that do not exist
 const EMPTY_PNG = Uint8Array.from(
@@ -40,7 +21,7 @@ const EMPTY_PNG = Uint8Array.from(
 );
 
 // Presence is resolved once per asset (null = no complete download) and
-// invalidated by the worker's download/remove events
+// invalidated whenever the set of stored archives changes
 const archives = new Map<string, Promise<PMTiles | null>>();
 const templates = new Map<string, Promise<string>>();
 
@@ -54,14 +35,7 @@ function offlineArchive(assetId: string): Promise<PMTiles | null> {
     let archive = archives.get(assetId);
 
     if (!archive) {
-        archive = (async () => {
-            if (!await hasCompleteOfflineTiles(assetId)) return null;
-
-            const handle = await offlineTilesHandle(assetId);
-            if (!handle) return null;
-
-            return new PMTiles(new OPFSSource(assetId, await handle.getFile()));
-        })();
+        archive = offlineTilesSource(assetId).then((source) => source ? new PMTiles(source) : null);
 
         archive.catch(() => archives.delete(assetId));
         archives.set(assetId, archive);
@@ -74,9 +48,9 @@ export function invalidateOfflinePMTiles(assetId: string): void {
     archives.delete(assetId);
 }
 
-export async function offlineTileJSON(assetId: string): Promise<OverlayTileJSON> {
+export async function offlineTileJSON(assetId: string): Promise<OverlayTileJSON | undefined> {
     const archive = await offlineArchive(assetId);
-    if (!archive) throw new Error(`Asset ${assetId} is not available offline`);
+    if (!archive) return undefined;
 
     return buildTileJSON(assetId, await archive.getHeader(), await archive.getMetadata());
 }

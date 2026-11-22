@@ -752,9 +752,7 @@ async function fetchList() {
 
         if (res.error) throw new Error(res.error.message);
 
-        await ProfileFileManager.bulkPut(
-            res.data.items.filter((item) => mapStore.offlineTiles.has(item.id))
-        );
+        await ProfileFileManager.refresh(res.data.items);
 
         list.value = res.data;
         buildPathTree();

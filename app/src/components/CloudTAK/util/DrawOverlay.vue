@@ -12,15 +12,33 @@
                             stroke='1'
                         /><span class='ms-2'>Draw Point</span>
                     </div>
-                    <CoordinateType
-                        v-model='mapStore.draw.point.type'
-                    />
+                    <div class='d-flex align-items-center gap-2'>
+                        <CoordinateType
+                            v-model='mapStore.draw.point.type'
+                        />
+                        <IconSelect
+                            v-model='mapStore.draw.point.icon'
+                            :compact='true'
+                        />
+                    </div>
                 </div>
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
-                        title='Finish Drawing'
-                        :disabled='!mapStore.draw.canFinish'
+                        v-if='!appStore.isMobileDetected'
+                        :title='mapStore.draw.point.drop === "multiple" ? "Dropping Multiple Points" : "Drop Multiple Points"'
+                        :class='{ "point-toggle--active": mapStore.draw.point.drop === "multiple" }'
+                        :aria-pressed='mapStore.draw.point.drop === "multiple"'
+                        @click='mapStore.draw.point.drop = mapStore.draw.point.drop === "multiple" ? "single" : "multiple"'
+                    >
+                        <IconMapPins
+                            :size='24'
+                            stroke='1'
+                        />
+                    </TablerIconButton>
+                    <TablerIconButton
+                        :title='mapStore.draw.point.drop === "multiple" ? "Done Dropping Points" : "Finish Drawing"'
+                        :disabled='mapStore.draw.point.drop !== "multiple" && !mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -352,6 +370,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import GenericBottomPane from '../GenericBottomPane.vue';
 import CoordinateType from '../util/CoordinateType.vue';
+import IconSelect from '../util/IconSelectOffline.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useAppStore } from '../../../stores/app.ts';
@@ -373,6 +392,7 @@ import {
     IconVector,
     IconPolygon,
     IconCheck,
+    IconMapPins,
 } from '@tabler/icons-vue';
 
 const mapStore = useMapStore();
@@ -406,6 +426,10 @@ watch(() => mapStore.draw.mode, async () => {
 .point-header :deep(.btn-group .btn) {
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
+}
+
+.point-toggle--active {
+    color: var(--tblr-primary);
 }
 
 .point-label {
