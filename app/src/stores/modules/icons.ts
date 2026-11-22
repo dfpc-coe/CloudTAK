@@ -30,8 +30,8 @@ import { stdurl } from '../../std.ts';
 import { db, type DBSprite } from '../../database.ts';
 import { isMilsymIcon, symbolCanvas } from '../../utils/milsymbol.ts';
 
-/** Target render width (px) used when rasterizing SVG iconset icons; height preserves the source aspect ratio. */
-const SVG_RENDER_WIDTH = 32;
+/** Longest edge (px) of a rasterized SVG iconset icon; the source aspect ratio is preserved. */
+const SVG_RENDER_SIZE = 32;
 
 /**
  * Custom MapLibre protocol used to serve built-in spritesheets out of Dexie
@@ -375,13 +375,12 @@ export default class IconManager {
         }
 
         if (!(width > 0) || !(height > 0)) {
-            width = SVG_RENDER_WIDTH;
-            height = SVG_RENDER_WIDTH;
+            width = SVG_RENDER_SIZE;
+            height = SVG_RENDER_SIZE;
         }
 
-        // Rasterize at a fixed 32px width so icons render consistently, while
-        // preserving the source aspect ratio.
-        const scale = SVG_RENDER_WIDTH / width;
+        // Fit the longest edge so tall icons match the footprint of raster icons
+        const scale = SVG_RENDER_SIZE / Math.max(width, height);
         const renderWidth = Math.max(1, Math.round(width * scale));
         const renderHeight = Math.max(1, Math.round(height * scale));
 

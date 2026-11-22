@@ -28,6 +28,7 @@ test('Setup', async () => {
 test('POST /tiles/profile/:username/:file/elevation returns sampled elevations', async () => {
     const token = jwt.sign({ email: 'user@example.com', access: 'profile' }, process.env.SigningSecret!);
     const originalFetch = globalThis.fetch;
+    // oxlint-disable-next-line typescript/unbound-method
     const originalRasterTileSource = FileTiles.prototype.rasterTileSource;
     const leftTile = await demTile(100);
     const rightTile = await demTile(200);
@@ -44,7 +45,7 @@ test('POST /tiles/profile/:username/:file/elevation returns sampled elevations',
     };
 
     globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = String(input);
+        const url = input instanceof Request ? input.url : String(input);
 
         if (url === 'https://example.test/terrain/2/1/1.png') {
             return new Response(leftTile, {

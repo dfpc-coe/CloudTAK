@@ -89,7 +89,7 @@ export default class KML implements Transform {
                             );
                             features.push(...linkedFeatures);
                         } catch (err) {
-                            console.warn(`NetworkLink local file ${href} not readable (${err})`);
+                            console.warn(`NetworkLink local file ${href} not readable (${String(err)})`);
                         }
 
                         continue;
@@ -270,7 +270,7 @@ export default class KML implements Transform {
 
                         icons.set(feat.properties.icon as string, iconbuffer);
                     } catch (err) {
-                        console.warn(`icon ${feat.properties.icon} not retrievable (${err})`);
+                        console.warn(`icon ${String(feat.properties.icon)} not retrievable (${String(err)})`);
                     }
                 } else {
                     // An unresolvable icon downgrades the feature to default

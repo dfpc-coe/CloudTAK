@@ -23,7 +23,7 @@ test('Worker Data Transform: Non-GeoPDF should throw geospatial error', async (t
     t.after(() => {
         Sinon.restore();
         setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
+        void mockAgent.close();
     });
 
     mockPool.intercept({

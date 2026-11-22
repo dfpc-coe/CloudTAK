@@ -12,7 +12,7 @@ function layerResources(spec: CompositeSpecType): Array<{ access: 'basemap'; id:
 }
 
 export default async function router(schema: Schema) {
-    schema.get('/tiles/composite/:spec', {
+    await schema.get('/tiles/composite/:spec', {
         name: 'Get Composite TileJSON',
         group: 'CompositeTiles',
         description: 'TileJSON for an ad hoc raster composite. The spec is a base64url encoded JSON document listing the basemaps to flatten, in draw order',
@@ -39,7 +39,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/composite/:spec/tiles/:z/:x/:y', {
+    await schema.get('/tiles/composite/:spec/tiles/:z/:x/:y', {
         name: 'Get Composite Tile',
         group: 'CompositeTiles',
         description: 'Render a tile for an ad hoc raster composite',
