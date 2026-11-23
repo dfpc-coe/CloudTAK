@@ -140,6 +140,17 @@ export function machineUsernameFromCertSubject(subject: string | undefined | nul
 }
 
 /**
+ * The CA chain of a TAK Server signClient response, in order. TAK Server returns one `ca<N>`
+ * field per certificate; with a Root, Intermediate and Enrollment CA that is more than two.
+ */
+export function caChain(signed: Record<string, unknown>): string[] {
+    return Object.keys(signed)
+        .map(key => /^ca(\d+)$/.exec(key))
+        .filter((match): match is RegExpExecArray => match !== null && typeof signed[match[0]] === 'string' && !!signed[match[0]])
+        .sort((a, b) => Number(a[1]) - Number(b[1]))
+        .map(match => String(signed[match[0]]));
+}
+/**
  * The Authentik machine username that owns a connection. `connection.username`
  * is the login of whoever created the connection (a human), so it must never be
  * used to find the machine user. The stored client certificate's CN is
@@ -948,7 +959,7 @@ export default class AuthentikProvider {
             throw new Err(500, null, `[M2M] TAK Server signClient/v2 rejected bearer token (${signResponse.status}): ${signBody}`);
         }
 
-        let signed: { signedCert: string; ca0?: string; ca1?: string };
+        let signed: { signedCert: string; [ca: `ca${number}`]: string | undefined };
         try {
             signed = JSON.parse(signBody);
         } catch {
@@ -959,9 +970,7 @@ export default class AuthentikProvider {
         if (!signed.signedCert.endsWith('\n')) cert += '\n';
         cert += '-----END CERTIFICATE-----';
 
-        const ca: string[] = [];
-        if (signed.ca0) ca.push(signed.ca0);
-        if (signed.ca1) ca.push(signed.ca1);
+        const ca = caChain(signed);
 
         console.log(`[M2M] Cert enrollment succeeded for ${username} via bearer token exchange`);
 

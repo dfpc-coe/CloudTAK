@@ -13,6 +13,7 @@ import {
     machineUsernameFor,
     machineUsernameFromCertSubject,
     machineUsernameForConnection,
+    caChain,
     isMachineUser,
     channelGroupName,
     isDuplicateUsernameError,
@@ -286,4 +287,18 @@ test('machineUsernameForConnection: refuses a certificate that belongs to a huma
         name: 'My Layer',
         auth: { cert: selfSignedCert('person@example.com') },
     }), undefined);
+});
+
+test('caChain: collects every ca<N> field in numeric order, not just ca0 and ca1', () => {
+    assert.deepEqual(caChain({
+        signedCert: 'CERT',
+        ca10: 'TEN',
+        ca2: 'TWO',
+        ca0: 'ZERO',
+        ca1: 'ONE',
+    }), ['ZERO', 'ONE', 'TWO', 'TEN']);
+});
+test('caChain: ignores other fields and empty values', () => {
+    assert.deepEqual(caChain({ signedCert: 'CERT', ca0: 'ZERO', ca1: '', cadence: 'x', ca: 'y', ca2: 3 }), ['ZERO']);
+    assert.deepEqual(caChain({ signedCert: 'CERT' }), []);
 });
