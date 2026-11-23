@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import { TAKAPI, APIAuthCertificate, TAKServerError } from '@tak-ps/node-tak';
+import { TAKAPI, APIAuth, APIAuthCertificate, TAKServerError } from '@tak-ps/node-tak';
 import type Config from '../config.js';
 import { authenticatedProfile } from './profile.js';
 
@@ -21,6 +21,44 @@ export function isSocketClose(err: unknown): boolean {
         && err.status === 400
         && !(err instanceof TAKServerError)
         && /UND_ERR_SOCKET|other side closed|socket hang up|EPIPE|ECONNRESET/i.test(String(err.message));
+}
+/**
+ * Does a raw transport error (before node-tak wraps it) look like TAK Server refusing our client
+ * certificate - a closed socket or a TLS alert - rather than the server being unreachable?
+ */
+export function isTransportRejection(err: unknown): boolean {
+    const parts: string[] = [];
+    for (let e: unknown = err; e instanceof Error && parts.length < 5; e = e.cause) {
+        parts.push((e as { code?: string }).code ?? '', e.message);
+    }
+    return /UND_ERR_SOCKET|other side closed|socket hang up|EPIPE|ECONNRESET|ERR_SSL|alert|certificate/i.test(parts.join(' '));
+}
+/**
+ * Client certificate auth for the server's own admin certificate. When TAK Server rejects the
+ * certificate (rotated or replaced PKI) it reloads the certificate from Secrets Manager and retries once
+ */
+class AdminCertificateAuth extends APIAuthCertificate {
+    config: Config;
+    constructor(config: Config) {
+        const { cert, key } = config.serverCert();
+        super(cert, key);
+        this.config = config;
+    }
+    async fetch(api: Parameters<APIAuth['fetch']>[0], url: Parameters<APIAuth['fetch']>[1], opts: Parameters<APIAuth['fetch']>[2]) {
+        try {
+            return await super.fetch(api, url, opts);
+        } catch (err) {
+            if (!isTransportRejection(err)) throw err;
+            // Another call may have reloaded the certificate while this one was in flight
+            const current = this.config.serverCert();
+            const stale = current.cert !== this.cert || current.key !== this.key;
+            if (!stale && !await this.config.reloadAdminCert('rejected')) throw err;
+            const next = this.config.serverCert();
+            this.cert = next.cert;
+            this.key = next.key;
+            return await super.fetch(api, url, opts);
+        }
+    }
 }
 /** The client UID a CloudTAK user presents to TAK Server */
 export function profileUid(username: string): string {
@@ -89,7 +127,7 @@ export default class TAKServerControl {
 
     /** As the server's own admin certificate */
     async asServer(): Promise<TAKAPI> {
-        return await this.withAuth(this.config.serverCert());
+        return await TAKAPI.init(this.url(), new AdminCertificateAuth(this.config));
     }
 
     /** As a Connection (or anything else carrying a certificate under `auth`) */

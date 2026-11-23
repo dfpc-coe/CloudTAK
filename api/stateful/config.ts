@@ -34,6 +34,10 @@ export default class ConfigStateful extends Config {
         this.locationArbiter = new LocationArbiter({}, arbiterModeFromEnv(process.env.CLOUDTAK_Location_Arbitration));
     }
 
+    /** Reconnect the admin connection (connection 0) with the new certificate */
+    protected async onAdminCertChanged(): Promise<void> {
+        await this.hub.serverRefresh();
+    }
     static async env(args: ConfigArgs): Promise<ConfigStateful> {
         return new ConfigStateful(await Config.envInit(args, { migrate: true }));
     }

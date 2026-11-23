@@ -8,8 +8,13 @@ import Models from './models.js';
 import process from 'node:process';
 import * as pgtypes from './schema.js';
 import ETLEvents from './etl-events.js';
+import { adminCertFromSecret, loadAdminCertFromSecret, refreshIntervalMs } from './admin-cert.js';
+import type { AdminCert } from './admin-cert.js';
 import { resolveChannelFolderSeparator } from './channel-folder-separator.js';
 
+/** What prompted an admin certificate reload */
+export type AdminCertReloadReason = 'interval' | 'rejected';
+const ADMIN_CERT_REJECTED_COOLDOWN = 60_000;
 export type ServerMode = 'both' | 'api' | 'hub';
 
 const SERVER_MODES: ServerMode[] = ['both', 'api', 'hub'];
@@ -86,6 +91,9 @@ export default class Config {
     mode: ServerMode;
     arnPrefix?: string;
     etlEvents: ETLEvents;
+    private adminCertReload?: Promise<boolean>;
+    private adminCertRejectedAt = 0;
+    private adminCertTimer?: ReturnType<typeof setInterval>;
 
     constructor(init: ConfigInit) {
         this.silent = init.silent;
@@ -136,6 +144,73 @@ export default class Config {
         return `${this.PMTILES_URL}/tiles/basemap`;
     }
 
+    /**
+     * Re-read the admin certificate from Secrets Manager and apply it when it changed.
+     *
+     * The admin certificate rotates (admin-cert-rotate.sh) and a PKI reset replaces it, so a value read only
+     * at boot goes stale. A failed load never replaces a good certificate. Concurrent calls share one load.
+     * Resolves true when the certificate changed.
+     */
+    reloadAdminCert(reason: AdminCertReloadReason = 'interval'): Promise<boolean> {
+        // A rejected call must not hit Secrets Manager on every request while the server stays unhappy
+        if (!this.adminCertReload && reason === 'rejected') {
+            if (Date.now() - this.adminCertRejectedAt < ADMIN_CERT_REJECTED_COOLDOWN) return Promise.resolve(false);
+            this.adminCertRejectedAt = Date.now();
+        }
+        this.adminCertReload ??= this.applyAdminCert(reason).finally(() => {
+            this.adminCertReload = undefined;
+        });
+        return this.adminCertReload;
+    }
+    private async applyAdminCert(reason: AdminCertReloadReason): Promise<boolean> {
+        let admin: AdminCert | undefined;
+        try {
+            admin = await loadAdminCertFromSecret();
+        } catch (err) {
+            console.error(`Error: AdminCertReloadFailed: ${reason}: keeping the current certificate: ${err instanceof Error ? err.message : String(err)}`);
+            return false;
+        }
+        if (!admin) return false;
+        // Every replica writes the same value, so racing writers converge
+        const stored = await this.models.Server.from(this.server.id);
+        if (stored.auth.cert !== admin.cert || stored.auth.key !== admin.key) {
+            await this.models.Server.commit(stored.id, {
+                auth: { ...stored.auth, cert: admin.cert, key: admin.key },
+                updated: sql`Now()`,
+            });
+        }
+        if (this.server.auth.cert === admin.cert && this.server.auth.key === admin.key) return false;
+        this.server = { ...this.server, auth: { ...this.server.auth, cert: admin.cert, key: admin.key } };
+        console.log(`ok - TAK Server admin certificate changed (${reason}) - reloaded from Secrets Manager`);
+        try {
+            await this.onAdminCertChanged(reason);
+        } catch (err) {
+            console.error(`Error: AdminCertApplyFailed: ${err instanceof Error ? err.message : String(err)}`);
+        }
+        return true;
+    }
+    /** Hook for the services that hold connections made with the admin certificate */
+    protected async onAdminCertChanged(reason: AdminCertReloadReason): Promise<void> {
+        void reason;
+    }
+    /**
+     * Check the secret every `intervalMs` (default CLOUDTAK_Server_auth_p12_refresh_interval, 3600s; 0 disables).
+     * Does nothing unless the admin certificate comes from a Secrets Manager P12
+     */
+    watchAdminCert(intervalMs: number = refreshIntervalMs()): void {
+        this.stopWatchingAdminCert();
+        if (!adminCertFromSecret() || intervalMs <= 0) return;
+        this.adminCertTimer = setInterval(() => {
+            this.reloadAdminCert('interval').catch((err) => {
+                console.error(`Error: AdminCertReloadFailed: interval: ${err instanceof Error ? err.message : String(err)}`);
+            });
+        }, intervalMs);
+        this.adminCertTimer.unref();
+    }
+    stopWatchingAdminCert(): void {
+        if (this.adminCertTimer) clearInterval(this.adminCertTimer);
+        this.adminCertTimer = undefined;
+    }
     serverCert(): {
         cert: string;
         key: string;
@@ -241,25 +316,11 @@ export default class Config {
                     cert: process.env.CLOUDTAK_Server_auth_cert,
                     key: process.env.CLOUDTAK_Server_auth_key,
                 };
-            } else if (process.env.CLOUDTAK_Server_auth_p12_secret_arn && process.env.CLOUDTAK_Server_auth_password) {
+            } else if (adminCertFromSecret()) {
                 try {
-                    const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_REGION });
-                    const secretValue = await secrets.send(new SecretsManager.GetSecretValueCommand({
-                        SecretId: process.env.CLOUDTAK_Server_auth_p12_secret_arn,
-                    }));
-                    if (secretValue.SecretBinary) {
-                        const pem = (await import('pem')).default;
-                        const p12Buffer = Buffer.from(secretValue.SecretBinary);
-                        const certs = await new Promise<{ pemCertificate: string; pemKey: string }>((resolve, reject) => {
-                            pem.readPkcs12(p12Buffer, { p12Password: process.env.CLOUDTAK_Server_auth_password }, (e: Error | null, result: { cert: string; key: string }) => {
-                                if (e) {
-                                    reject(e);
-                                } else {
-                                    resolve({ pemCertificate: result.cert, pemKey: result.key });
-                                }
-                            });
-                        });
-                        serverData.auth = { cert: certs.pemCertificate, key: certs.pemKey };
+                    const admin = await loadAdminCertFromSecret();
+                    if (admin) {
+                        serverData.auth = { cert: admin.cert, key: admin.key };
                         console.error('ok - Extracted P12 certificate from Secrets Manager');
                     }
                 } catch (e) {
@@ -282,25 +343,11 @@ export default class Config {
                 cert: process.env.CLOUDTAK_Server_auth_cert,
                 key: process.env.CLOUDTAK_Server_auth_key,
             };
-        } else if (process.env.CLOUDTAK_Server_auth_p12_secret_arn && process.env.CLOUDTAK_Server_auth_password) {
+        } else if (adminCertFromSecret()) {
             try {
-                const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_REGION });
-                const secretValue = await secrets.send(new SecretsManager.GetSecretValueCommand({
-                    SecretId: process.env.CLOUDTAK_Server_auth_p12_secret_arn,
-                }));
-                if (secretValue.SecretBinary) {
-                    const pem = (await import('pem')).default;
-                    const p12Buffer = Buffer.from(secretValue.SecretBinary);
-                    const certs = await new Promise<{ pemCertificate: string; pemKey: string }>((resolve, reject) => {
-                        pem.readPkcs12(p12Buffer, { p12Password: process.env.CLOUDTAK_Server_auth_password }, (e: Error | null, result: { cert: string; key: string }) => {
-                            if (e) {
-                                reject(e);
-                            } else {
-                                resolve({ pemCertificate: result.cert, pemKey: result.key });
-                            }
-                        });
-                    });
-                    serverUpdates.auth = { ...(server.auth || {}), cert: certs.pemCertificate, key: certs.pemKey };
+                const admin = await loadAdminCertFromSecret();
+                if (admin) {
+                    serverUpdates.auth = { ...(server.auth || {}), cert: admin.cert, key: admin.key };
                 }
             } catch (e) {
                 console.error(`Error loading P12 for server update: ${e instanceof Error ? e.message : String(e)}`);
