@@ -962,17 +962,77 @@ export default class AtlasDatabase {
     }
 
     /**
+     * The profile-saved plain copy of a feature, which its Mission copy replaces
+     */
+    private plainCopy(uid: string): COT | undefined {
+        const cot = this.cots.get(uid);
+        if (!cot || !cot.savable || this.pendingDelete.has(uid)) return;
+        return cot;
+    }
+
+    /**
+     * Move a feature that was filed as a plain CoT into the Mission it belongs to
+     *
+     * @returns true if a plain copy was moved
+     */
+    private async adoptMissionFeature(guid: string, uid: string): Promise<boolean> {
+        const cot = this.plainCopy(uid);
+        if (!cot) return false;
+
+        const sub = await Subscription.from(guid, {
+            subscribed: true
+        });
+        if (!sub) return false;
+
+        this.subscriptionPending.delete(uid);
+
+        await sub.feature.update(this.atlas, cot, {
+            skipNetwork: true
+        });
+
+        await this.remove(uid);
+
+        return true;
+    }
+
+    /**
+     * Drop the plain copies of every feature held in the given Mission's store
+     */
+    async adoptMissionFeatures(guid: string): Promise<void> {
+        if (this.hydrating) await this.hydrating;
+
+        const uids = await db.subscription_feature
+            .where('mission')
+            .equals(guid)
+            .primaryKeys();
+
+        for (const uid of uids) {
+            if (this.plainCopy(uid)) await this.remove(uid);
+        }
+    }
+
+    /**
      * Called everytime a Mission Task message is received
      *
      * @param task - GeoJSON Feature representing the Mission Task
      */
     async subChange(task: Feature): Promise<void> {
         if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
+            const guid = task.properties.mission.guid;
             let updateGuid;
             let doMissionRefresh = false;
 
+            // Registered before any await so a CoT racing this notice is filed in its Mission
+            if (guid) {
+                for (const change of task.properties.mission.missionChanges) {
+                    if (change.type === 'ADD_CONTENT' && change.contentUid) {
+                        this.subscriptionPending.set(change.contentUid, guid);
+                    }
+                }
+            }
+
             for (const change of task.properties.mission.missionChanges) {
-                if (!task.properties.mission.guid) {
+                if (!guid) {
                     console.error(`Cannot add ${change.contentUid} to ${JSON.stringify(task.properties.mission)} as no guid was included`);
                     continue;
                 }
@@ -980,7 +1040,7 @@ export default class AtlasDatabase {
                 await db.subscription_changes.put({
                     serverTime: new Date().toISOString(),
                     ...change,
-                    mission: task.properties.mission.guid,
+                    mission: guid,
                 } as DBSubscriptionChanges);
 
                 if (change.contentResource) {
@@ -988,13 +1048,17 @@ export default class AtlasDatabase {
                 }
 
                 if (change.type === 'ADD_CONTENT') {
-                    if (change.contentUid) this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
+                    if (change.contentUid && await this.adoptMissionFeature(guid, change.contentUid)) {
+                        updateGuid = guid;
+                    }
                 } else if (change.type === 'REMOVE_CONTENT') {
-                    const sub = await Subscription.from(task.properties.mission.guid, {
+                    if (change.contentUid) this.subscriptionPending.delete(change.contentUid);
+
+                    const sub = await Subscription.from(guid, {
                         subscribed: true
                     });
                     if (!sub) {
-                        console.error(`Cannot remove ${change.contentUid} from ${task.properties.mission.guid} as it's not in memory`);
+                        console.error(`Cannot remove ${change.contentUid} from ${guid} as it's not in memory`);
                         continue;
                     }
 
@@ -1005,12 +1069,16 @@ export default class AtlasDatabase {
                         skipNetwork: true
                     });
 
-                    updateGuid = task.properties.mission.guid;
+                    if (this.plainCopy(change.contentUid)) {
+                        await this.remove(change.contentUid);
+                    }
+
+                    updateGuid = guid;
                 }
             }
 
-            if (doMissionRefresh && task.properties.mission.guid) {
-                const sub = await Subscription.from(task.properties.mission.guid, {
+            if (doMissionRefresh && guid) {
+                const sub = await Subscription.from(guid, {
                     subscribed: true
                 });
 
@@ -1115,6 +1183,11 @@ export default class AtlasDatabase {
         let exists = await this.get(feat.properties.id, {
             mission: opts.skipMissionLookup !== true
         });
+
+        // A plain copy on its way off the map no longer answers for its Mission copy
+        if (exists && opts.skipMissionLookup !== true && this.pendingDelete.has(exists.id)) {
+            exists = await this.missionCopy(exists.id) || exists;
+        }
 
         if (opts.authored && !exists) {
             feat.properties.creator = await this.atlas.profile.creator();
@@ -1481,8 +1554,17 @@ export default class AtlasDatabase {
             return cot;
         }
 
+        if (opts.mission) return await this.missionCopy(id);
+
+        return;
+    }
+
+    /**
+     * Returns the CoT from the Mission Stores given the ID
+     */
+    private async missionCopy(id: string): Promise<COT | undefined> {
         // A Mission edit drawn on the map whose write has not landed yet
-        const writing = opts.mission ? this.missionWrites.get(id) : undefined;
+        const writing = this.missionWrites.get(id);
         if (writing) {
             return await COT.load(structuredClone(writing.feature), {
                 mode: OriginMode.MISSION,
@@ -1490,31 +1572,27 @@ export default class AtlasDatabase {
             });
         }
 
-        if (opts.mission) {
-            // subscription_feature is keyed on the feature id, so resolve the
-            // owning mission with two indexed gets rather than iterating every
-            // subscribed mission's store
-            const feat = await db.subscription_feature.get(id);
+        // subscription_feature is keyed on the feature id, so resolve the
+        // owning mission with two indexed gets rather than iterating every
+        // subscribed mission's store
+        const feat = await db.subscription_feature.get(id);
 
-            if (!feat || feat.deleted) return;
+        if (!feat || feat.deleted) return;
 
-            const sub = await db.subscription.get(feat.mission);
+        const sub = await db.subscription.get(feat.mission);
 
-            if (!sub || !sub.subscribed) return;
+        if (!sub || !sub.subscribed) return;
 
-            return await COT.load({
-                id: feat.id,
-                type: 'Feature',
-                path: feat.path,
-                properties: feat.properties,
-                geometry: feat.geometry,
-            }, {
-                mode: OriginMode.MISSION,
-                mode_id: feat.mission
-            });
-        }
-
-        return;
+        return await COT.load({
+            id: feat.id,
+            type: 'Feature',
+            path: feat.path,
+            properties: feat.properties,
+            geometry: feat.geometry,
+        }, {
+            mode: OriginMode.MISSION,
+            mode_id: feat.mission
+        });
     }
 
     /**

@@ -4,6 +4,7 @@
             v-if='compact'
             :title='selected ? `Icon: ${selectedDisplayName}` : "Select Icon"'
             :disabled='disabled'
+            :bordered='true'
             @click='modal = true'
         >
             <img
@@ -14,6 +15,11 @@
             <IconPhotoSearch
                 v-else
                 :size='24'
+                stroke='1'
+            />
+            <IconChevronDown
+                class='ms-1 text-secondary'
+                :size='16'
                 stroke='1'
             />
         </TablerIconButton>
@@ -215,6 +221,7 @@ import {
     IconInfoSquare,
     IconTrash,
     IconPhotoSearch,
+    IconChevronDown,
     IconSearch
 } from '@tabler/icons-vue';
 import {
