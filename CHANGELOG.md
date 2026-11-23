@@ -24,6 +24,7 @@
 
 > [!WARNING]
 > This release requires ETLs to be on ETL-Base v11 or higher
+> Minio Docker must be migrated to garage before upgrading to v14
 
 - :rocket: **Breaking** Remove the `GET /api/search/reverse/:long/:lat` endpoint - use the per-type `GET /api/search/reverse/:long/:lat/<sun|magnetic|weather|reverse|elevation>` endpoints
 - :rocket: **Breaking** Remove the `GET /api/fonts/:fontstack/:start-:end.pbf` glyph endpoint and the bundled API glyph files - the web app draws labels from bundled font files via the style `font-faces` property and no longer caches glyphs in the service worker
