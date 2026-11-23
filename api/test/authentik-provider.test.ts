@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
     asTakGroup,
     asTakRole,
@@ -8,6 +12,8 @@ import {
     SCOPE_ALL,
     machineUsernameFor,
     machineUsernameFromCertSubject,
+    machineUsernameForConnection,
+    caChain,
     isMachineUser,
     channelGroupName,
     isDuplicateUsernameError,
@@ -244,4 +250,55 @@ test('isDuplicateUsernameError: false for other 400s and non-400 statuses', () =
     assert.equal(isDuplicateUsernameError(500, 'must be unique'), false);
     assert.equal(isDuplicateUsernameError(403, 'forbidden'), false);
     assert.equal(isDuplicateUsernameError(400, ''), false);
+});
+
+function selfSignedCert(cn: string): string {
+    const dir = mkdtempSync(join(tmpdir(), 'machine-user-'));
+    try {
+        execFileSync('openssl', [
+            'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
+            '-subj', `/CN=${cn}`, '-keyout', join(dir, 'k.pem'), '-out', join(dir, 'c.pem'),
+        ], { stdio: 'ignore' });
+        return readFileSync(join(dir, 'c.pem'), 'utf8');
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+}
+/**
+ * connection.username is the login of whoever created the connection, so the
+ * renew routes must resolve the machine user from the stored cert instead.
+ */
+test('machineUsernameForConnection: uses the certificate CN, not the creator login', () => {
+    assert.equal(machineUsernameForConnection({
+        name: 'Renamed Later',
+        agency: 1,
+        auth: { cert: selfSignedCert('etl-agency1-original-name') },
+    }), 'etl-agency1-original-name');
+});
+test('machineUsernameForConnection: falls back to the name convention when the cert is unparseable', () => {
+    assert.equal(machineUsernameForConnection({
+        name: 'My Layer',
+        agency: 2,
+        auth: { cert: 'not a certificate' },
+    }), 'etl-agency2-my-layer');
+});
+test('machineUsernameForConnection: refuses a certificate that belongs to a human account', () => {
+    assert.equal(machineUsernameForConnection({
+        name: 'My Layer',
+        auth: { cert: selfSignedCert('person@example.com') },
+    }), undefined);
+});
+
+test('caChain: collects every ca<N> field in numeric order, not just ca0 and ca1', () => {
+    assert.deepEqual(caChain({
+        signedCert: 'CERT',
+        ca10: 'TEN',
+        ca2: 'TWO',
+        ca0: 'ZERO',
+        ca1: 'ONE',
+    }), ['ZERO', 'ONE', 'TWO', 'TEN']);
+});
+test('caChain: ignores other fields and empty values', () => {
+    assert.deepEqual(caChain({ signedCert: 'CERT', ca0: 'ZERO', ca1: '', cadence: 'x', ca: 'y', ca2: 3 }), ['ZERO']);
+    assert.deepEqual(caChain({ signedCert: 'CERT' }), []);
 });

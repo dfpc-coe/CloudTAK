@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert';
+import Sinon from 'sinon';
 import Flight from './flight.js';
+import TAKServerControl from '../common/control/takserver.js';
 
 const flight = new Flight();
 
@@ -135,4 +137,69 @@ test('GET: api/login - certificate revoked on the TAK Server', async () => {
     });
 });
 
+/**
+ * Under TLS 1.3 TAK Server answers a client certificate it does not trust by closing the
+ * socket (UND_ERR_SOCKET: other side closed). That used to escape Certificate.probe() as an
+ * unclassified error: password login answered 400 and the OIDC callback kept the dead cert.
+ */
+function closeSocketOnVersion(): void {
+    flight.tak.mockMarti.unshift(async (request) => {
+        if (request.method === 'GET' && request.url === '/Marti/api/version') {
+            request.socket.destroy();
+            return true;
+        }
+        return false;
+    });
+}
+test('POST: api/login - certificate silently rejected by the TAK Server is regenerated', async () => {
+    closeSocketOnVersion();
+    try {
+        const res = await flight.fetch('/api/login', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: { username: 'admin@example.com', password: 'password123' },
+        }, false);
+        assert.ok(res.body.token, JSON.stringify(res.body));
+    } finally {
+        flight.tak.mockMarti.shift();
+    }
+});
+test('GET: api/login - socket closed while the enrollment port answers means the certificate is rejected', async () => {
+    const login = await flight.fetch('/api/login', {
+        method: 'POST',
+        auth: { bearer: flight.token.admin },
+        body: { username: 'admin@example.com', password: 'password123' },
+    }, true);
+    closeSocketOnVersion();
+    try {
+        const res = await flight.fetch('/api/login', {
+            method: 'GET',
+            auth: { bearer: login.body.token },
+        }, false);
+        assert.equal(res.status, 401);
+        assert.equal(res.body.message, 'Certificate is expired or not trusted by the TAK Server');
+    } finally {
+        flight.tak.mockMarti.shift();
+    }
+});
+test('GET: api/login - socket closed while the enrollment port is down is not treated as a rejection', async () => {
+    const login = await flight.fetch('/api/login', {
+        method: 'POST',
+        auth: { bearer: flight.token.admin },
+        body: { username: 'admin@example.com', password: 'password123' },
+    }, true);
+    closeSocketOnVersion();
+    const reachable = Sinon.stub(TAKServerControl.prototype, 'enrollmentReachable').resolves(false);
+    try {
+        const res = await flight.fetch('/api/login', {
+            method: 'GET',
+            auth: { bearer: login.body.token },
+        }, false);
+        assert.notEqual(res.status, 401);
+        assert.equal(reachable.called, true);
+    } finally {
+        reachable.restore();
+        flight.tak.mockMarti.shift();
+    }
+});
 flight.landing();

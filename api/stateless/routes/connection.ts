@@ -15,6 +15,7 @@ import * as Default from '../lib/limits.js';
 import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
 import { needsCertRenewal } from '../lib/cert-health.js';
 import AuthentikProvider, { machineUsernameFor, machineUsernameFromCertSubject } from '../lib/authentik-provider.js';
+import { certRenewalConfigured, renewConnectionCert } from '../lib/connection-cert.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { stringify } from '../../common/stringify.js';
 
@@ -570,6 +571,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         params: Type.Object({
             connectionid: Type.Integer({ minimum: 1 }),
         }),
+        query: Type.Object({
+            force: Type.Optional(Type.Boolean({
+                description: 'Renew even if the certificate is not close to expiry, e.g. after TAK Server rejected it',
+            })),
+        }),
         res: Type.Object({
             renewed: Type.Boolean(),
             message: Type.String(),
@@ -580,37 +586,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }],
             }, req.params.connectionid);
 
-            let authentik: InstanceType<typeof AuthentikProvider> | null = null;
-            try {
-                if (process.env.AUTHENTIK_URL && process.env.AUTHENTIK_API_TOKEN_SECRET_ARN) {
-                    authentik = await AuthentikProvider.init(config);
-                }
-            } catch { /* Authentik not configured */ }
-
-            if (!authentik) {
-                return res.json({ renewed: false, message: 'Certificate renewal only supported with Authentik provider' });
-            }
-
-            if (!needsCertRenewal(connection.auth.cert)) {
-                return res.json({ renewed: false, message: 'Certificate does not need renewal' });
-            }
-
-            // Look up the Authentik user by connection username to get their numeric ID
-            const machineUser = await authentik.fetchMachineUser(0, connection.username || '');
-            const renewed = await authentik.renewConnectionCertificate(machineUser.id, String(config.server.api));
-
-            await config.models.Connection.commit(req.params.connectionid, {
-                auth: { ...connection.auth, cert: renewed.cert, key: renewed.key },
-            });
-
+            const result = await renewConnectionCert(config, connection, { force: req.query.force });
             // Rebuild the live connection so it picks up the new certificate.
             // Upstream moved the connection pool onto ConfigStateful; the hub is
             // how the stateless side reaches it.
-            if (connection.enabled) {
+            if (result.renewed && connection.enabled) {
                 await config.hub.connectionSync(connection.id, { force: true });
             }
-
-            res.json({ renewed: true, message: `Certificate renewed for connection ${connection.id}` });
+            return res.json(result);
         } catch (err) {
             Err.respond(err, res);
         }
@@ -642,32 +625,17 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const connection = await config.models.Connection.from(layer.connection);
 
-            let authentik: InstanceType<typeof AuthentikProvider> | null = null;
-            try {
-                if (process.env.AUTHENTIK_URL && process.env.AUTHENTIK_API_TOKEN_SECRET_ARN) {
-                    authentik = await AuthentikProvider.init(config);
-                }
-            } catch { /* Authentik not configured */ }
-
-            if (!authentik || !needsCertRenewal(connection.auth.cert)) {
+            if (!certRenewalConfigured() || !needsCertRenewal(connection.auth.cert)) {
                 return res.json({ healthy: true, cert_renewed: false });
             }
-
             try {
-                const machineUser2 = await authentik.fetchMachineUser(0, connection.username || '');
-                const renewed = await authentik.renewConnectionCertificate(machineUser2.id, String(config.server.api));
-
-                await config.models.Connection.commit(connection.id, {
-                    auth: { ...connection.auth, cert: renewed.cert, key: renewed.key },
-                });
-
+                await renewConnectionCert(config, connection);
                 // Rebuild the live connection so it picks up the new certificate.
                 // Upstream moved the connection pool onto ConfigStateful; the hub
                 // is how the stateless side reaches it.
                 if (connection.enabled) {
                     await config.hub.connectionSync(connection.id, { force: true });
                 }
-
                 console.log(`Certificate renewed for connection ${connection.id} via layer ${layer.id} health check`);
                 return res.json({ healthy: true, cert_renewed: true, message: 'Certificate renewed' });
             } catch (err) {

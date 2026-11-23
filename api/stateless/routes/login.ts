@@ -10,7 +10,7 @@ import { Type } from '@sinclair/typebox';
 import Provider from '../lib/provider.js';
 import ProfileControl from '../lib/control/profile.js';
 import { X509Certificate, createHash, timingSafeEqual } from 'crypto';
-import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
+import TAKServerControl from '../../common/control/takserver.js';
 import { discovery, authorizationUrl, exchangeCode, userinfo } from '../lib/oidc.js';
 import type { OIDCConfig } from '../lib/oidc.js';
 import { sql } from 'drizzle-orm';
@@ -424,11 +424,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
                     if (!needsCert && profile.auth?.cert && profile.auth?.key) {
                         try {
-                            const cert_api = await TAKAPI.init(
-                                new URL(String(config.server.api)),
-                                new APIAuthCertificate(profile.auth.cert, profile.auth.key),
-                            );
-                            const probe = await cert_api.Certificate.probe();
+                            const probe = await new TAKServerControl(config).probeCertificate({
+                                cert: profile.auth.cert,
+                                key: profile.auth.key,
+                            });
 
                             if (!probe.accepted) {
                                 needsCert = true;

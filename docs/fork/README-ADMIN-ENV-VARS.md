@@ -33,7 +33,14 @@ CLOUDTAK_Server_api="https://tak.example.com:8443"
 CLOUDTAK_Server_webtak="https://tak.example.com:8444"
 CLOUDTAK_Server_auth_p12_secret_arn="arn:aws:secretsmanager:..."
 CLOUDTAK_Server_auth_password="password"
+CLOUDTAK_Server_auth_p12_refresh_interval=3600
 ```
+
+When the admin certificate comes from `CLOUDTAK_Server_auth_p12_secret_arn`, the API and the hub re-read the secret
+every `CLOUDTAK_Server_auth_p12_refresh_interval` seconds (default 3600, `0` turns the timer off). A changed
+certificate is written to the `server` table, applied in memory and the hub reconnects its admin connection. A
+call made with the admin certificate that fails with a closed socket or TLS alert also triggers one reload (at most
+once a minute) and is retried once. A failed load logs `AdminCertReloadFailed` and keeps the certificate in use.
 ## SAR travel-time relay (`SAR_SERVICE_URL`, `SAR_SERVICE_KEY`, `SAR_RATE_LIMIT`)
 These variables configure the `/api/sar` relay for the `cloudtak-plugin-sar` plugin. They are plain
 environment variables, not `CLOUDTAK_Server_*` settings.

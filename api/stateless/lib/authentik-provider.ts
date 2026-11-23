@@ -2,7 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Config from '../../common/config.js';
 import { Static } from '@sinclair/typebox';
 import { Agency, MachineUser, Channel, ChannelAccessEnum } from './interface-user.js';
-import crypto from 'crypto';
+import crypto, { X509Certificate } from 'crypto';
 import { sql } from 'drizzle-orm';
 import { TAKAPI, APIAuthPassword } from '@tak-ps/node-tak';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
@@ -139,6 +139,39 @@ export function machineUsernameFromCertSubject(subject: string | undefined | nul
     return cn || undefined;
 }
 
+/**
+ * The CA chain of a TAK Server signClient response, in order. TAK Server returns one `ca<N>`
+ * field per certificate; with a Root, Intermediate and Enrollment CA that is more than two.
+ */
+export function caChain(signed: Record<string, unknown>): string[] {
+    return Object.keys(signed)
+        .map(key => /^ca(\d+)$/.exec(key))
+        .filter((match): match is RegExpExecArray => match !== null && typeof signed[match[0]] === 'string' && !!signed[match[0]])
+        .sort((a, b) => Number(a[1]) - Number(b[1]))
+        .map(match => String(signed[match[0]]));
+}
+/**
+ * The Authentik machine username that owns a connection. `connection.username`
+ * is the login of whoever created the connection (a human), so it must never be
+ * used to find the machine user. The stored client certificate's CN is
+ * authoritative; the connection name + agency convention is the fallback for
+ * certs that cannot be parsed. Returns undefined when the result does not carry
+ * the `etl-` prefix, so a caller can never act on a human account.
+ */
+export function machineUsernameForConnection(connection: {
+    name: string;
+    agency?: number | null;
+    auth?: { cert?: string | null } | null;
+}): string | undefined {
+    let name: string | undefined;
+    if (connection.auth?.cert) {
+        try {
+            name = machineUsernameFromCertSubject(new X509Certificate(connection.auth.cert).subject);
+        } catch { /* fall through to name-based derivation */ }
+    }
+    if (!name) name = machineUsernameFor(connection.name, connection.agency);
+    return name.startsWith(MACHINE_USER_PREFIX) ? name : undefined;
+}
 /**
  * Is this Authentik user an ETL machine user we are allowed to delete? We can
  * not rely on a `machineUser` attribute (the service_account create endpoint
@@ -926,7 +959,7 @@ export default class AuthentikProvider {
             throw new Err(500, null, `[M2M] TAK Server signClient/v2 rejected bearer token (${signResponse.status}): ${signBody}`);
         }
 
-        let signed: { signedCert: string; ca0?: string; ca1?: string };
+        let signed: { signedCert: string; [ca: `ca${number}`]: string | undefined };
         try {
             signed = JSON.parse(signBody);
         } catch {
@@ -937,9 +970,7 @@ export default class AuthentikProvider {
         if (!signed.signedCert.endsWith('\n')) cert += '\n';
         cert += '-----END CERTIFICATE-----';
 
-        const ca: string[] = [];
-        if (signed.ca0) ca.push(signed.ca0);
-        if (signed.ca1) ca.push(signed.ca1);
+        const ca = caChain(signed);
 
         console.log(`[M2M] Cert enrollment succeeded for ${username} via bearer token exchange`);
 
@@ -1024,7 +1055,7 @@ export default class AuthentikProvider {
     async renewConnectionCertificate(
         machineUserId: number,
         takServerUrl: string,
-    ): Promise<{ cert: string; key: string }> {
+    ): Promise<{ cert: string; key: string; ca: string[] }> {
         const creds = await this.auth();
         const tempPassword = crypto.randomBytes(32).toString('base64url');
 
@@ -1056,6 +1087,6 @@ export default class AuthentikProvider {
         const takApi = await TAKAPI.init(new URL(takServerUrl), takAuth);
         const enrollment = await takApi.Credentials.generate();
 
-        return { cert: enrollment.cert, key: enrollment.key };
+        return { cert: enrollment.cert, key: enrollment.key, ca: enrollment.ca };
     }
 }

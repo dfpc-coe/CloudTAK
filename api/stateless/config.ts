@@ -1,5 +1,5 @@
 import Config from '../common/config.js';
-import type { ConfigArgs, ConfigInit } from '../common/config.js';
+import type { AdminCertReloadReason, ConfigArgs, ConfigInit } from '../common/config.js';
 import RemoteHub from './lib/hub/remote.js';
 import { UserManager } from './lib/interface-user.js';
 import { WeatherManager } from './lib/interface-weather.js';
@@ -32,6 +32,13 @@ export default class ConfigStateless extends Config {
         this.weather = new WeatherManager();
     }
 
+    /**
+     * The stateful service polls the secret itself, so only a rejection seen here (which means the
+     * admin connection is probably broken too) asks it to reconnect right away
+     */
+    protected async onAdminCertChanged(reason: AdminCertReloadReason): Promise<void> {
+        if (reason === 'rejected') await this.hub.serverRefresh();
+    }
     static async env(args: ConfigArgs, opts: {
         hub?: HubClient;
     } = {}): Promise<ConfigStateless> {

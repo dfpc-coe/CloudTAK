@@ -126,6 +126,10 @@ export default async function server(configs: ServerConfigs): Promise<ServerMana
         if (!stateful.noevents) await stateful.events.init(stateful.pg);
     }
 
+    // The admin certificate rotates; pick up a new one without a restart
+    stateful?.watchAdminCert();
+    stateless?.watchAdminCert();
+
     let app: express.Application;
     if (!stateless) {
         app = express();
@@ -172,6 +176,8 @@ export default async function server(configs: ServerConfigs): Promise<ServerMana
         }
 
         srv.on('close', async () => {
+            stateful?.stopWatchingAdminCert();
+            stateless?.stopWatchingAdminCert();
             if (rpc) {
                 rpc.close();
             }
