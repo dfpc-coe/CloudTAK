@@ -20,6 +20,12 @@
 
 ### Pending Release
 
+### v14.0.1 - 2026-11-23
+
+- :bug: Fix issue where Data Sync add content would race the content itself, resulting in data sync content potentially being added to the personal feature store - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1813 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1882
+- :rocket: UI Improvements for point dropper - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2061
+- :rocket: Allow PATCHing admin incoming/outgoing config - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2042
+
 ### v14.0.0 - 2026-11-22
 
 > [!WARNING]
