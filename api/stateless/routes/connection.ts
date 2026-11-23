@@ -14,7 +14,7 @@ import Schema from '@openaddresses/batch-schema';
 import * as Default from '../lib/limits.js';
 import { generateClientP12, generateTrustP12 } from '../lib/certificate.js';
 import { needsCertRenewal } from '../lib/cert-health.js';
-import AuthentikProvider, { machineUsernameFor, machineUsernameFromCertSubject } from '../lib/authentik-provider.js';
+import AuthentikProvider, { machineUsernameFor, machineUsernameFromCertSubject, machineUsernameForConnection } from '../lib/authentik-provider.js';
 import { TAKAPI, APIAuthCertificate } from '@tak-ps/node-tak';
 import { stringify } from '../../common/stringify.js';
 
@@ -595,12 +595,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 return res.json({ renewed: false, message: 'Certificate does not need renewal' });
             }
 
-            // Look up the Authentik user by connection username to get their numeric ID
-            const machineUser = await authentik.fetchMachineUser(0, connection.username || '');
+            // connection.username is the creator's login, not the machine user
+            const machineName = machineUsernameForConnection(connection);
+            if (!machineName) throw new Err(400, null, 'Connection is not managed by a Machine User');
+            const machineUser = await authentik.fetchMachineUser(0, machineName);
             const renewed = await authentik.renewConnectionCertificate(machineUser.id, String(config.server.api));
 
             await config.models.Connection.commit(req.params.connectionid, {
-                auth: { ...connection.auth, cert: renewed.cert, key: renewed.key },
+                auth: { ...connection.auth, cert: renewed.cert, key: renewed.key, ca: renewed.ca.length ? renewed.ca : connection.auth.ca },
             });
 
             // Rebuild the live connection so it picks up the new certificate.
@@ -654,11 +656,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             }
 
             try {
-                const machineUser2 = await authentik.fetchMachineUser(0, connection.username || '');
+                // connection.username is the creator's login, not the machine user
+                const machineName = machineUsernameForConnection(connection);
+                if (!machineName) throw new Err(400, null, 'Connection is not managed by a Machine User');
+                const machineUser2 = await authentik.fetchMachineUser(0, machineName);
                 const renewed = await authentik.renewConnectionCertificate(machineUser2.id, String(config.server.api));
 
                 await config.models.Connection.commit(connection.id, {
-                    auth: { ...connection.auth, cert: renewed.cert, key: renewed.key },
+                    auth: { ...connection.auth, cert: renewed.cert, key: renewed.key, ca: renewed.ca.length ? renewed.ca : connection.auth.ca },
                 });
 
                 // Rebuild the live connection so it picks up the new certificate.
