@@ -21105,7 +21105,10 @@ export interface paths {
         /** Check and renew connection certificate if needed */
         post: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Renew even if the certificate is not close to expiry, e.g. after TAK Server rejected it */
+                    force?: boolean;
+                };
                 header?: never;
                 path: {
                     /** @description No Description */
