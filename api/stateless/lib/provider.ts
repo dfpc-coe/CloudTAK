@@ -124,12 +124,11 @@ export default class AuthProvider {
             }
         }
 
-        const cert_api = await new TAKServerControl(this.config).withAuth(auth);
 
         // The TAK Server X509 filter runs on every request so a GET of the anonymous, DB-free
         // version endpoint is the cheapest authoritative check that the certificate is still
         // accepted (revocation, trust) - non-authentication errors are rethrown by probe()
-        const probe = await cert_api.Certificate.probe();
+        const probe = await new TAKServerControl(this.config).probeCertificate(auth);
 
         if (!probe.accepted) {
             console.error(`Error: CertificateRejected: ${profile.username}: ${probe.reason}: ${probe.message}`);
