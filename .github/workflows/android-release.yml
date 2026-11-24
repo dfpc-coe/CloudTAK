@@ -1,0 +1,207 @@
+name: Android release
+
+# Builds the Android app, signs it with the release key and publishes the APK as the
+# `android-latest` GitHub release. Only the latest build is kept: every run deletes the previous
+# release and its tag, then creates them again. Run it by hand from the Actions tab. It needs your
+# approval (the android-release environment) and only runs from main.
+#
+# The download link does not change:
+# https://github.com/TAK-NZ/CloudTAK/releases/download/android-latest/TAK-NZ-CloudTAK.apk
+#
+# The tag must not start with "v": release.yml turns every v* tag into a release that triggers the
+# production deployment.
+#
+# Secrets (repository or the android-release environment): ANDROID_KEYSTORE_BASE64 (the keystore
+# file, base64), ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD. For push,
+# later: GOOGLE_SERVICES_JSON_B64 (the Firebase google-services.json, base64).
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish as the android-latest release (untick to build and sign only)'
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: android-latest
+  APK_NAME: TAK-NZ-CloudTAK.apk
+
+jobs:
+  android:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: android-release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check the secrets are set
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          missing=0
+          for name in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then echo "::error::Secret $name is not set"; missing=1; fi
+          done
+          exit $missing
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+          cache-dependency-path: |
+            app/android/**/*.gradle*
+            app/android/gradle/wrapper/gradle-wrapper.properties
+
+      # The web plugins are baked into the app's bundled web files, the same way the Docker
+      # image does it (api/bin/plugin.ts), so the phone app has the plugins production has.
+      - name: Install the web plugins
+        run: |
+          PLUGINS=$(jq -r '.context.prod.cloudtak.webPlugins // ""' cdk/cdk.json)
+          echo "Plugins: $PLUGINS"
+          cd api
+          WEB_PLUGINS="$PLUGINS" node bin/plugin.ts
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Build the web app
+        working-directory: app
+        run: npm run build
+
+      - name: Sync Capacitor into the Android project
+        working-directory: app
+        run: npx cap sync android
+
+      # google-services.json is the Firebase push config. It holds credentials, so it is not in git.
+      # build.gradle only applies the Google Services plugin when the file exists. Without the
+      # secret the app is built without it and push stays off.
+      - name: Firebase config for push
+        env:
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > app/android/app/google-services.json
+            echo "Using the Firebase config from the secret."
+          else
+            echo "No Firebase config set: building without it, push stays off."
+          fi
+
+      - name: Work out the version
+        id: version
+        run: |
+          version=$(sed -n 's/.*versionName "\(.*\)".*/\1/p' app/android/app/build.gradle)
+          code=$(sed -n 's/.*versionCode \([0-9]*\).*/\1/p' app/android/app/build.gradle)
+          if [ -z "$version" ] || [ -z "$code" ]; then echo "::error::Could not read versionName and versionCode from app/android/app/build.gradle"; exit 1; fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Version $version (version code $code), run ${{ github.run_number }}"
+
+      # compileSdk is 36. The runner image has it, this makes sure of it
+      - name: Android SDK
+        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Build the release APK (unsigned)
+        working-directory: app/android
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # Signed outside Gradle so build.gradle, which upstream also changes, stays untouched. The
+      # APK is aligned first, as apksigner's v2 signature covers the whole file.
+      - name: Align and sign the APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          tools="$ANDROID_HOME/build-tools/36.0.0"
+          keystore="$RUNNER_TEMP/release.jks"
+          unsigned=$(ls app/android/app/build/outputs/apk/release/*.apk | head -1)
+          echo "Unsigned APK: $unsigned"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 --decode > "$keystore"
+          "$tools/zipalign" -f 4 "$unsigned" "$RUNNER_TEMP/aligned.apk"
+          "$tools/zipalign" -c 4 "$RUNNER_TEMP/aligned.apk"
+          KS_PASS="$ANDROID_KEYSTORE_PASSWORD" KEY_PASS="$ANDROID_KEY_PASSWORD" "$tools/apksigner" sign \
+            --ks "$keystore" \
+            --ks-key-alias "$ANDROID_KEY_ALIAS" \
+            --ks-pass env:KS_PASS \
+            --key-pass env:KEY_PASS \
+            --out "$RUNNER_TEMP/$APK_NAME" \
+            "$RUNNER_TEMP/aligned.apk"
+          "$tools/apksigner" verify --print-certs "$RUNNER_TEMP/$APK_NAME"
+          mkdir -p dist
+          cp "$RUNNER_TEMP/$APK_NAME" "dist/$APK_NAME"
+          (cd dist && sha256sum "$APK_NAME" > "$APK_NAME.sha256" && cat "$APK_NAME.sha256")
+          ls -l dist
+
+      - name: Remove the keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
+
+      # Kept as a normal artifact too, so a run that fails while publishing does not lose the build
+      - name: Keep the signed APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: android-release-apk
+          path: dist/
+          retention-days: 14
+
+      # Only the latest build is kept, so the previous release and its tag are deleted first
+      - name: Publish the android-latest release
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          short="${GITHUB_SHA::9}"
+          gh release delete "$RELEASE_TAG" --cleanup-tag --yes || echo "No previous $RELEASE_TAG release."
+          cat > "$RUNNER_TEMP/notes.md" <<NOTES
+          Android build of TAK-NZ CloudTAK **$VERSION** (build ${{ github.run_number }}), commit \`$short\`.
+
+          Only the latest build is kept here. Install \`$APK_NAME\` and allow installs from unknown sources when the phone asks. Builds are signed with the same key, so a new build installs over the old one.
+
+          Check the download with the \`.sha256\` file: \`sha256sum -c $APK_NAME.sha256\`.
+          NOTES
+          gh release create "$RELEASE_TAG" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Android $VERSION (build ${{ github.run_number }})" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            "dist/$APK_NAME" "dist/$APK_NAME.sha256"
+
+      - name: Summary
+        if: success()
+        run: |
+          {
+            echo "### Android build ${{ steps.version.outputs.version }} (${{ github.run_number }})"
+            if [ "${{ inputs.publish }}" = "true" ]; then
+              echo "Published as the [android-latest release](https://github.com/${{ github.repository }}/releases/tag/android-latest)."
+              echo ""
+              echo "Download: https://github.com/${{ github.repository }}/releases/download/android-latest/$APK_NAME"
+            else
+              echo "Built and signed, not published. The APK is in the \`android-release-apk\` artifact."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
