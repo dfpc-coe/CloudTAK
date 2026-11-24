@@ -54,9 +54,16 @@ jobs:
         working-directory: app
         run: npx cap sync android
 
-      # compileSdk is 36. The runner image has it, this makes sure of it
+      # compileSdk is 36. The runner image may or may not have it, this makes sure of it. sdkmanager
+      # is not on the PATH of the hosted runners, so it is looked for in the SDK
       - name: Android SDK
-        run: sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
+        run: |
+          sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$sdk" >> "$GITHUB_ENV"
+          sdkmanager=$(ls "$sdk"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          echo "Android SDK $sdk, sdkmanager $sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          "$sdkmanager" --install "platforms;android-36" "build-tools;36.0.0"
 
       - name: Build the debug APK
         working-directory: app/android
