@@ -8,6 +8,7 @@ import {
     DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
 import Flight from './flight.js';
+import ChatControl from '../common/control/chat.js';
 
 const flight = new Flight();
 
@@ -312,14 +313,9 @@ test('DELETE: api/user/:username', async () => {
     await models.Profile.generate({ username, name: 'Erase Me', auth: null, last_login: null });
     await models.ProfileConfig.commit(username, { 'tak::callsign': 'Erase Me' });
     await models.ProfileToken.generate({ username, name: 'Token', token: 'etl.erase' });
-    await models.ProfileChat.generate({
-        username,
-        chatroom: 'Room',
-        sender_callsign: 'Erase Me',
-        sender_uid: 'ANDROID-erase',
-        message_id: 'erase-message',
-        message: 'Personal Message',
-    });
+    const chat = new ChatControl(flight.config!);
+    const room = await chat.direct(await chat.identity(username), { uid: 'ANDROID-peer', callsign: 'Peer' });
+    await chat.send(username, room.id, { body: 'Personal Message' });
     await models.ProfileFile.generate({ username, name: 'file.kml', size: 1 });
 
     const connection = await models.Connection.generate({
@@ -376,11 +372,14 @@ test('DELETE: api/user/:username', async () => {
 
         await assert.rejects(models.Profile.from(username), 'the user no longer exists');
 
-        for (const model of [models.ProfileToken, models.ProfileChat, models.ProfileFile]) {
+        for (const model of [models.ProfileToken, models.ProfileFile, models.ChatroomMember]) {
             assert.equal(await model.count({
                 where: sql`username = ${username}`,
             }), 0);
         }
+
+        assert.equal(await models.ChatMessage.count({ where: sql`chatroom = ${room.id}` }), 0);
+        assert.equal(await models.Chatroom.count({ where: sql`id = ${room.id}` }), 0);
 
         assert.deepEqual(await models.ProfileConfig.from(username), {});
 

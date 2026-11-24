@@ -13,12 +13,23 @@
 ### Deprecation Notices
 
 - `Layer.template` is deprecated and will be removed
+- The chat interfaces used by the CloudTAK <= 14.0 web & mobile UI are deprecated and will be removed in v15 - clients must be updated before then
+    - The `/api/profile/chatroom` routes - use `/api/chatroom`
+    - Sending 1:1 chat as a `chat` WebSocket message - use `POST /api/chatroom/:chatroom/message`, Mission Chat is not affected
+    - The `chat` WebSocket event and `chat:receipt` for Chatroom messages - use `chatroom:message` & `chatroom:message:update`
 
 ### Beta Notice
 
 - CoreEvents & CoreDevices are in beta and functionality may change in minor releases. Use with caution in production environments.
 
 ### Pending Release
+
+- :tada: Chatrooms are now stored by CloudTAK and shared by their members instead of mirrored per user from GeoChat - users of the same server message each other directly, everyone else is reached through GeoChat on the TAK Server - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1147
+- :tada: Create Groups, manage their members, mute Chatrooms, reply to, edit, delete, react to & search messages and page through history
+- :rocket: Chat is sent over `POST /api/chatroom/:chatroom/message` and received as `chatroom:message` & `chatroom:message:update` WebSocket events - the `/api/chatroom` routes replace `/api/profile/chatroom`
+- :rocket: The `/api/profile/chatroom` routes, 1:1 chat sent over the WebSocket and the `chat` & `chat:receipt` WebSocket events keep working for clients on the CloudTAK <= 14.0 UI - deprecated, to be removed in v15
+- :bug: The sender of a GeoChat is resolved from its remarks source & event UID as ATAK does, a 1:1 chat addressed to its own sender (TAK Aware) is no longer filed as a group and group members are read from `chatgrp` when the hierarchy lists none
+- :arrow_up: Update `@tak-ps/node-cot` to `14.61.0`
 
 ### v14.0.1 - 2026-11-23
 

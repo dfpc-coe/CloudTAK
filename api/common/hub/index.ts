@@ -53,6 +53,9 @@ export type SubmitCotsRequest = {
     broadcast?: boolean;
     ensureProfile?: boolean;
     ifPooled?: boolean;
+
+    /** Reject unless the CoTs were written to a TAK connection that is ready for them */
+    confirm?: boolean;
 };
 
 export interface HubClient {

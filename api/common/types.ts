@@ -672,6 +672,25 @@ export const ProfileVideoPosition = Type.Object({
     h: Type.Integer({ minimum: 1, description: 'Height in grid rows' }),
 });
 
+export const ChatMember = Type.Object({
+    uid: Type.String(),
+    callsign: Type.String(),
+});
+
+export type ChatMember = Static<typeof ChatMember>;
+
+/** State a Chatroom carries for the system it is bridged to - for TAK the GeoChat group tree */
+export type ChatroomExternalMetadata = {
+    parent?: string;
+    hierarchy?: Feature.ChatHierarchyNode;
+};
+
+export const ChatMessageMetadata = Type.Object({
+    location: Type.Optional(Type.Array(Type.Number(), { minItems: 2, maxItems: 3 })),
+});
+
+export type ChatMessageMetadata = Static<typeof ChatMessageMetadata>;
+
 export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
     lease: Type.Integer(),
     position: ProfileVideoPosition,

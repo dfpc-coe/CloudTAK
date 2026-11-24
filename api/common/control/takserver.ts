@@ -12,6 +12,13 @@ export function profileUid(username: string): string {
     return `ANDROID-CloudTAK-${username}`;
 }
 
+/** The callsign a CloudTAK user presents to TAK Server */
+export async function profileCallsign(config: Config, username: string): Promise<string> {
+    const configs = await config.models.ProfileConfig.from(username);
+    const callsign = configs['tak::callsign'];
+    return typeof callsign === 'string' && callsign ? callsign : 'CloudTAK User';
+}
+
 /**
  * Builds TAK Server API clients. Clients are cheap and not cached - one per request is the norm
  */

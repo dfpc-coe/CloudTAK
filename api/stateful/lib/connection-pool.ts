@@ -3,7 +3,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ImportControl, { ImportSourceEnum } from '../../common/control/import.js';
 import type ConfigStateful from '../config.js';
-import { randomUUID } from 'node:crypto';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from '../../common/schema.js';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -11,8 +10,9 @@ import TAK, { TAKAPI } from '@tak-ps/node-tak';
 import CoT, { CoTParser } from '@tak-ps/node-cot';
 import type ConnectionConfig from '../../common/connection-config.js';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEntitySubmitter } from '../../common/connection-config.js';
-import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
-import TAKServerControl, { profileUid } from '../../common/control/takserver.js';
+import { ChatMessageStatus, WebSocket_Event } from '../../common/enums.js';
+import ChatControl from '../../common/control/chat.js';
+import TAKServerControl from '../../common/control/takserver.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as {
     version: string;
@@ -22,11 +22,11 @@ const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta
  * Chat Receipt CoTs reference an existing message via `chat.messageId` and
  * carry no remarks - they update the delivery status of the original message
  */
-const ChatReceiptTypes: Record<string, ProfileChatStatus> = {
-    'b-t-f-d': ProfileChatStatus.DELIVERED,
-    'b-t-f-r': ProfileChatStatus.READ,
-    'b-t-f-p': ProfileChatStatus.PENDING,
-    'b-t-f-s': ProfileChatStatus.FAILED,
+const ChatReceiptTypes: Record<string, ChatMessageStatus> = {
+    'b-t-f-d': ChatMessageStatus.DELIVERED,
+    'b-t-f-r': ChatMessageStatus.READ,
+    'b-t-f-p': ChatMessageStatus.PENDING,
+    'b-t-f-s': ChatMessageStatus.FAILED,
 };
 
 export class ConnectionClient {
@@ -124,6 +124,15 @@ export class ConnectionClient {
     }
 }
 
+/** Mission chat lives in the Mission's CoT store, never in a profile's direct chats */
+function isMissionChat(feat: Awaited<ReturnType<typeof CoTParser.to_geojson>>): boolean {
+    if (!feat.properties.chat) return false;
+    if (feat.properties.chat.parent === 'DataSyncMissionsList') return true;
+
+    const dest = feat.properties.dest;
+    return (Array.isArray(dest) ? dest : dest ? [dest] : []).some((d) => !!d.mission);
+}
+
 /**
  * Maintain a pool of TAK Connections, reconnecting as necessary
  * @class
@@ -133,6 +142,7 @@ export const CONNECTION_LINGER_MS = 60000;
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     config: ConfigStateful;
     importControl: ImportControl;
+    chat: ChatControl;
     closed: boolean;
     pending: Map<number | string, Promise<ConnectionClient>>;
 
@@ -156,6 +166,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.lingering = new Map();
         this.config = config;
         this.importControl = new ImportControl(config);
+        this.chat = new ChatControl(config);
 
         this.pingInterval = setInterval(() => {
             try {
@@ -299,44 +310,25 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         normalize2525: true,
                     });
 
-                    const receiptStatus: ProfileChatStatus | undefined = feat.properties && feat.properties.chat
+                    const receiptStatus: ChatMessageStatus | undefined = feat.properties && feat.properties.chat
                         ? ChatReceiptTypes[feat.properties.type]
                         : undefined;
 
-                    // Server-assigned created for the stored chat - relayed in place of the sender
-                    // device's CoT time so live ordering matches what clients get on refresh
-                    let storedCreated: string | undefined;
+                    const missionChat = isMissionChat(feat);
+
+                    const profileChat = conn instanceof ProfileConnConfig && !!feat.properties?.chat && (!!receiptStatus || !missionChat);
 
                     try {
-                        if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat && receiptStatus) {
+                        if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat && (receiptStatus || !missionChat)) {
+                            const source = cot.raw.event.detail?.remarks?._attributes?.source;
+
                             // Chat Receipts don't contain the original message so they
                             // must never be stored as a message themselves
-                            if (feat.properties.chat.messageId) {
-                                await this.config.models.ProfileChat.receipt(
-                                    String(conn.id),
-                                    feat.properties.chat.messageId,
-                                    receiptStatus,
-                                );
+                            if (receiptStatus) {
+                                await this.chat.receiptTAK(String(conn.id), feat, receiptStatus, source);
+                            } else {
+                                await this.chat.ingestTAK(String(conn.id), feat, source);
                             }
-                        } else if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat) {
-                            const myUid = profileUid(conn.id);
-                            const senderUid = feat.properties.chat.chatgrp?._attributes?.uid0;
-                            const isOutgoing = senderUid === myUid;
-                            const chatroom = isOutgoing
-                                ? feat.properties.chat.chatroom
-                                : feat.properties.chat.senderCallsign;
-
-                            const stored = await this.config.models.ProfileChat.generate({
-                                username: String(conn.id),
-                                chatroom: chatroom,
-                                sender_callsign: feat.properties.chat.senderCallsign,
-                                sender_uid: feat.properties.chat.chatgrp._attributes.uid0,
-                                message_id: feat.properties.chat.messageId || randomUUID(),
-                                message: feat.properties.remarks || '',
-                            });
-
-                            // Normalize the pg timestamptz to ISO 8601 before it goes over the wire
-                            storedCreated = new Date(stored.created).toISOString();
                         } else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
 
@@ -359,35 +351,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         if (!client.events.includes(WebSocket_Event.MAP)) continue;
 
                         if (client.format == 'geojson') {
-                            if (feat.properties && feat.properties.chat && feat.properties.chat.parent === 'DataSyncMissionsList') {
-                                console.log(JSON.stringify(feat));
-                            }
-
-                            if (feat.properties && feat.properties.chat && receiptStatus) {
-                                client.ws.send(JSON.stringify({
-                                    type: 'chat:receipt',
-                                    connection: conn.id,
-                                    data: {
-                                        messageId: feat.properties.chat.messageId,
-                                        status: receiptStatus,
-                                        chatroom: feat.properties.chat.chatroom,
-                                    },
-                                }));
-                            } else if (feat.properties && feat.properties.chat && feat.properties.chat.parent !== 'DataSyncMissionsList') {
-                                client.ws.send(JSON.stringify({
-                                    type: 'chat',
-                                    connection: conn.id,
-                                    data: {
-                                        chatroom: feat.properties.chat.chatroom,
-                                        messageId: feat.properties.chat.messageId,
-                                        from: {
-                                            uid: feat.properties.chat.chatgrp?._attributes?.uid0,
-                                            callsign: feat.properties.chat.senderCallsign,
-                                        },
-                                        message: feat.properties.remarks,
-                                        time: storedCreated || feat.properties.time || new Date().toISOString(),
-                                    },
-                                }));
+                            if (profileChat) {
+                                // Chatrooms notify their own Members
+                                continue;
                             } else if (feat.properties.type.startsWith('t-x')) {
                                 client.ws.send(JSON.stringify({ type: 'task', connection: conn.id, data: feat }));
                             } else if (feat.properties.type.startsWith('b-f-t')) {

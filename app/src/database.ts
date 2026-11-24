@@ -75,13 +75,27 @@ export interface DBFeatureHistory {
     geometry: Feature["geometry"];
 }
 
+export interface DBChatroomMember {
+    uid: string;
+    callsign: string;
+    role: 'owner' | 'member';
+    // The Member is a user of this CloudTAK Server
+    local: boolean;
+}
+
 export interface DBChatroom {
     id: string;
+    type: 'direct' | 'group' | 'broadcast';
     name: string;
+    role: 'owner' | 'member';
+    muted: boolean;
+    members: Array<DBChatroomMember>;
     created: string;
     updated: string;
     unread?: number;
     last_read: string | null;
+    // `updated` of the newest Message already stored locally
+    synced?: string;
 }
 
 /**
@@ -117,8 +131,12 @@ export interface DBChatroomChat {
     sender_uid: string;
     message: string;
     created: string;
-    unread?: boolean;
+    updated?: string;
     status?: ChatStatus;
+    reply_to?: string | null;
+    edited?: string | null;
+    deleted?: string | null;
+    reactions?: Array<{ emoji: string; uids: Array<string> }>;
 }
 
 export interface DBIconset {
@@ -433,6 +451,15 @@ db.version(7).upgrade(async (tx) => {
     }
 
     await kv.where('key').startsWith('pmtiles::').delete();
+});
+
+// Chatrooms are keyed by a server assigned ID - everything cached under a peer UID is refetched
+db.version(8).stores({
+    chatroom: 'id',
+    chatroom_chats: 'id, chatroom',
+}).upgrade(async (tx) => {
+    await tx.table('chatroom').clear();
+    await tx.table('chatroom_chats').clear();
 });
 
 let reopenPromise: Promise<void> | null = null;

@@ -1618,6 +1618,13 @@
       "when": 1795276515313,
       "tag": "0231_plugin",
       "breakpoints": true
+    },
+    {
+      "idx": 232,
+      "version": "7",
+      "when": 1795468087909,
+      "tag": "0232_chat_dedupe",
+      "breakpoints": true
     }
   ]
 }

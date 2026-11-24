@@ -166,29 +166,20 @@ export type PaletteFeatureList = {
     items: Array<PaletteFeature>;
 }
 
-export type Chat = {
-    chatroom: string;
-    messageId: string;
-    from: {
-        callsign: string;
-        uid: string;
-    };
-    message: string;
-    time: string;
-}
+export type Chatroom = paths["/api/chatroom/{:chatroom}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ChatroomList = paths["/api/chatroom"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ChatMessageList = paths["/api/chatroom/{:chatroom}/message"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ChatMessage = ChatMessageList["items"][0]
 
-export type APIProfileChat = {
-    id: number;
-    read: boolean;
-    username: string;
-    chatroom: string;
-    sender_callsign: string;
-    sender_uid: string;
-    created: string;
-    updated: string;
-    message_id: string;
-    message: string;
-    status?: string | null;
+/** WebSocket `chatroom:message` & `chatroom:message:update` events */
+export type ChatEvent = {
+    message: ChatMessage;
+    chatroom: {
+        id: string;
+        type: Chatroom["type"];
+        name: string;
+        muted: boolean;
+    };
 }
 
 export type MissionTemplate = paths["/api/template/mission/{:mission}"]["get"]["responses"]["200"]["content"]["application/json"]
@@ -201,8 +192,6 @@ export type MissionTemplateLogList = paths["/api/template/mission/{:mission}/log
 export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
-export type ProfileChatroomList = paths["/api/profile/chatroom"]["get"]["responses"]["200"]["content"]["application/json"]
-export type ProfileChatList = paths["/api/profile/chatroom/{:chatroom}/chat"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ProfileVideoList = paths["/api/profile/video"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileVideo = paths["/api/profile/video/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
