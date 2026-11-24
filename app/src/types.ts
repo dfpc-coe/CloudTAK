@@ -171,7 +171,7 @@ export type ChatroomList = paths["/api/chatroom"]["get"]["responses"]["200"]["co
 export type ChatMessageList = paths["/api/chatroom/{:chatroom}/message"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ChatMessage = ChatMessageList["items"][0]
 
-/** WebSocket `chat` & `chat:update` events */
+/** WebSocket `chatroom:message` & `chatroom:message:update` events */
 export type ChatEvent = {
     message: ChatMessage;
     chatroom: {

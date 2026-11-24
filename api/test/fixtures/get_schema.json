@@ -1484,6 +1484,31 @@
         "query": true,
         "res": false
     },
+    "GET /profile/chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/chatroom": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /profile/chatroom/:chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/chatroom/:chatroom/chat": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /profile/chatroom/:chatroom/chat": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /profile/feature": {
         "body": false,
         "query": true,

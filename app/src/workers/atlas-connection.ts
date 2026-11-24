@@ -360,7 +360,7 @@ export default class AtlasConnection {
                 } else {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
-            } else if (body.type === 'chat' || body.type === 'chat:update') {
+            } else if (body.type === 'chatroom:message' || body.type === 'chatroom:message:update') {
                 const event = body.data as ChatEvent;
                 const message = event.message;
 
@@ -369,7 +369,7 @@ export default class AtlasConnection {
                 // A message already stored is a redelivery or a change - not a new message
                 const created = await storeChat(message);
 
-                if (created && body.type === 'chat') {
+                if (created && body.type === 'chatroom:message') {
                     const incoming = message.sender_uid !== this.atlas.profile.uid();
 
                     await db.chatroom.where('id').equals(event.chatroom.id).modify(local => {
@@ -389,6 +389,8 @@ export default class AtlasConnection {
                         );
                     }
                 }
+            } else if (body.type === 'chat') {
+                // The form of `chatroom:message` sent for CloudTAK <= 14.0 clients
             } else if (body.type === 'chatroom') {
                 await Chatroom.store(body.data as APIChatroom);
             } else if (body.type === 'chatroom:delete') {

@@ -7,6 +7,7 @@ import { ConnectionClient } from './connection-pool.js';
 import { ChatMessageStatus, WebSocket_Event } from '../../common/enums.js';
 import { ProfileConnConfig } from '../../common/connection-config.js';
 import { profileCallsign } from '../../common/control/takserver.js';
+import LegacyChatControl from '../../common/chat/legacy.js';
 import { rawDataToString } from '../../common/stringify.js';
 
 export class ConnectionWebSocket {
@@ -36,10 +37,9 @@ export class ConnectionWebSocket {
 
                     if (msg.type === 'ping') {
                         this.ws.send(JSON.stringify({ type: 'pong' }));
+                    } else if (msg.type === 'chat' && !msg.data.mission) {
+                        await this.legacyChat(client, msg.data);
                     } else if (msg.type === 'chat') {
-                        // Chatrooms are sent to over the API - only Mission Chat rides the WebSocket
-                        if (!msg.data.mission) throw new Error('Only Mission Chat can be sent over the WebSocket');
-
                         const profile = client.config instanceof ProfileConnConfig ? client.config : undefined;
 
                         // The sender is who the connection belongs to, never who the browser claims to be
@@ -120,6 +120,44 @@ export class ConnectionWebSocket {
                     }));
                 }
             });
+        }
+    }
+
+    /** CloudTAK <= 14.0 sends to a Chatroom over the WebSocket, newer clients use the API */
+    private async legacyChat(client: ConnectionClient, data: Record<string, unknown>): Promise<void> {
+        if (!(client.config instanceof ProfileConnConfig)) {
+            throw new Error('Only Mission Chat can be sent over the WebSocket of a Connection');
+        }
+
+        const text = (value: unknown): string | undefined => typeof value === 'string' && value ? value : undefined;
+
+        const to = (data.to ?? {}) as Record<string, unknown>;
+        const uid = text(to.uid);
+        const chatroom = text(data.chatroom);
+        const messageId = text(data.messageId);
+
+        try {
+            if (!chatroom) throw new Error('Chatroom is required');
+
+            await new LegacyChatControl(client.config.config).send(String(client.config.id), {
+                chatroom,
+                to: uid ? { uid, callsign: text(to.callsign) ?? uid } : undefined,
+                message: text(data.message) ?? '',
+                messageId,
+                location: Array.isArray(data.location) ? data.location.map(Number) : undefined,
+            });
+        } catch (err) {
+            console.error(`Error: Failed to send Chat ${messageId}:`, err);
+
+            this.ws.send(JSON.stringify({
+                type: 'chat:receipt',
+                connection: client.config.id,
+                data: {
+                    messageId,
+                    status: ChatMessageStatus.FAILED,
+                    chatroom,
+                },
+            }));
         }
     }
 

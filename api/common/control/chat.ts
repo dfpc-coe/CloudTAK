@@ -792,7 +792,9 @@ export default class ChatControl {
             ? members.filter((member) => member.id === me.id)
             : members;
 
-        await this.notifyMessage(room, audience, view, 'chat');
+        await this.notifyMessage(room, audience, view, 'chatroom:message');
+
+        if (me.username) this.notifyLegacyReceipt(me.username, room, members, view);
 
         return view;
     }
@@ -893,7 +895,7 @@ export default class ChatControl {
 
     private async changed(room: Room, message: string): Promise<MessageView> {
         const view = await this.messageView(message);
-        await this.notifyMessage(room, await this.members(room.id), view, 'chat:update');
+        await this.notifyMessage(room, await this.members(room.id), view, 'chatroom:message:update');
         return view;
     }
 
@@ -909,7 +911,10 @@ export default class ChatControl {
             .where(eq(ChatMessage.id, message));
 
         const room = await this.room(rows[0].chatroom);
-        await this.changed(room, message);
+        const view = await this.changed(room, message);
+
+        const sender = (await this.locals([view.sender_uid])).get(view.sender_uid);
+        if (sender) this.notifyLegacyReceipt(sender, room, await this.members(room.id), view);
 
         return true;
     }
@@ -924,7 +929,7 @@ export default class ChatControl {
         room: Room,
         members: Array<Member>,
         message: MessageView,
-        type: 'chat' | 'chat:update',
+        type: 'chatroom:message' | 'chatroom:message:update',
     ): Promise<void> {
         const sender = members.find((member) => member.uid === message.sender_uid);
 
@@ -948,7 +953,41 @@ export default class ChatControl {
                     },
                 },
             });
+
+            if (type === 'chatroom:message' && !own) {
+                this.notify(member.username, {
+                    type: 'chat',
+                    data: {
+                        chatroom: this.legacyName(room, members, member.uid),
+                        messageId: message.id,
+                        from: { uid: message.sender_uid, callsign: message.sender_callsign },
+                        message: message.body,
+                        time: message.created,
+                    },
+                });
+            }
         }
+    }
+
+    /** The name CloudTAK <= 14.0 clients know a Chatroom by */
+    private legacyName(room: Room, members: Array<Member>, uid: string): string {
+        if (room.type !== ChatroomType.DIRECT) return room.name;
+        return members.find((member) => member.uid !== uid)?.callsign ?? room.name;
+    }
+
+    /** Delivery status in the form CloudTAK <= 14.0 clients apply to a Message they sent */
+    private notifyLegacyReceipt(username: string, room: Room, members: Array<Member>, message: MessageView): void {
+        if (!message.status) return;
+
+        this.notify(username, {
+            type: 'chat:receipt',
+            data: {
+                messageId: message.id,
+                status: message.status,
+                chatroom: this.legacyName(room, members, message.sender_uid),
+                created: message.created,
+            },
+        });
     }
 
     /** Push the current state of a Chatroom to every Member that is a user of this server */
@@ -1048,7 +1087,7 @@ export default class ChatControl {
         const members = await this.members(room.id);
         const view = await this.messageView(message.id);
 
-        await this.notifyMessage(room, members, view, 'chat');
+        await this.notifyMessage(room, members, view, 'chatroom:message');
 
         if (room.type === ChatroomType.DIRECT && !own) {
             this.config.hub.submitCots({

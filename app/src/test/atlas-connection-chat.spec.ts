@@ -49,7 +49,7 @@ const room = {
 };
 
 const chat = {
-    type: 'chat',
+    type: 'chatroom:message',
     connection: 'me@example.com',
     data: {
         chatroom: { id: room.id, type: 'direct', name: 'ALPHA', muted: false },
@@ -170,7 +170,7 @@ describe('AtlasConnection chat', () => {
         sock.emit('message', {
             data: JSON.stringify({
                 ...chat,
-                type: 'chat:update',
+                type: 'chatroom:message:update',
                 data: { ...chat.data, message: { ...chat.data.message, body: 'edited', edited: '2026-01-01T00:00:02.000000Z' } },
             }),
         });

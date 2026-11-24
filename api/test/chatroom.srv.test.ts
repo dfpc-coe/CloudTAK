@@ -157,7 +157,7 @@ test('TAK: a Direct GeoChat is stored once and acknowledged', async () => {
     // TAK Server store-and-forward redelivers under the original messageId
     flight.tak.write(cot);
 
-    const event = await next('chat');
+    const event = await next('chatroom:message');
 
     assert.equal(event.data.message.body, 'Hello');
     assert.equal(event.data.message.sender_uid, device.uid);
@@ -168,7 +168,7 @@ test('TAK: a Direct GeoChat is stored once and acknowledged', async () => {
 
     await delay(200);
 
-    assert.equal(events('chat').length, 0, 'a redelivered GeoChat is not announced twice');
+    assert.equal(events('chatroom:message').length, 0, 'a redelivered GeoChat is not announced twice');
     assert.equal(receipts('b-t-f-d', ids.first), 1);
 
     flight.tak.write(new MissionChat({
@@ -205,7 +205,7 @@ test('TAK: a reply is sent as GeoChat from the user and its receipts move the st
     assert.ok(event.includes(`uid="GeoChat.${admin.uid}.${device.uid}.${ids.reply}"`));
     assert.ok(event.includes(`<dest uid="${device.uid}"/>`));
 
-    await next('chat', (e) => e.data.message.id === ids.reply);
+    await next('chatroom:message', (e) => e.data.message.id === ids.reply);
 
     // Sending again under the same ID is not a second message
     await ok('admin', 'POST', `/api/chatroom/${ids.direct}/message`, { id: ids.reply, body: 'On my way' });
@@ -213,7 +213,7 @@ test('TAK: a reply is sent as GeoChat from the user and its receipts move the st
 
     flight.tak.write(new DirectChatReceipt({ to: admin, from: device, status: 'read', messageId: ids.reply }));
 
-    const update = await next('chat:update', (e) => e.data.message.id === ids.reply);
+    const update = await next('chatroom:message:update', (e) => e.data.message.id === ids.reply);
     assert.equal(update.data.message.status, 'read');
 
     // A late Delivered Receipt never downgrades Read
@@ -257,7 +257,7 @@ test('Native: two users of this server never touch the TAK Server', async () => 
 
     await ok<Room>('user', 'PATCH', `/api/chatroom/${ids.peers}`, { last_read: ids.native });
 
-    const update = await next('chat:update', (e) => e.data.message.id === ids.native);
+    const update = await next('chatroom:message:update', (e) => e.data.message.id === ids.native);
     assert.equal(update.data.message.status, 'read');
 });
 
@@ -265,7 +265,7 @@ test('Native: replies, edits, reactions & deletes', async () => {
     const reply = await ok('user', 'POST', `/api/chatroom/${ids.peers}/message`, { body: 'A Reply', reply_to: ids.native });
     assert.equal(reply.reply_to, ids.native);
 
-    const event = await next('chat', (e) => e.data.message.id === reply.id);
+    const event = await next('chatroom:message', (e) => e.data.message.id === reply.id);
     assert.equal(event.data.message.status, null, 'delivery status is only shown to the sender');
 
     const reacted = await ok('admin', 'PUT', `/api/chatroom/${ids.peers}/message/${reply.id}/reaction`, { emoji: '👍' });
@@ -330,7 +330,7 @@ test('Group: owned by a user, bridged to TAK for the Members that are not', asyn
         messageId: answer,
     }));
 
-    const received = await next('chat', (e) => e.data.message.body === 'Five minutes out');
+    const received = await next('chatroom:message', (e) => e.data.message.body === 'Five minutes out');
     assert.equal(received.data.chatroom.id, ids.group);
     assert.equal(received.data.chatroom.name, 'Search Team', 'only the owner renames a Group');
 
@@ -372,7 +372,7 @@ test('Group: created on a TAK client and deleted by its owner', async () => {
         message: 'Welcome',
     }));
 
-    const event = await next('chat', (e) => e.data.message.body === 'Welcome');
+    const event = await next('chatroom:message', (e) => e.data.message.body === 'Welcome');
     const id = event.data.chatroom.id;
 
     const room = await ok<Room>('admin', 'GET', `/api/chatroom/${id}`);
@@ -440,7 +440,7 @@ test('Broadcast: All Chat Rooms belongs to each user', async () => {
         message: 'Broadcast Reply',
     }));
 
-    const event = await next('chat', (e) => e.data.message.body === 'Broadcast Reply');
+    const event = await next('chatroom:message', (e) => e.data.message.body === 'Broadcast Reply');
     assert.equal(event.data.chatroom.id, mine.id);
 
     // Each connection the TAK Server delivered the broadcast to keeps its own copy
@@ -461,11 +461,75 @@ test('Leaving a Direct Chatroom clears it until its next Message', async () => {
 
     flight.tak.write(new DirectChat({ to: admin, from: device, message: 'Still there?' }));
 
-    const event = await next('chat', (e) => e.data.message.body === 'Still there?');
+    const event = await next('chatroom:message', (e) => e.data.message.body === 'Still there?');
     assert.equal(event.data.chatroom.id, ids.direct);
 
     const messages = await listMessages('admin', ids.direct);
     assert.deepEqual(messages.items.map((message) => message.body), ['Still there?']);
+});
+
+test('Legacy: a CloudTAK <= 14.0 client still receives, sends and lists 1:1 chat', async () => {
+    type LegacyEvent = { data: { chatroom: string; messageId: string; status?: string; message?: string; from?: { uid: string; callsign: string } } };
+
+    flight.tak.write(new DirectChat({ to: admin, from: device, message: 'Legacy In' }));
+
+    const received = await next('chat', (e) => (e as unknown as LegacyEvent).data.message === 'Legacy In') as unknown as LegacyEvent;
+    assert.equal(received.data.chatroom, device.callsign);
+    assert.deepEqual(received.data.from, device);
+
+    const messageId = randomUUID();
+
+    conn.send(JSON.stringify({
+        type: 'chat',
+        data: {
+            chatroom: device.callsign,
+            from: admin,
+            to: device,
+            message: 'Legacy Out',
+            messageId,
+            time: new Date().toISOString(),
+            location: [0, 0],
+        },
+    }));
+
+    const receipt = await next('chat:receipt', (e) => (e as unknown as LegacyEvent).data.messageId === messageId) as unknown as LegacyEvent;
+    assert.equal(receipt.data.status, 'sent');
+    assert.equal(receipt.data.chatroom, device.callsign);
+
+    assert.ok(sentEvent(messageId).includes(device.uid));
+
+    const stored = await listMessages('admin', ids.direct);
+    assert.ok(stored.items.some((message) => message.id === messageId), 'the Message is in the Chatroom newer clients use');
+
+    const list = await ok<{ items: Array<{ id: string; chatroom: string }> }>('admin', 'GET', '/api/profile/chatroom');
+    assert.ok(list.items.some((room) => room.chatroom === device.callsign));
+
+    const chats = await ok<{ items: Array<{ message_id: string; message: string; sender_uid: string; status: string | null }> }>(
+        'admin', 'GET', `/api/profile/chatroom/${encodeURIComponent(device.callsign)}/chat?limit=50&page=0&order=desc&sort=created`,
+    );
+    assert.deepEqual(chats.items.map((chat) => chat.message), ['Legacy Out', 'Legacy In', 'Still there?']);
+    assert.equal(chats.items[0].message_id, messageId);
+    assert.equal(chats.items[0].sender_uid, admin.uid);
+
+    // A recipient the client could only guess from the name of the Chatroom
+    const guessed = randomUUID();
+
+    conn.send(JSON.stringify({
+        type: 'chat',
+        data: {
+            chatroom: device.callsign,
+            from: admin,
+            to: { uid: device.callsign, callsign: device.callsign },
+            message: 'Legacy Guess',
+            messageId: guessed,
+        },
+    }));
+
+    await next('chat:receipt', (e) => (e as unknown as LegacyEvent).data.messageId === guessed);
+    assert.ok((await listMessages('admin', ids.direct)).items.some((message) => message.id === guessed));
+
+    await ok('admin', 'DELETE', `/api/profile/chatroom?chatroom=${encodeURIComponent(device.callsign)}`);
+    assert.ok(!(await rooms('admin')).some((r) => r.id === ids.direct));
 });
 
 test('Close the WebSocket', () => {
