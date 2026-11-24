@@ -20,7 +20,10 @@
 
 ### Pending Release
 
-- :tada: Send GeoChat messages to Group Chatrooms & `All Chat Rooms` - Group membership is learned from incoming messages and a Group deleted by its owner is removed - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1147
+- :tada: Chatrooms are now stored by CloudTAK and shared by their members instead of mirrored per user from GeoChat - users of the same server message each other directly, everyone else is reached through GeoChat on the TAK Server - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1147
+- :tada: Create Groups, manage their members, mute Chatrooms, reply to, edit, delete, react to & search messages and page through history
+- :rocket: Chat is sent over `POST /api/chatroom/:chatroom/message` - the `/api/profile/chatroom` routes are replaced by `/api/chatroom` and only Mission Chat is still sent over the WebSocket
+- :bug: The sender of a GeoChat is resolved from its remarks source & event UID as ATAK does, a 1:1 chat addressed to its own sender (TAK Aware) is no longer filed as a group and group members are read from `chatgrp` when the hierarchy lists none
 - :arrow_up: Update `@tak-ps/node-cot` to `14.61.0`
 
 ### v14.0.1 - 2026-11-23

@@ -1,8 +1,10 @@
 import 'fake-indexeddb/auto';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const server = vi.hoisted(() => ({
     GET: vi.fn(),
+    POST: vi.fn(),
+    PUT: vi.fn(),
     PATCH: vi.fn(),
     DELETE: vi.fn(),
 }));
@@ -10,32 +12,51 @@ const server = vi.hoisted(() => ({
 vi.mock('../std.ts', () => ({ server }));
 
 import { db, ChatStatus } from '../database.ts';
-import ChatroomChats, { SEND_TIMEOUT_MS, BroadcastChatroom } from '../base/chatroom-chats.ts';
-import type Atlas from '../workers/atlas.ts';
-import type { Remote } from 'comlink';
+import type { DBChatroom } from '../database.ts';
+import ChatroomChats, { storeChat } from '../base/chatroom-chats.ts';
+import Chatroom from '../base/chatroom.ts';
+import type { ChatMessage } from '../types.ts';
 
-const NAME = 'ALPHA';
-const ROOM = 'ANDROID-alpha';
+const ROOM = '3f0c6a0e-0000-4000-8000-000000000001';
 const me = { uid: 'ANDROID-CloudTAK-me@example.com', callsign: 'ME' };
-const peer = { uid: ROOM, callsign: NAME };
+const peer = { uid: 'ANDROID-alpha', callsign: 'ALPHA' };
 
-const sendCOT = vi.fn();
-const worker = { conn: { sendCOT }, profile: { location: undefined } } as unknown as Remote<Atlas>;
+function room(overrides: Partial<DBChatroom> = {}): DBChatroom {
+    return {
+        id: ROOM,
+        type: 'direct',
+        name: peer.callsign,
+        role: 'member',
+        muted: false,
+        members: [
+            { ...me, role: 'member', local: true },
+            { ...peer, role: 'member', local: false },
+        ],
+        created: '2026-01-01T00:00:00.000000Z',
+        updated: '2026-01-01T00:00:00.000000Z',
+        unread: 0,
+        last_read: null,
+        ...overrides,
+    };
+}
 
-function remote(items: Array<{ message_id: string; read: boolean; status?: string | null }>): void {
-    server.GET.mockResolvedValue({
-        data: {
-            total: items.length,
-            items: items.map((item) => ({
-                sender_callsign: NAME,
-                sender_uid: peer.uid,
-                message: 'server',
-                created: '2026-01-01T00:00:00.000Z',
-                status: null,
-                ...item,
-            })),
-        },
-    });
+function message(overrides: Partial<ChatMessage> = {}): ChatMessage {
+    return {
+        id: crypto.randomUUID(),
+        chatroom: ROOM,
+        created: '2026-01-01T00:00:00.000000Z',
+        updated: '2026-01-01T00:00:00.000000Z',
+        sender_uid: peer.uid,
+        sender_callsign: peer.callsign,
+        body: 'server',
+        reply_to: null,
+        metadata: {},
+        edited: null,
+        deleted: null,
+        status: null,
+        reactions: [],
+        ...overrides,
+    };
 }
 
 describe('ChatroomChats', () => {
@@ -43,167 +64,193 @@ describe('ChatroomChats', () => {
         vi.clearAllMocks();
         await db.chatroom.clear();
         await db.chatroom_chats.clear();
-        await db.chatroom.put({ id: ROOM, name: NAME, type: 'direct', created: '', updated: '', last_read: null });
-        server.PATCH.mockResolvedValue({ data: { last_read: '2026-01-01T00:00:00.000Z' } });
+        await db.chatroom.put(room());
     });
 
-    afterEach(() => {
-        vi.useRealTimers();
-    });
+    it('sends over the API under a client generated id and stores what the server returns', async () => {
+        server.POST.mockImplementation(async (_url: string, req: { body: { id: string; body: string } }) => ({
+            data: message({ id: req.body.id, body: req.body.body, sender_uid: me.uid, sender_callsign: me.callsign, status: 'sent' }),
+        }));
 
-    it('fails a message when the WebSocket is closed and resends it under the same id', async () => {
         const chats = new ChatroomChats(ROOM);
+        await chats.send('hello', me, { reply_to: 'parent-id', location: [-105, 39] });
 
-        sendCOT.mockResolvedValue(false);
-        await chats.send('hello', me, worker, peer);
+        const body = server.POST.mock.calls[0][1].body;
+        expect(body.body).toBe('hello');
+        expect(body.reply_to).toBe('parent-id');
+        expect(body.metadata).toEqual({ location: [-105, 39] });
+
+        const [stored] = await chats.list();
+        expect(stored.id).toBe(body.id);
+        expect(stored.status).toBe(ChatStatus.Sent);
+    });
+
+    it('fails a message the server rejects and resends it under the same id', async () => {
+        server.POST.mockResolvedValueOnce({ error: { message: 'offline' } });
+
+        const chats = new ChatroomChats(ROOM);
+        await chats.send('hello', me);
 
         const [failed] = await chats.list();
         expect(failed.status).toBe(ChatStatus.Failed);
 
-        sendCOT.mockResolvedValue(true);
-        await chats.retry(failed.id, me, worker, peer);
+        server.POST.mockImplementation(async (_url: string, req: { body: { id: string } }) => ({
+            data: message({ id: req.body.id, body: 'hello', sender_uid: me.uid, status: 'sent' }),
+        }));
 
-        const [retried] = await chats.list();
-        expect(retried.id).toBe(failed.id);
-        expect(retried.status).toBe(ChatStatus.Sending);
-        expect(sendCOT.mock.calls[1][0].messageId).toBe(failed.id);
+        await chats.retry(failed.id);
+
+        expect(server.POST.mock.calls[1][1].body.id).toBe(failed.id);
+        expect((await chats.list()).map((chat) => chat.status)).toEqual([ChatStatus.Sent]);
     });
 
-    it('fails a message the server never acknowledges', async () => {
-        vi.useFakeTimers({ toFake: ['setTimeout', 'Date'] });
+    it('keeps the status the server reports as failed so the sender can retry', async () => {
+        server.POST.mockImplementation(async (_url: string, req: { body: { id: string } }) => ({
+            data: message({ id: req.body.id, sender_uid: me.uid, status: 'failed' }),
+        }));
 
         const chats = new ChatroomChats(ROOM);
+        await chats.send('hello', me);
 
-        sendCOT.mockResolvedValue(true);
-        await chats.send('hello', me, worker, peer);
-        expect((await chats.list())[0].status).toBe(ChatStatus.Sending);
-
-        await vi.advanceTimersByTimeAsync(SEND_TIMEOUT_MS + 1);
-
-        expect((await db.chatroom_chats.toArray())[0].status).toBe(ChatStatus.Failed);
-    });
-
-    it('leaves an acknowledged message alone when the timeout fires', async () => {
-        vi.useFakeTimers({ toFake: ['setTimeout', 'Date'] });
-
-        const chats = new ChatroomChats(ROOM);
-
-        sendCOT.mockResolvedValue(true);
-        await chats.send('hello', me, worker, peer);
-        await db.chatroom_chats.toCollection().modify({ status: ChatStatus.Sent });
-
-        await vi.advanceTimersByTimeAsync(SEND_TIMEOUT_MS + 1);
-
-        expect((await db.chatroom_chats.toArray())[0].status).toBe(ChatStatus.Sent);
-    });
-
-    it('keeps unsent local messages across a refresh', async () => {
-        const chats = new ChatroomChats(ROOM);
-
-        sendCOT.mockResolvedValue(false);
-        await chats.send('never left', me, worker, peer);
-
-        await db.chatroom_chats.put({
-            id: 'stale', chatroom: ROOM, sender: NAME, sender_uid: peer.uid, message: 'gone', created: '2026-01-01T00:00:00.000Z'
-        });
-
-        remote([{ message_id: 'server-1', read: true }]);
-        await chats.refresh();
-
-        const messages = (await chats.list()).map((chat) => chat.message).sort();
-        expect(messages).toEqual(['never left', 'server']);
-    });
-
-    it('acknowledges unread messages once', async () => {
-        const chats = new ChatroomChats(ROOM);
-
-        await chats.markRead();
-        expect(server.PATCH).not.toHaveBeenCalled();
-
-        remote([{ message_id: 'server-1', read: false }]);
-        await chats.refresh();
-
-        await chats.markRead();
-        await chats.markRead();
-        expect(server.PATCH).toHaveBeenCalledTimes(1);
-
-        await db.chatroom.update(ROOM, { unread: 2 });
-        await chats.markRead();
-        expect(server.PATCH).toHaveBeenCalledTimes(2);
-        expect((await db.chatroom.get(ROOM))?.unread).toBe(0);
-        expect(server.PATCH.mock.calls[1][1].body).toEqual({ last_read: 'server-1' });
-    });
-
-    it('addresses a message to the UID the Chatroom is keyed by', async () => {
-        const chats = new ChatroomChats(ROOM);
-
-        sendCOT.mockResolvedValue(true);
-        await chats.send('hello', me, worker);
-
-        expect(sendCOT.mock.calls[0][0].to).toEqual(peer);
-        expect(sendCOT.mock.calls[0][0].chatroom).toBe(NAME);
-    });
-
-    it('moves a Chatroom keyed by callsign onto the UID it resolves to', async () => {
-        await db.chatroom.clear();
-        await db.chatroom.put({ id: NAME, name: NAME, type: 'direct', created: '', updated: '', last_read: null });
-        await db.chatroom_chats.put({
-            id: 'old', chatroom: NAME, sender: NAME, sender_uid: peer.uid, message: 'earlier', created: '2026-01-01T00:00:00.000Z'
-        });
-
-        const chats = new ChatroomChats(NAME);
-
-        sendCOT.mockResolvedValue(true);
-        await chats.send('hello', me, worker);
-
-        expect(chats.chatroom).toBe(ROOM);
-        expect(await db.chatroom.get(NAME)).toBeUndefined();
-        expect((await db.chatroom.get(ROOM))?.name).toBe(NAME);
-        expect((await chats.list()).map((chat) => chat.message)).toEqual(['earlier', 'hello']);
-    });
-
-    it('addresses a Group Chatroom by its id', async () => {
-        sendCOT.mockResolvedValue(true);
-        await db.chatroom.put({
-            id: 'group-1',
-            name: 'Search Team',
-            type: 'group',
-            members: [{ uid: 'ANDROID-alpha', callsign: 'Alpha' }],
-            created: '',
-            updated: '',
-            last_read: null
-        });
-
-        const chats = new ChatroomChats('group-1');
-
-        await chats.send('hello', me, worker);
-
-        expect(sendCOT.mock.calls[0][0].group).toBe('group-1');
-        expect(sendCOT.mock.calls[0][0].chatroom).toBe('Search Team');
-        expect(sendCOT.mock.calls[0][0].to).toBeUndefined();
-        expect(chats.chatroom).toBe('group-1');
-        expect((await chats.list())[0].status).toBe(ChatStatus.Sending);
-    });
-
-    it('does not send to a Group Chatroom with no known members', async () => {
-        await db.chatroom.put({ id: 'group-1', name: 'Search Team', type: 'group', created: '', updated: '', last_read: null });
-
-        const chats = new ChatroomChats('group-1');
-
-        await chats.send('hello', me, worker);
-
-        expect(sendCOT).not.toHaveBeenCalled();
         expect((await chats.list())[0].status).toBe(ChatStatus.Failed);
     });
 
-    it('broadcasts to All Chat Rooms without members', async () => {
-        sendCOT.mockResolvedValue(true);
-        await db.chatroom.put({ id: BroadcastChatroom, name: BroadcastChatroom, type: 'group', created: '', updated: '', last_read: null });
+    it('merges a refresh into what is stored, then only asks for what changed', async () => {
+        const first = message({ body: 'first', updated: '2026-01-01T00:00:01.000000Z' });
+        await db.chatroom_chats.put({
+            id: 'local-unsent',
+            chatroom: ROOM,
+            sender: me.callsign,
+            sender_uid: me.uid,
+            message: 'unsent',
+            created: new Date().toISOString(),
+            status: ChatStatus.Sending,
+        });
 
-        const chats = new ChatroomChats(BroadcastChatroom);
+        server.GET.mockResolvedValueOnce({ data: { total: 80, items: [first] } });
 
-        await chats.send('hello', me, worker);
+        const chats = new ChatroomChats(ROOM);
+        await chats.refresh();
 
-        expect(sendCOT.mock.calls[0][0].group).toBe(BroadcastChatroom);
+        expect(chats.more).toBe(true);
+        expect(server.GET.mock.calls[0][1].params.query).toEqual({ limit: 50 });
+        expect((await chats.list()).map((chat) => chat.message).sort()).toEqual(['first', 'unsent']);
+
+        server.GET.mockResolvedValueOnce({
+            data: { total: 1, items: [{ ...first, body: 'first (edited)', edited: '2026-01-01T00:00:02.000000Z', updated: '2026-01-01T00:00:02.000000Z' }] },
+        });
+
+        await chats.refresh();
+
+        expect(server.GET.mock.calls[1][1].params.query).toEqual({ limit: 200, since: '2026-01-01T00:00:01.000000Z' });
+        expect((await db.chatroom_chats.get(first.id))?.message).toBe('first (edited)');
+        expect((await db.chatroom.get(ROOM))?.synced).toBe('2026-01-01T00:00:02.000000Z');
+    });
+
+    it('pages older messages from the oldest stored one', async () => {
+        const newest = message({ created: '2026-01-02T00:00:00.000000Z' });
+        const oldest = message({ created: '2026-01-01T00:00:00.000000Z' });
+        await storeChat(newest);
+        await storeChat(oldest);
+
+        server.GET.mockResolvedValueOnce({ data: { total: 1, items: [message({ created: '2025-12-31T00:00:00.000000Z' })] } });
+
+        const chats = new ChatroomChats(ROOM);
+        await chats.older();
+
+        expect(server.GET.mock.calls[0][1].params.query).toEqual({ limit: 50, before: oldest.id });
+        expect(chats.more).toBe(false);
+        expect(await db.chatroom_chats.count()).toBe(3);
+    });
+
+    it('acknowledges unread messages once', async () => {
+        const unread = message();
+        await storeChat(unread);
+        await db.chatroom.update(ROOM, { unread: 1 });
+
+        server.PATCH.mockResolvedValue({ data: { last_read: unread.created, unread: 0 } });
+
+        const chats = new ChatroomChats(ROOM);
+        await chats.markRead();
+        await chats.markRead();
+
+        expect(server.PATCH).toHaveBeenCalledTimes(1);
+        expect(server.PATCH.mock.calls[0][1].body).toEqual({ last_read: unread.id });
+        expect((await db.chatroom.get(ROOM))?.unread).toBe(0);
+    });
+
+    it('never moves the delivery status of a message backwards', async () => {
+        const sent = message({ sender_uid: me.uid, status: 'read' });
+        await storeChat(sent);
+
+        expect(await storeChat({ ...sent, status: 'delivered' })).toBe(false);
+        expect((await db.chatroom_chats.get(sent.id))?.status).toBe(ChatStatus.Read);
+    });
+
+    it('deletes a message that never reached the server locally', async () => {
+        await db.chatroom_chats.put({
+            id: 'local-failed',
+            chatroom: ROOM,
+            sender: me.callsign,
+            sender_uid: me.uid,
+            message: 'failed',
+            created: new Date().toISOString(),
+            status: ChatStatus.Failed,
+        });
+
+        await new ChatroomChats(ROOM).remove('local-failed');
+
+        expect(server.DELETE).not.toHaveBeenCalled();
+        expect(await db.chatroom_chats.count()).toBe(0);
+    });
+});
+
+describe('Chatroom', () => {
+    beforeEach(async () => {
+        vi.clearAllMocks();
+        await db.chatroom.clear();
+        await db.chatroom_chats.clear();
+    });
+
+    it('drops Chatrooms the server no longer lists and keeps the sync position of the rest', async () => {
+        await db.chatroom.put(room({ synced: '2026-01-01T00:00:01.000000Z' }));
+        await db.chatroom.put(room({ id: 'stale' }));
+        await db.chatroom_chats.put({ id: 'm', chatroom: 'stale', sender: '', sender_uid: '', message: '', created: '' });
+
+        const { synced: _synced, ...listed } = room({ unread: 3 });
+        void _synced;
+
+        server.GET.mockResolvedValue({ data: { total: 1, items: [listed] } });
+
+        await Chatroom.sync();
+
+        expect(await db.chatroom.get('stale')).toBeUndefined();
+        expect(await db.chatroom_chats.count()).toBe(0);
+        expect((await db.chatroom.get(ROOM))?.unread).toBe(3);
+        expect((await db.chatroom.get(ROOM))?.synced).toBe('2026-01-01T00:00:01.000000Z');
+    });
+
+    it('opens the Direct Chatroom of a Contact through the API', async () => {
+        server.POST.mockResolvedValue({ data: room() });
+
+        const opened = await Chatroom.direct(peer);
+
+        expect(server.POST.mock.calls[0][1].body).toEqual({ type: 'direct', member: peer });
+        expect(opened.id).toBe(ROOM);
+        expect((await db.chatroom.get(ROOM))?.name).toBe(peer.callsign);
+    });
+
+    it('does not count muted Chatrooms as unread', async () => {
+        await db.chatroom.put(room({ unread: 2 }));
+        await db.chatroom.put(room({ id: 'muted', unread: 5, muted: true }));
+
+        const count = await new Promise<number>((resolve) => {
+            const sub = Chatroom.liveUnreadCount().subscribe((value) => {
+                resolve(value);
+                queueMicrotask(() => sub.unsubscribe());
+            });
+        });
+
+        expect(count).toBe(2);
     });
 });

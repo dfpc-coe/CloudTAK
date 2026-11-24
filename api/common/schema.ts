@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
-import { primaryKey, foreignKey } from 'drizzle-orm/pg-core';
+import { primaryKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
-import type { ProfileVideoPosition, ChatroomMember } from './types.js';
+import type { ProfileVideoPosition, ChatroomExternalMetadata, ChatMessageMetadata } from './types.js';
 import type { StyleContainer } from './style.js';
 import { CoreEntityLink, CoreEntityStyle, CoreEventMission } from './types.js';
 import type { FilterContainer } from './filter.js';
@@ -17,7 +17,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, ProfileChatroomType, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status,
+    ChatMessageStatus, ChatroomType, ChatMemberRole, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status,
     CoreEntityTimeline_Type, LayerMapping_Destination,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index, uniqueIndex } from 'drizzle-orm/pg-core';
@@ -364,51 +364,102 @@ export const ProfileFileChannel = pgTable('profile_file_channel', {
     file_channel_idx: unique().on(table.file, table.channel),
 }));
 
-export const ProfileChatroom = pgTable('profile_chatroom', {
-    username: text().notNull().references(() => Profile.username),
-    // Direct: UID of the other party, Group: GeoChat group id
-    id: text().notNull(),
+export const Chatroom = pgTable('chatroom', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
-    type: text().$type<ProfileChatroomType>().notNull().default(ProfileChatroomType.DIRECT),
-    name: text().notNull(),
-    parent: text(),
-    members: jsonb().$type<Array<ChatroomMember>>().notNull().default([]),
-    hierarchy: jsonb().$type<Feature.ChatHierarchyNode>(),
-    last_read: timestamp({ withTimezone: true, mode: 'string' }),
-}, (table) => {
-    return {
-        pk: primaryKey({ columns: [table.username, table.id] }),
-    };
+    type: text().$type<ChatroomType>().notNull(),
+    name: text().notNull().default(''),
+
+    // Natural key of rooms that exist once per pair or per user - direct:<uid>|<uid>, broadcast:<username>
+    key: text().unique(),
 });
 
-export const ProfileChat = pgTable('profile_chats', {
+export const ChatroomExternal = pgTable('chatroom_external', {
     id: serial().primaryKey(),
-    username: text().notNull().references(() => Profile.username),
+    chatroom: uuid().notNull().references(() => Chatroom.id, { onDelete: 'cascade' }),
+    system: text().notNull(),
+    external_id: text().notNull(),
+    metadata: jsonb().$type<ChatroomExternalMetadata>().notNull().default({}),
+}, (table) => ({
+    system_external_idx: unique('chatroom_external_system_external_id_idx').on(table.system, table.external_id),
+    chatroom_idx: index('chatroom_external_chatroom_idx').on(table.chatroom),
+}));
+
+export const ChatroomMember = pgTable('chatroom_member', {
+    id: serial().primaryKey(),
+    chatroom: uuid().notNull().references(() => Chatroom.id, { onDelete: 'cascade' }),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    // UID the member is known by on the TAK network
+    uid: text().notNull(),
+    callsign: text().notNull(),
+
+    // Set when the member is a user of this CloudTAK Server
+    username: text().references(() => Profile.username, { onDelete: 'cascade' }),
+
+    role: text().$type<ChatMemberRole>().notNull().default(ChatMemberRole.MEMBER),
+
+    // Messages before this are not visible to the member
+    joined: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    last_read: timestamp({ withTimezone: true, mode: 'string' }),
+    muted: boolean().notNull().default(false),
+}, (table) => ({
+    chatroom_uid_idx: unique('chatroom_member_chatroom_uid_idx').on(table.chatroom, table.uid),
+    username_idx: index('chatroom_member_username_idx').on(table.username),
+}));
+
+export const ChatMessage = pgTable('chat_message', {
+    id: uuid().primaryKey().default(sql`gen_random_uuid()`),
+    chatroom: uuid().notNull().references(() => Chatroom.id, { onDelete: 'cascade' }),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 
-    read: boolean().notNull().default(false),
-    chatroom: text().notNull(),
-    sender_callsign: text().notNull(),
     sender_uid: text().notNull(),
-    message_id: text().notNull(),
-    message: text().notNull(),
+    sender_callsign: text().notNull(),
 
-    // Delivery status of an outgoing message: sent, pending, failed, delivered, read
-    status: text().$type<ProfileChatStatus>(),
-}, (table) => {
-    return {
-        username_message_idx: uniqueIndex('profile_chats_username_message_id_idx').on(table.username, table.message_id),
-        chatroom_idx: index('profile_chats_username_chatroom_idx').on(table.username, table.chatroom),
-        chatroom_fk: foreignKey({
-            name: 'profile_chats_chatroom_fk',
-            columns: [table.username, table.chatroom],
-            foreignColumns: [ProfileChatroom.username, ProfileChatroom.id],
-        }).onDelete('cascade').onUpdate('cascade'),
-    };
-});
+    body: text().notNull(),
+    reply_to: uuid().references((): AnyPgColumn => ChatMessage.id, { onDelete: 'set null' }),
+    metadata: jsonb().$type<ChatMessageMetadata>().notNull().default({}),
+
+    edited: timestamp({ withTimezone: true, mode: 'string' }),
+    deleted: timestamp({ withTimezone: true, mode: 'string' }),
+
+    // Furthest delivery state reached by any recipient: sent, pending, failed, delivered, read
+    status: text().$type<ChatMessageStatus>(),
+}, (table) => ({
+    chatroom_created_idx: index('chat_message_chatroom_created_idx').on(table.chatroom, table.created),
+}));
+
+export const ChatMessageExternal = pgTable('chat_message_external', {
+    id: serial().primaryKey(),
+    message: uuid().notNull().references(() => ChatMessage.id, { onDelete: 'cascade' }),
+    chatroom: uuid().notNull().references(() => Chatroom.id, { onDelete: 'cascade' }),
+    system: text().notNull(),
+    external_id: text().notNull(),
+}, (table) => ({
+    chatroom_system_external_idx: unique('chat_message_external_chatroom_system_external_id_idx').on(table.chatroom, table.system, table.external_id),
+    message_idx: index('chat_message_external_message_idx').on(table.message),
+}));
+
+export const ChatMessageReceipt = pgTable('chat_message_receipt', {
+    message: uuid().notNull().references(() => ChatMessage.id, { onDelete: 'cascade' }),
+    uid: text().notNull(),
+    delivered: timestamp({ withTimezone: true, mode: 'string' }),
+    read: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => ({
+    pk: primaryKey({ columns: [table.message, table.uid] }),
+}));
+
+export const ChatReaction = pgTable('chat_reaction', {
+    message: uuid().notNull().references(() => ChatMessage.id, { onDelete: 'cascade' }),
+    uid: text().notNull(),
+    emoji: text().notNull(),
+    created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+}, (table) => ({
+    pk: primaryKey({ columns: [table.message, table.uid, table.emoji] }),
+}));
 
 export const VideoLease = pgTable('video_lease', {
     id: serial().primaryKey(),

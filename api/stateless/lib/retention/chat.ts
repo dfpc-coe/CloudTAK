@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 
 import type ConfigStateless from '../../config.js';
-import { ProfileChat, ProfileChatroom } from '../../../common/schema.js';
+import { ChatMessage, Chatroom } from '../../../common/schema.js';
 import type { RetentionTask, RetentionTaskResult } from '../retention.js';
 
 const task: RetentionTask = {
@@ -12,20 +12,20 @@ const task: RetentionTask = {
         const days = (await config.models.Setting.typed('retention::chat::days')).value || 30;
         const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-        const deleted = await config.models.ProfileChat.pool.delete(ProfileChat)
+        const deleted = await config.models.ChatMessage.pool.delete(ChatMessage)
             .where(sql`
-                ${ProfileChat.created} < ${cutoff.toISOString()}::timestamptz
+                ${ChatMessage.created} < ${cutoff.toISOString()}::timestamptz
             `)
             .returning({ deleted: sql<number>`1` });
 
-        await config.models.ProfileChatroom.pool.delete(ProfileChatroom)
+        await config.models.Chatroom.pool.delete(Chatroom)
             .where(sql`
-                profile_chatroom.updated < ${cutoff.toISOString()}::timestamptz
+                chatroom.type = 'direct'
+                AND chatroom.updated < ${cutoff.toISOString()}::timestamptz
                 AND NOT EXISTS (
                     SELECT 1
-                        FROM profile_chats
-                        WHERE profile_chats.username = profile_chatroom.username
-                            AND profile_chats.chatroom = profile_chatroom.id
+                        FROM chat_message
+                        WHERE chat_message.chatroom = chatroom.id
                 )
             `);
 

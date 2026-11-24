@@ -35,18 +35,54 @@ class FakeSocket {
     send() { /* noop */ }
 }
 
+const room = {
+    id: '3f0c6a0e-0000-4000-8000-000000000001',
+    type: 'direct',
+    name: 'ALPHA',
+    role: 'member',
+    muted: false,
+    members: [],
+    created: '2026-01-01T00:00:00.000000Z',
+    updated: '2026-01-01T00:00:00.000000Z',
+    unread: 0,
+    last_read: null,
+};
+
 const chat = {
     type: 'chat',
     connection: 'me@example.com',
     data: {
-        chatroom: 'ME',
-        room: { id: 'ANDROID-alpha', name: 'ALPHA', type: 'direct' },
-        messageId: 'message-1',
-        from: { uid: 'ANDROID-alpha', callsign: 'ALPHA' },
-        message: 'hello',
-        time: '2026-01-01T00:00:00.000Z',
+        chatroom: { id: room.id, type: 'direct', name: 'ALPHA', muted: false },
+        message: {
+            id: 'message-1',
+            chatroom: room.id,
+            created: '2026-01-01T00:00:01.000000Z',
+            updated: '2026-01-01T00:00:01.000000Z',
+            sender_uid: 'ANDROID-alpha',
+            sender_callsign: 'ALPHA',
+            body: 'hello',
+            reply_to: null,
+            metadata: {},
+            edited: null,
+            deleted: null,
+            status: null,
+            reactions: [],
+        },
     },
 };
+
+function atlasMock(): Atlas {
+    return {
+        token: 'token',
+        profile: {
+            profile_callsign: { value: 'ME' },
+            username: 'me@example.com',
+            uid: () => 'ANDROID-CloudTAK-me@example.com',
+        },
+        sync: { started: false, fullSync: vi.fn(async () => undefined) },
+        postMessage: vi.fn(async () => undefined),
+    } as unknown as Atlas;
+}
 
 describe('AtlasConnection chat', () => {
     beforeEach(async () => {
@@ -63,14 +99,9 @@ describe('AtlasConnection chat', () => {
     });
 
     it('treats a redelivered message as already seen', async () => {
-        const atlas = {
-            token: 'token',
-            profile: { profile_callsign: { value: 'ME' }, username: 'me@example.com' },
-            sync: { started: false, fullSync: vi.fn(async () => undefined) },
-            postMessage: vi.fn(async () => undefined),
-        } as unknown as Atlas;
+        server.GET.mockResolvedValue({ data: room } as never);
 
-        const conn = new AtlasConnection(atlas);
+        const conn = new AtlasConnection(atlasMock());
         conn.connect('me@example.com');
         const sock = FakeSocket.instances[0];
         sock.open();
@@ -79,48 +110,85 @@ describe('AtlasConnection chat', () => {
         await vi.waitFor(async () => expect(await db.chatroom_chats.count()).toBe(1));
         await vi.waitFor(() => expect(notify).toHaveBeenCalledTimes(1));
 
-        await db.chatroom.update('ANDROID-alpha', { unread: 0 });
+        expect((await db.chatroom.get(room.id))?.unread).toBe(1);
+        expect(notify.mock.calls[0]).toContain(`/menu/chats/${room.id}`);
+
+        await db.chatroom.update(room.id, { unread: 0 });
 
         sock.emit('message', { data: JSON.stringify(chat) });
         await new Promise((resolve) => setTimeout(resolve, 50));
 
         expect(await db.chatroom_chats.count()).toBe(1);
-        expect((await db.chatroom.get('ANDROID-alpha'))?.unread).toBe(0);
+        expect((await db.chatroom.get(room.id))?.unread).toBe(0);
         expect(notify).toHaveBeenCalledTimes(1);
 
         conn.destroy();
     });
 
-    it('stores the members of a Group Chatroom and drops a Group its owner deleted', async () => {
-        const atlas = {
-            token: 'token',
-            profile: { profile_callsign: { value: 'ME' }, username: 'me@example.com' },
-            sync: { started: false, fullSync: vi.fn(async () => undefined) },
-            postMessage: vi.fn(async () => undefined),
-        } as unknown as Atlas;
+    it('does not notify for the echo of a sent message or in a muted Chatroom', async () => {
+        await db.chatroom.put(room as never);
 
-        const conn = new AtlasConnection(atlas);
+        const conn = new AtlasConnection(atlasMock());
         conn.connect('me@example.com');
         const sock = FakeSocket.instances[0];
         sock.open();
 
-        const members = [{ uid: 'ANDROID-alpha', callsign: 'ALPHA' }];
+        sock.emit('message', {
+            data: JSON.stringify({
+                ...chat,
+                data: { ...chat.data, message: { ...chat.data.message, id: 'own', sender_uid: 'ANDROID-CloudTAK-me@example.com' } },
+            }),
+        });
 
         sock.emit('message', {
             data: JSON.stringify({
                 ...chat,
-                data: { ...chat.data, room: { id: 'group-1', name: 'Search Team', type: 'group', members } },
+                data: { chatroom: { ...chat.data.chatroom, muted: true }, message: { ...chat.data.message, id: 'muted' } },
             }),
         });
 
-        await vi.waitFor(async () => expect((await db.chatroom.get('group-1'))?.members).toEqual(members));
-        expect(await db.chatroom_chats.count()).toBe(1);
+        await vi.waitFor(async () => expect(await db.chatroom_chats.count()).toBe(2));
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(notify).not.toHaveBeenCalled();
+        expect((await db.chatroom.get(room.id))?.unread).toBe(1);
+
+        conn.destroy();
+    });
+
+    it('applies changes to messages & Chatrooms and drops a Chatroom the user left', async () => {
+        await db.chatroom.put(room as never);
+
+        const conn = new AtlasConnection(atlasMock());
+        conn.connect('me@example.com');
+        const sock = FakeSocket.instances[0];
+        sock.open();
+
+        sock.emit('message', { data: JSON.stringify(chat) });
+        await vi.waitFor(async () => expect(await db.chatroom_chats.count()).toBe(1));
 
         sock.emit('message', {
-            data: JSON.stringify({ type: 'chatroom:delete', connection: 'me@example.com', data: { id: 'group-1' } }),
+            data: JSON.stringify({
+                ...chat,
+                type: 'chat:update',
+                data: { ...chat.data, message: { ...chat.data.message, body: 'edited', edited: '2026-01-01T00:00:02.000000Z' } },
+            }),
         });
 
-        await vi.waitFor(async () => expect(await db.chatroom.get('group-1')).toBeUndefined());
+        await vi.waitFor(async () => expect((await db.chatroom_chats.get('message-1'))?.message).toBe('edited'));
+        expect(notify).toHaveBeenCalledTimes(1);
+
+        sock.emit('message', {
+            data: JSON.stringify({ type: 'chatroom', connection: 'me@example.com', data: { ...room, name: 'Renamed' } }),
+        });
+
+        await vi.waitFor(async () => expect((await db.chatroom.get(room.id))?.name).toBe('Renamed'));
+
+        sock.emit('message', {
+            data: JSON.stringify({ type: 'chatroom:delete', connection: 'me@example.com', data: { id: room.id } }),
+        });
+
+        await vi.waitFor(async () => expect(await db.chatroom.get(room.id)).toBeUndefined());
         expect(await db.chatroom_chats.count()).toBe(0);
 
         conn.destroy();

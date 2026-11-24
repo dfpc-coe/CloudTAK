@@ -64,6 +64,61 @@
         "query": false,
         "res": true
     },
+    "GET /chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /chatroom": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /chatroom/:chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /chatroom/:chatroom": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /chatroom/:chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /chatroom/:chatroom/member": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /chatroom/:chatroom/message": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /chatroom/:chatroom/message": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /chatroom/:chatroom/message/:message": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /chatroom/:chatroom/message/:message": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /chatroom/:chatroom/message/:message/reaction": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /config": {
         "body": false,
         "query": true,
@@ -1428,36 +1483,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "GET /profile/chatroom": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /profile/chatroom": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "PATCH /profile/chatroom/:chatroom": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /profile/chatroom/:chatroom": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/chatroom/:chatroom/chat": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "DELETE /profile/chatroom/:chatroom/chat": {
-        "body": false,
-        "query": true,
-        "res": true
     },
     "GET /profile/feature": {
         "body": false,

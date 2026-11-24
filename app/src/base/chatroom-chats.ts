@@ -1,18 +1,12 @@
 import { db } from '../database.ts';
 import { server } from '../std.ts';
-import type {
-    ProfileChatList,
-    APIProfileChat
-} from '../types.ts'
+import type { ChatMessage } from '../types.ts';
 import type { DBChatroomChat } from '../database.ts';
-import { ChatStatus } from '../database.ts';
-import type Atlas from '../workers/atlas.ts';
-import type { Remote } from 'comlink';
-import ContactManager from './contact.ts';
+import { ChatStatus, ChatStatusRank } from '../database.ts';
 
 export const SEND_TIMEOUT_MS = 15000;
 
-export const BroadcastChatroom = 'All Chat Rooms';
+const PAGE = 50;
 
 type Sendable = { status?: ChatStatus, created: string };
 
@@ -34,30 +28,48 @@ export function failIfSending(chat: Sendable): void {
     if (chat.status === ChatStatus.Sending) chat.status = ChatStatus.Failed;
 }
 
+export function toChat(message: ChatMessage): DBChatroomChat {
+    return {
+        id: message.id,
+        chatroom: message.chatroom,
+        sender: message.sender_callsign,
+        sender_uid: message.sender_uid,
+        message: message.body,
+        created: message.created,
+        updated: message.updated,
+        status: (message.status as ChatStatus | null) ?? undefined,
+        reply_to: message.reply_to,
+        edited: message.edited,
+        deleted: message.deleted,
+        reactions: message.reactions
+    };
+}
+
 /**
- * Move a Chatroom that was keyed by callsign, and the Chats in it, onto the UID behind it
+ * Store a Message from the server, returning true if it was not known before
+ * The delivery status of a Message only ever moves forward
  */
-export async function rekeyChatroom(from: string, to: string, name?: string): Promise<void> {
-    if (from === to) return;
+export async function storeChat(message: ChatMessage): Promise<boolean> {
+    return await db.transaction('rw', db.chatroom_chats, async () => {
+        const existing = await db.chatroom_chats.get(message.id);
+        const chat = toChat(message);
 
-    await db.transaction('rw', db.chatroom, db.chatroom_chats, async () => {
-        const room = await db.chatroom.get(from);
-        if (!room) return;
-
-        if (!await db.chatroom.get(to)) {
-            await db.chatroom.put({ ...room, id: to, name: name || room.name });
+        if (existing?.status && existing.status !== ChatStatus.Sending && existing.status !== ChatStatus.Failed) {
+            const known = ChatStatusRank[existing.status];
+            if (!chat.status || ChatStatusRank[chat.status] < known) chat.status = existing.status;
         }
 
-        await db.chatroom.delete(from);
-        await db.chatroom_chats.where('chatroom').equals(from).modify({ chatroom: to });
+        await db.chatroom_chats.put(chat);
+
+        return !existing;
     });
 }
 
 export default class ChatroomChats {
     chatroom: string;
 
-    // The server holds unread messages that have not been acknowledged with a Read Receipt
-    unacked = false;
+    // Older Messages exist on the server than are stored locally
+    more = false;
 
     constructor(
         chatroom: string
@@ -65,58 +77,64 @@ export default class ChatroomChats {
         this.chatroom = chatroom;
     }
 
+    /**
+     * Fetch the newest Messages, or everything that changed since the last refresh
+     */
     async refresh(): Promise<void> {
-        const res = await server.GET('/api/profile/chatroom/{:chatroom}/chat', {
+        const room = await db.chatroom.get(this.chatroom);
+
+        const res = await server.GET('/api/chatroom/{:chatroom}/message', {
             params: {
                 path: { ':chatroom': this.chatroom },
-                query: { limit: 50, page: 0, order: 'desc', sort: 'created' }
+                query: room?.synced ? { limit: 200, since: room.synced } : { limit: PAGE }
             }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        const list = res.data as ProfileChatList;
+        for (const message of res.data.items) await storeChat(message);
 
-        this.unacked = list.items.some((chat) => !(chat as APIProfileChat).read);
+        if (!room?.synced) this.more = res.data.total > res.data.items.length;
 
-        const remote = new Set(list.items.map((chat) => (chat as APIProfileChat).message_id));
+        const synced = res.data.items.reduce((newest, message) => {
+            return message.updated > newest ? message.updated : newest;
+        }, room?.synced ?? '');
 
-        await db.transaction('rw', db.chatroom_chats, async () => {
-            const unsent = (await db.chatroom_chats
-                .where('chatroom')
-                .equals(this.chatroom)
-                .toArray()
-            ).filter((chat) => isUnsent(chat) && !remote.has(chat.id));
+        if (synced) await db.chatroom.update(this.chatroom, { synced });
+    }
 
-            await db.chatroom_chats
-                .where('chatroom')
-                .equals(this.chatroom)
-                .delete();
+    /**
+     * Fetch the page of Messages before the oldest one stored locally
+     */
+    async older(): Promise<void> {
+        const oldest = (await this.list()).find((chat) => !isUnsent(chat));
+        if (!oldest) return;
 
-            await db.chatroom_chats.bulkPut(unsent);
-
-            for (const chat of list.items) {
-                const c = chat as APIProfileChat;
-                await db.chatroom_chats.put({
-                    id: c.message_id,
-                    chatroom: this.chatroom,
-                    sender: c.sender_callsign,
-                    sender_uid: c.sender_uid,
-                    message: c.message,
-                    // Postgres timestamps are not ISO 8601 formatted - normalize
-                    // so they sort consistently against locally created messages
-                    created: new Date(c.created).toISOString(),
-                    status: (c.status as ChatStatus | null) ?? undefined
-                });
+        const res = await server.GET('/api/chatroom/{:chatroom}/message', {
+            params: {
+                path: { ':chatroom': this.chatroom },
+                query: { limit: PAGE, before: oldest.id }
             }
         });
 
-        const activeItem = list.items[list.items.length - 1];
-        if (activeItem) {
-            await db.chatroom.update(this.chatroom, {
-                updated: (activeItem as APIProfileChat).created
-            });
-        }
+        if (res.error) throw new Error(res.error.message);
+
+        for (const message of res.data.items) await storeChat(message);
+
+        this.more = res.data.total > res.data.items.length;
+    }
+
+    async search(filter: string): Promise<Array<DBChatroomChat>> {
+        const res = await server.GET('/api/chatroom/{:chatroom}/message', {
+            params: {
+                path: { ':chatroom': this.chatroom },
+                query: { limit: PAGE, filter }
+            }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        return res.data.items.map(toChat).reverse();
     }
 
     async list(
@@ -133,8 +151,6 @@ export default class ChatroomChats {
             .equals(this.chatroom)
             .toArray();
 
-        // Oldest to most recent - compare as dates as stored timestamps
-        // may be a mix of ISO 8601 and Postgres formatted strings
         chats.sort((a, b) => {
             return new Date(a.created).getTime() - new Date(b.created).getTime();
         });
@@ -144,37 +160,31 @@ export default class ChatroomChats {
 
     async markRead(): Promise<void> {
         const room = await db.chatroom.get(this.chatroom);
-
-        if (!room?.unread && !this.unacked) return;
+        if (!room?.unread) return;
 
         const newest = (await this.list()).filter((chat) => !isUnsent(chat)).pop();
         if (!newest) return;
 
-        if (room?.unread) {
-            await db.chatroom.update(this.chatroom, { unread: 0 });
-        }
+        await db.chatroom.update(this.chatroom, { unread: 0 });
 
-        this.unacked = false;
-
-        const res = await server.PATCH('/api/profile/chatroom/{:chatroom}', {
+        const res = await server.PATCH('/api/chatroom/{:chatroom}', {
             params: { path: { ':chatroom': this.chatroom } },
             body: { last_read: newest.id }
         });
 
         if (res.error) {
-            this.unacked = true;
+            await db.chatroom.update(this.chatroom, { unread: room.unread });
             console.error('Failed to mark Chats as read', res.error);
             return;
         }
 
-        await db.chatroom.update(this.chatroom, { last_read: res.data.last_read });
+        await db.chatroom.update(this.chatroom, { last_read: res.data.last_read, unread: res.data.unread });
     }
 
     async send(
         message: string,
         sender: { uid: string, callsign: string },
-        worker: Remote<Atlas>,
-        recipient?: { uid: string, callsign: string }
+        opts: { reply_to?: string, location?: number[] } = {}
     ): Promise<void> {
         const chat: DBChatroomChat = {
             id: crypto.randomUUID(),
@@ -183,7 +193,8 @@ export default class ChatroomChats {
             sender_uid: sender.uid,
             message: message,
             created: new Date().toISOString(),
-            status: ChatStatus.Sending
+            status: ChatStatus.Sending,
+            reply_to: opts.reply_to ?? null
         };
 
         await db.chatroom.update(this.chatroom, {
@@ -192,18 +203,13 @@ export default class ChatroomChats {
 
         await db.chatroom_chats.put(chat);
 
-        await this.dispatch(chat, sender, worker, recipient);
+        await this.dispatch(chat, opts.location);
     }
 
     /**
      * Resend a message under its original id so recipients that did get it don't see it twice
      */
-    async retry(
-        id: string,
-        sender: { uid: string, callsign: string },
-        worker: Remote<Atlas>,
-        recipient?: { uid: string, callsign: string }
-    ): Promise<void> {
+    async retry(id: string): Promise<void> {
         const chat = await db.chatroom_chats.get(id);
         if (!chat) return;
 
@@ -212,77 +218,68 @@ export default class ChatroomChats {
 
         await db.chatroom_chats.put(chat);
 
-        await this.dispatch(chat, sender, worker, recipient);
+        await this.dispatch(chat);
     }
 
-    private async dispatch(
-        chat: DBChatroomChat,
-        sender: { uid: string, callsign: string },
-        worker: Remote<Atlas>,
-        recipient?: { uid: string, callsign: string }
-    ): Promise<void> {
+    private async dispatch(chat: DBChatroomChat, location?: number[]): Promise<void> {
         try {
-            const room = await db.chatroom.get(this.chatroom);
-
-            const group = room?.type === 'group' ? room : undefined;
-
-            if (group && this.chatroom !== BroadcastChatroom && !group.members?.length) {
-                throw new Error('Group Chatroom has no known members');
-            }
-
-            if (!group) {
-                recipient ??= await this.recipient(sender, room?.name || this.chatroom);
-
-                if (recipient.uid !== this.chatroom) {
-                    await rekeyChatroom(this.chatroom, recipient.uid, recipient.callsign);
-                    this.chatroom = recipient.uid;
-                    chat.chatroom = recipient.uid;
-                }
-            }
-
-            const location = (await worker.profile?.location)?.coordinates || [0, 0];
-
-            const sent = await worker.conn.sendCOT({
-                chatroom: group ? group.name : recipient?.callsign,
-                from: {
-                    uid: sender.uid,
-                    callsign: sender.callsign
+            const res = await server.POST('/api/chatroom/{:chatroom}/message', {
+                params: { path: { ':chatroom': this.chatroom } },
+                body: {
+                    id: chat.id,
+                    body: chat.message,
+                    ...(chat.reply_to ? { reply_to: chat.reply_to } : {}),
+                    ...(location && (location[0] !== 0 || location[1] !== 0) ? { metadata: { location } } : {})
                 },
-                ...(group ? { group: this.chatroom } : { to: recipient }),
-                message: chat.message,
-                messageId: chat.id,
-                time: chat.created,
-                location
-            }, 'chat');
+                signal: AbortSignal.timeout(SEND_TIMEOUT_MS)
+            });
 
-            if (!sent) throw new Error('Not connected to the CloudTAK Server');
+            if (res.error) throw new Error(res.error.message);
+
+            await db.chatroom_chats.put(toChat(res.data));
         } catch (err) {
             console.error('Failed to send Chat', err);
             await db.chatroom_chats.where('id').equals(chat.id).modify(failIfSending);
+        }
+    }
+
+    async edit(id: string, message: string): Promise<void> {
+        const res = await server.PATCH('/api/chatroom/{:chatroom}/message/{:message}', {
+            params: { path: { ':chatroom': this.chatroom, ':message': id } },
+            body: { body: message }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        await storeChat(res.data);
+    }
+
+    async remove(id: string): Promise<void> {
+        const chat = await db.chatroom_chats.get(id);
+
+        // A Message that never reached the server only exists here
+        if (chat && isUnsent(chat)) {
+            await db.chatroom_chats.delete(id);
             return;
         }
 
-        setTimeout(() => {
-            void db.chatroom_chats.where('id').equals(chat.id).modify(failIfSending);
-        }, SEND_TIMEOUT_MS);
+        const res = await server.DELETE('/api/chatroom/{:chatroom}/message/{:message}', {
+            params: { path: { ':chatroom': this.chatroom, ':message': id } }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        await storeChat(res.data);
     }
 
-    /**
-     * A Direct Chatroom is keyed by the UID of the other party, unless it predates
-     * UID keyed Chatrooms, in which case it is keyed by a callsign that has to be resolved
-     */
-    private async recipient(
-        sender: { uid: string, callsign: string },
-        name: string
-    ): Promise<{ uid: string, callsign: string }> {
-        if (this.chatroom !== name) return { uid: this.chatroom, callsign: name };
+    async react(id: string, emoji: string, active: boolean): Promise<void> {
+        const res = await server.PUT('/api/chatroom/{:chatroom}/message/{:message}/reaction', {
+            params: { path: { ':chatroom': this.chatroom, ':message': id } },
+            body: { emoji, active }
+        });
 
-        const single = (await this.list()).find((c) => c.sender_uid !== sender.uid);
-        if (single) return { uid: single.sender_uid, callsign: single.sender };
+        if (res.error) throw new Error(res.error.message);
 
-        const contact = await ContactManager.getByCallsign(name);
-        if (contact) return { uid: contact.uid, callsign: contact.callsign };
-
-        return { uid: this.chatroom, callsign: name };
+        await storeChat(res.data);
     }
 }

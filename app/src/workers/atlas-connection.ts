@@ -12,7 +12,8 @@ import { OriginMode } from '../base/cot.ts';
 import { WorkerMessageType } from '../utils/events.ts';
 import type { SyncTriggerReason, SyncTriggerBody } from '../utils/events.ts';
 import type { SyncEvent } from './atlas-sync.ts';
-import type { Feature, Import, Chat } from '../types.ts';
+import type { Feature, Import, ChatEvent, Chatroom as APIChatroom } from '../types.ts';
+import { storeChat } from '../base/chatroom-chats.ts';
 
 const RECONNECT_BACKOFF_STEP_MS = 5000;
 const RECONNECT_BACKOFF_MAX_MS = 30000;
@@ -359,49 +360,41 @@ export default class AtlasConnection {
                 } else {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
-            } else if (body.type === 'chat') {
-                const chat = body.data as Chat;
+            } else if (body.type === 'chat' || body.type === 'chat:update') {
+                const event = body.data as ChatEvent;
+                const message = event.message;
 
-                const room: NonNullable<Chat['room']> = chat.room ?? { id: chat.from.uid, name: chat.from.callsign, type: 'direct' };
+                if (!await db.chatroom.get(event.chatroom.id)) await Chatroom.from(event.chatroom.id);
 
-                // A message already stored is a redelivery - not a new message
-                if (!await db.chatroom_chats.get(chat.messageId)) {
-                    if (room.type === 'direct' && !await db.chatroom.get(room.id)) {
-                        await Chatroom.rekey(room.name, room.id, room.name);
+                // A message already stored is a redelivery or a change - not a new message
+                const created = await storeChat(message);
+
+                if (created && body.type === 'chat') {
+                    const incoming = message.sender_uid !== this.atlas.profile.uid();
+
+                    await db.chatroom.where('id').equals(event.chatroom.id).modify(local => {
+                        if (message.created > local.updated) local.updated = message.created;
+                        if (incoming) local.unread = (local.unread || 0) + 1;
+                    });
+
+                    if (incoming && !event.chatroom.muted) {
+                        await TAKNotification.create(
+                            NotificationType.Chat,
+                            'New Chat Message',
+                            event.chatroom.type === 'direct'
+                                ? `${message.sender_callsign} says: ${message.body}`
+                                : `${message.sender_callsign} in ${event.chatroom.name} says: ${message.body}`,
+                            `/menu/chats/${event.chatroom.id}`,
+                            true
+                        );
                     }
-
-                    await Chatroom.load(room.id, { name: room.name, type: room.type });
-
-                    await db.chatroom.where('id').equals(room.id).modify(local => {
-                        if (room.members) local.members = room.members;
-                        local.updated = chat.time;
-                        local.unread = (local.unread || 0) + 1;
-                    });
-
-                    await db.chatroom_chats.put({
-                        id: chat.messageId,
-                        chatroom: room.id,
-                        sender: chat.from.callsign,
-                        sender_uid: chat.from.uid,
-                        message: chat.message,
-                        created: chat.time
-                    });
-
-                    await TAKNotification.create(
-                        NotificationType.Chat,
-                        'New Chat Message',
-                        room.type === 'group'
-                            ? `${chat.from.callsign} in ${room.name} says: ${chat.message}`
-                            : `${chat.from.callsign} says: ${chat.message}`,
-                        `/menu/chats`,
-                        true
-                    );
                 }
+            } else if (body.type === 'chatroom') {
+                await Chatroom.store(body.data as APIChatroom);
             } else if (body.type === 'chatroom:delete') {
                 const { id } = body.data as { id: string };
 
-                await db.chatroom_chats.where('chatroom').equals(id).delete();
-                await db.chatroom.delete(id);
+                await Chatroom.forget([id]);
             } else if (body.type === 'chat:receipt') {
                 const receipt = body.data as {
                     messageId: string;
@@ -412,7 +405,7 @@ export default class AtlasConnection {
 
                 if (receipt.messageId && ChatStatusRank[receipt.status] !== undefined) {
                     const progress = (chat: { status?: ChatStatus, created?: string }) => {
-                        // Messages sort by created - adopt the server-assigned timestamp so
+                        // Mission Chat sorts by created - adopt the server-assigned timestamp so
                         // ordering doesn't depend on the local clock that stamped the optimistic copy
                         if (receipt.created) {
                             chat.created = receipt.created;
@@ -422,11 +415,6 @@ export default class AtlasConnection {
                             chat.status = receipt.status;
                         }
                     };
-
-                    await db.chatroom_chats
-                        .where('id')
-                        .equals(receipt.messageId)
-                        .modify(progress);
 
                     await db.subscription_chat
                         .where('id')

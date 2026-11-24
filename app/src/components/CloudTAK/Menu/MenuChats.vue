@@ -19,6 +19,15 @@
                     stroke='1'
                 />
             </TablerIconButton>
+            <TablerIconButton
+                title='New Group'
+                @click='newGroup = true'
+            >
+                <IconUsersPlus
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerRefreshButton
                 :loading='loading'
                 @click='fetchList'
@@ -92,6 +101,11 @@
                                     :size='24'
                                     stroke='1'
                                 />
+                                <IconBroadcast
+                                    v-else-if='item.type === "broadcast"'
+                                    :size='24'
+                                    stroke='1'
+                                />
                                 <IconUser
                                     v-else
                                     :size='24'
@@ -105,7 +119,14 @@
                             >
                                 <div class='d-flex justify-content-between align-items-center w-100'>
                                     <div class='d-flex flex-column text-truncate'>
-                                        <span class='fw-bold text-truncate'>{{ item.name }}</span>
+                                        <span class='fw-bold text-truncate'>
+                                            {{ item.name }}
+                                            <IconBellOff
+                                                v-if='item.muted'
+                                                :size='14'
+                                                stroke='1'
+                                            />
+                                        </span>
                                         <span
                                             class='text-muted text-nowrap'
                                             style='font-size: 0.75rem;'
@@ -127,6 +148,13 @@
             </template>
         </template>
     </MenuTemplate>
+
+    <MenuChatGroup
+        v-if='newGroup'
+        :my-u-i-d='myUID'
+        @close='newGroup = false'
+        @saved='openGroup'
+    />
 </template>
 
 <script setup lang='ts'>
@@ -145,11 +173,16 @@ import {
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import MenuChatGroup from './MenuChatGroup.vue';
+import ProfileConfig from '../../../base/profile.ts';
 import SearchSortFilter from '../util/SearchSortFilter.vue';
 import {
     IconListCheck,
     IconUser,
     IconUsers,
+    IconUsersPlus,
+    IconBroadcast,
+    IconBellOff,
     IconPlus,
     IconLetterCase,
     IconClock,
@@ -166,6 +199,8 @@ const router = useRouter();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 const multiselect = ref(false)
+const newGroup = ref(false);
+const myUID = ref('');
 
 const paging = ref({
     filter: ''
@@ -218,8 +253,16 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
+    const username = (await ProfileConfig.get('username'))?.value;
+    myUID.value = `ANDROID-CloudTAK-${String(username ?? '')}`;
+
     await fetchList();
 });
+
+async function openGroup(id: string): Promise<void> {
+    newGroup.value = false;
+    await router.push({ name: 'home-menu-chat', params: { chatroom: id } });
+}
 
 async function deleteChats(): Promise<void> {
     if (!select.value) return;

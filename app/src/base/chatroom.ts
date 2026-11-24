@@ -1,32 +1,35 @@
 import { db, liveQuery } from '../database.ts'
 import type { DBChatroom } from '../database.ts';
 import { server } from '../std.ts';
-import ChatroomChats, { rekeyChatroom, BroadcastChatroom } from './chatroom-chats.ts';
+import ChatroomChats from './chatroom-chats.ts';
 import type { Observable } from 'dexie';
-import type { ProfileChatroomList } from '../types.ts';
+import type { Chatroom as APIChatroom, ChatroomList } from '../types.ts';
+
+export type ChatroomContact = { uid: string, callsign: string };
 
 /**
- * High Level Wrapper around the Profile Chatroom API
+ * High Level Wrapper around the Chatroom API
  *
- * A Direct Chatroom is keyed by the UID of the other party, a Group Chatroom by its GeoChat id
+ * A Chatroom is shared by its Members - users of this server are reached directly,
+ * every other Member through GeoChat on the TAK Server
  */
 export default class Chatroom {
     id: string;
     name: string;
-    type: 'direct' | 'group';
+    type: DBChatroom['type'];
     chats: ChatroomChats;
 
     constructor(room: Pick<DBChatroom, 'id' | 'name' | 'type'>) {
         this.id = room.id;
         this.name = room.name;
-        this.type = room.type ?? 'direct';
+        this.type = room.type;
         this.chats = new ChatroomChats(room.id);
     }
 
     static liveUnreadCount(): Observable<number> {
         return liveQuery(async () => {
             const chatrooms = await db.chatroom.toArray();
-            return chatrooms.reduce((acc, room) => acc + (room.unread || 0), 0);
+            return chatrooms.reduce((acc, room) => acc + (room.muted ? 0 : (room.unread || 0)), 0);
         });
     }
 
@@ -34,76 +37,101 @@ export default class Chatroom {
         return liveQuery(async () => await db.chatroom.get(id));
     }
 
-    static async from(id: string): Promise<Chatroom | undefined> {
-        const exists = await db.chatroom.get(id);
-        if (!exists) return;
+    /**
+     * Store a Chatroom from the server, keeping what is only tracked locally
+     */
+    static async store(room: APIChatroom): Promise<DBChatroom> {
+        const existing = await db.chatroom.get(room.id);
+        const stored: DBChatroom = { ...room, synced: existing?.synced };
 
-        return new Chatroom(exists);
+        await db.chatroom.put(stored);
+
+        return stored;
     }
 
-    /**
-     * Load a Chatroom from the local DB, creating it locally if it is not yet known
-     */
-    static async load(
-        id: string,
-        opts: {
-            name?: string,
-            type?: 'direct' | 'group',
-        } = {}
-    ): Promise<Chatroom> {
-        const exists = await db.chatroom.get(id);
+    static async from(id: string): Promise<Chatroom | undefined> {
+        let room = await db.chatroom.get(id);
 
-        if (exists) {
-            if (opts.name && opts.name !== exists.name) {
-                exists.name = opts.name;
-                await db.chatroom.update(id, { name: opts.name });
-            }
+        if (!room) {
+            const res = await server.GET('/api/chatroom/{:chatroom}', {
+                params: { path: { ':chatroom': id } }
+            });
 
-            return new Chatroom(exists);
+            if (res.error) return undefined;
+
+            room = await Chatroom.store(res.data);
         }
-
-        const now = new Date().toISOString();
-        const room: DBChatroom = {
-            id,
-            name: opts.name || id,
-            type: opts.type || 'direct',
-            created: now,
-            updated: now,
-            last_read: null
-        };
-
-        await db.chatroom.put(room);
 
         return new Chatroom(room);
     }
 
     /**
-     * Move a Chatroom that was keyed by callsign onto the UID behind it
+     * The 1:1 Chatroom with a Contact, created on first use
      */
-    static async rekey(from: string, to: string, name?: string): Promise<void> {
-        await rekeyChatroom(from, to, name);
-    }
-
-    static async delete(ids: string[]): Promise<void> {
-        const res = await server.DELETE('/api/profile/chatroom', {
-            params: { query: { chatroom: ids } }
+    static async direct(contact: ChatroomContact): Promise<Chatroom> {
+        const res = await server.POST('/api/chatroom', {
+            body: { type: 'direct', member: contact }
         });
 
-        if (res.error && res.response.status !== 404) throw new Error(res.error.message);
+        if (res.error) throw new Error(res.error.message);
 
+        return new Chatroom(await Chatroom.store(res.data));
+    }
+
+    static async group(name: string, members: Array<ChatroomContact>): Promise<Chatroom> {
+        const res = await server.POST('/api/chatroom', {
+            body: { type: 'group', name, members }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        return new Chatroom(await Chatroom.store(res.data));
+    }
+
+    async update(body: { name?: string, muted?: boolean }): Promise<void> {
+        const res = await server.PATCH('/api/chatroom/{:chatroom}', {
+            params: { path: { ':chatroom': this.id } },
+            body
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        this.name = res.data.name;
+        await Chatroom.store(res.data);
+    }
+
+    /**
+     * Replace the Members of a Group - only its owner can
+     */
+    async members(members: Array<ChatroomContact>): Promise<void> {
+        const res = await server.PUT('/api/chatroom/{:chatroom}/member', {
+            params: { path: { ':chatroom': this.id } },
+            body: { members }
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        await Chatroom.store(res.data);
+    }
+
+    static async forget(ids: string[]): Promise<void> {
         await db.chatroom_chats.where('chatroom').anyOf(ids).delete();
         await db.chatroom.bulkDelete(ids);
     }
 
-    async deleteChats(ids: string[]): Promise<void> {
-        const res = await server.DELETE('/api/profile/chatroom/{:chatroom}/chat', {
-            params: {
-                path: { ':chatroom': this.id },
-                query: { chat: ids }
-            }
-        });
+    /**
+     * Leave Chatrooms - the owner of a Group deletes it for every Member
+     */
+    static async delete(ids: string[]): Promise<void> {
+        for (const id of ids) {
+            const res = await server.DELETE('/api/chatroom/{:chatroom}', {
+                params: { path: { ':chatroom': id } }
+            });
 
-        if (res.error) throw new Error(res.error.message);
+            if (res.error && res.response.status !== 404) throw new Error(res.error.message);
+        }
+
+        await Chatroom.forget(ids);
     }
 
     static async list(filter?: string): Promise<DBChatroom[]> {
@@ -118,8 +146,8 @@ export default class Chatroom {
         return (await collection.sortBy('updated')).reverse();
     }
 
-    static async sync(): Promise<ProfileChatroomList> {
-        const res = await server.GET('/api/profile/chatroom');
+    static async sync(): Promise<ChatroomList> {
+        const res = await server.GET('/api/chatroom');
 
         if (res.error) throw new Error(res.error.message);
 
@@ -128,27 +156,11 @@ export default class Chatroom {
         const remote = new Set(list.items.map((room) => room.id));
         const stale = (await db.chatroom.toArray())
             .map((room) => room.id)
-            .filter((id) => !remote.has(id) && id !== BroadcastChatroom);
+            .filter((id) => !remote.has(id));
 
-        if (stale.length) {
-            await db.chatroom_chats.where('chatroom').anyOf(stale).delete();
-            await db.chatroom.bulkDelete(stale);
-        }
+        if (stale.length) await Chatroom.forget(stale);
 
-        await db.chatroom.bulkPut(list.items.map((room) => ({
-            id: room.id,
-            name: room.name,
-            type: room.type,
-            members: room.members,
-            created: new Date(room.created).toISOString(),
-            updated: new Date(room.updated).toISOString(),
-            unread: room.unread,
-            last_read: room.last_read
-        })));
-
-        if (!remote.has(BroadcastChatroom)) {
-            await Chatroom.load(BroadcastChatroom, { type: 'group' });
-        }
+        for (const room of list.items) await Chatroom.store(room);
 
         return list;
     }

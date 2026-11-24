@@ -1,11 +1,20 @@
 <template>
     <MenuTemplate
-        :name='name'
+        :name='detail?.name || name'
         :subtitle='subtitle'
         :loading='loading'
         :scroll='false'
     >
         <template #buttons>
+            <TablerIconButton
+                title='Search Messages'
+                @click='toggleSearch'
+            >
+                <IconSearch
+                    :size='32'
+                    stroke='1'
+                />
+            </TablerIconButton>
             <TablerIconButton
                 v-if='isGroup'
                 title='Members'
@@ -17,10 +26,17 @@
                 />
             </TablerIconButton>
             <TablerIconButton
-                title='Select Chats'
-                @click='multiselect = !multiselect'
+                v-if='detail'
+                :title='detail.muted ? "Unmute Notifications" : "Mute Notifications"'
+                @click='toggleMute'
             >
-                <IconListCheck
+                <IconBellOff
+                    v-if='detail.muted'
+                    :size='32'
+                    stroke='1'
+                />
+                <IconBell
+                    v-else
                     :size='32'
                     stroke='1'
                 />
@@ -31,67 +47,114 @@
             />
         </template>
         <template #default>
+            <TablerAlert
+                v-if='error'
+                :err='error'
+            />
+            <div
+                v-if='searching'
+                class='flex-shrink-0 py-2'
+            >
+                <TablerInput
+                    v-model='filter'
+                    icon='search'
+                    placeholder='Search Messages'
+                    :autofocus='true'
+                />
+            </div>
             <div
                 v-if='isGroup && showMembers'
                 class='flex-shrink-0 border-bottom overflow-y-auto py-1'
                 style='max-height: 40%;'
             >
-                <TablerNone
-                    v-if='!members.length'
-                    label='No Known Members'
-                    :create='false'
-                    :compact='true'
-                />
+                <div
+                    v-if='detail?.role === "owner"'
+                    class='d-flex justify-content-end px-2'
+                >
+                    <button
+                        class='btn btn-sm btn-link p-0'
+                        @click='editGroup = true'
+                    >
+                        Edit Group
+                    </button>
+                </div>
                 <StandardItem
                     v-for='member in members'
                     :key='member.uid'
                     class='d-flex align-items-center gap-2 px-2 py-1'
-                    @click='router.push(`/menu/chats/new?callsign=${encodeURIComponent(member.callsign)}&uid=${encodeURIComponent(member.uid)}`)'
+                    @click='openDirect(member)'
                 >
                     <IconUser
                         :size='20'
                         stroke='1'
                     />
                     <span
-                        class='text-truncate'
+                        class='text-truncate flex-grow-1'
                         v-text='member.callsign'
                     />
+                    <span
+                        v-if='member.role === "owner"'
+                        class='badge bg-blue-lt'
+                    >Owner</span>
+                    <span
+                        v-if='!member.local'
+                        class='badge bg-secondary-lt'
+                        title='Reached through the TAK Server'
+                    >TAK</span>
                 </StandardItem>
             </div>
             <GenericChat
-                :chats='chats'
+                :chats='filter.trim().length ? results : chats'
                 :my-u-i-d='id'
                 :loading='loading'
                 :can-send='true'
-                :can-delete='true'
-                :multiselect='multiselect'
+                :rich='true'
+                :more='more && !filter.trim().length'
                 placeholder='Send Message...'
                 @send='sendMessage'
-                @delete='deleteChats'
                 @retry='retryMessage'
+                @older='loadOlder'
+                @edit='editMessage'
+                @remove='removeMessage'
+                @react='reactMessage'
                 @at-bottom='onAtBottom'
             />
         </template>
     </MenuTemplate>
+
+    <MenuChatGroup
+        v-if='editGroup && detail'
+        :room='detail'
+        :my-u-i-d='id'
+        @close='editGroup = false'
+        @saved='editGroup = false'
+    />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, shallowRef, watch, onUnmounted, nextTick } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Chatroom from '../../../base/chatroom.ts';
-import { BroadcastChatroom } from '../../../base/chatroom-chats.ts';
 import type { Subscription } from 'dexie';
 import { liveQuery } from '../../../database.ts';
-import type { DBChatroom, DBChatroomChat } from '../../../database.ts';
-import { IconListCheck, IconUser, IconUsers } from '@tabler/icons-vue';
+import type { DBChatroom, DBChatroomChat, DBChatroomMember } from '../../../database.ts';
 import {
-    TablerNone,
+    IconBell,
+    IconBellOff,
+    IconSearch,
+    IconUser,
+    IconUsers,
+} from '@tabler/icons-vue';
+import {
+    TablerAlert,
+    TablerInput,
     TablerRefreshButton,
     TablerIconButton,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import GenericChat from '../util/GenericChat.vue';
+import MenuChatGroup from './MenuChatGroup.vue';
 import { useMapStore } from '../../../stores/map.ts';
 import ProfileConfig from '../../../base/profile.ts';
 
@@ -121,61 +184,85 @@ const router = useRouter();
 const id = ref('');
 const callsign = ref('');
 const loading = ref(true);
-const multiselect = ref(false);
+const error = ref<Error | undefined>(undefined);
 
 const name = ref('');
 const room = shallowRef<Chatroom | undefined>(undefined);
-
-async function openRoom(): Promise<void> {
-    const isNew = route.params.chatroom === 'new';
-
-    const roomId = isNew
-        ? normalizeRouteQuery(route.query.uid)
-        : normalizeRouteParam(route.params.chatroom);
-
-    if (!roomId) {
-        room.value = undefined;
-        loading.value = false;
-        return;
-    }
-
-    room.value = await Chatroom.load(roomId, {
-        name: isNew ? normalizeRouteQuery(route.query.callsign) : undefined
-    });
-
-    name.value = room.value.name;
-
-    await fetchChats();
-}
+const more = ref(false);
 
 const detail = ref<DBChatroom | undefined>(undefined);
 const showMembers = ref(false);
+const editGroup = ref(false);
 let detailSubscription: Subscription | undefined;
 
-const isBroadcast = computed(() => detail.value?.id === BroadcastChatroom);
-const isGroup = computed(() => detail.value?.type === 'group' && !isBroadcast.value);
+const searching = ref(false);
+const filter = ref('');
+const results = ref<DBChatroomChat[]>([]);
 
-const members = computed(() => {
-    return [...(detail.value?.members ?? [])].sort((a, b) => a.callsign.localeCompare(b.callsign));
+const isGroup = computed(() => detail.value?.type === 'group');
+
+const members = computed<Array<DBChatroomMember>>(() => {
+    return [...(detail.value?.members ?? [])]
+        .filter((member) => member.uid !== id.value)
+        .sort((a, b) => a.callsign.localeCompare(b.callsign));
 });
 
 const subtitle = computed(() => {
-    if (isBroadcast.value) return 'Everyone on your Channels';
+    if (detail.value?.type === 'broadcast') return 'Everyone on your Channels';
     if (!isGroup.value) return '';
 
     return `${members.value.length} other ${members.value.length === 1 ? 'member' : 'members'}`;
 });
+
+/**
+ * A new Chatroom is opened by the UID & callsign of a Contact and then gets its own URL
+ */
+async function openRoom(): Promise<void> {
+    error.value = undefined;
+
+    try {
+        if (route.params.chatroom === 'new') {
+            const uid = normalizeRouteQuery(route.query.uid);
+            if (!uid) throw new Error('A Contact is required to start a Chat');
+
+            const opened = await Chatroom.direct({
+                uid,
+                callsign: normalizeRouteQuery(route.query.callsign) || uid
+            });
+
+            // Replace so Back skips the placeholder entry
+            await router.replace({ name: 'home-menu-chat', params: { chatroom: opened.id } });
+            return;
+        }
+
+        room.value = await Chatroom.from(normalizeRouteParam(route.params.chatroom));
+        if (!room.value) throw new Error('Chatroom Not Found');
+
+        name.value = room.value.name;
+    } catch (err) {
+        room.value = undefined;
+        loading.value = false;
+        error.value = err instanceof Error ? err : new Error(String(err));
+        return;
+    }
+
+    await fetchChats();
+}
 
 watch(room, (newRoom) => {
     detailSubscription?.unsubscribe();
     detailSubscription = undefined;
     detail.value = undefined;
     showMembers.value = false;
+    searching.value = false;
+    filter.value = '';
 
     if (!newRoom) return;
 
     detailSubscription = Chatroom.live(newRoom.id).subscribe({
         next: (val) => {
+            // The Chatroom was deleted or the user was removed from it
+            if (!val && detail.value) void router.replace({ name: 'home-menu-chats' });
             detail.value = val;
         },
         error: (err: unknown) => {
@@ -187,13 +274,13 @@ watch(room, (newRoom) => {
 const chats = ref<DBChatroomChat[]>([]);
 let subscription: Subscription | undefined;
 
-watch([room, () => route.params.chatroom], ([newRoom, chatroom]) => {
+watch(room, (newRoom) => {
     if (subscription) {
         subscription.unsubscribe();
         subscription = undefined;
     }
 
-    if (newRoom && chatroom) {
+    if (newRoom) {
         const obs = liveQuery(() => newRoom.chats.list());
         subscription = obs.subscribe({
             next: async (val) => {
@@ -212,9 +299,34 @@ watch([room, () => route.params.chatroom], ([newRoom, chatroom]) => {
     }
 }, { immediate: true });
 
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+watch(filter, (term) => {
+    clearTimeout(searchTimer);
+
+    if (!term.trim().length) {
+        results.value = [];
+        return;
+    }
+
+    searchTimer = setTimeout(async () => {
+        try {
+            results.value = await room.value?.chats.search(term.trim()) ?? [];
+        } catch (err) {
+            error.value = err instanceof Error ? err : new Error(String(err));
+        }
+    }, 250);
+});
+
+function toggleSearch(): void {
+    searching.value = !searching.value;
+    if (!searching.value) filter.value = '';
+}
+
 onUnmounted(() => {
     if (subscription) subscription.unsubscribe();
     detailSubscription?.unsubscribe();
+    clearTimeout(searchTimer);
 });
 
 onMounted(async () => {
@@ -232,64 +344,70 @@ onMounted(async () => {
 });
 
 watch(() => route.params.chatroom, async (chatroom) => {
-    if (chatroom === room.value?.chats.chatroom) return;
+    if (!chatroom || chatroom === room.value?.id) return;
+    loading.value = true;
     await openRoom();
 });
 
-/**
- * Sending can move a Chatroom onto the UID behind it, and a new Chatroom gets its own URL
- */
-async function followRoom(): Promise<void> {
-    if (!room.value) return;
+async function guard(action: () => Promise<void>): Promise<void> {
+    try {
+        error.value = undefined;
+        await action();
+    } catch (err) {
+        error.value = err instanceof Error ? err : new Error(String(err));
+    }
+}
 
-    const current = room.value.chats.chatroom;
-    if (route.params.chatroom === current) return;
-
-    // Replace so Back skips the previous entry
-    await router.replace({
+async function openDirect(member: DBChatroomMember): Promise<void> {
+    await router.push({
         name: 'home-menu-chat',
-        params: { chatroom: current }
+        params: { chatroom: 'new' },
+        query: { uid: member.uid, callsign: member.callsign }
+    });
+}
+
+async function toggleMute(): Promise<void> {
+    await guard(async () => {
+        if (!room.value || !detail.value) return;
+        await room.value.update({ muted: !detail.value.muted });
     });
 }
 
 async function retryMessage(messageId: string | number): Promise<void> {
-    if (!room.value) return;
-
-    await room.value.chats.retry(
-        String(messageId),
-        { uid: id.value, callsign: callsign.value },
-        mapStore.worker
-    );
-
-    await followRoom();
+    await room.value?.chats.retry(String(messageId));
 }
 
-async function sendMessage(message: string): Promise<void> {
+async function sendMessage(message: string, opts: { reply_to?: string } = {}): Promise<void> {
     if (!message.trim().length) return;
     if (!room.value) return;
+
+    const location = (await mapStore.worker.profile.location)?.coordinates;
 
     await room.value.chats.send(
         message,
         { uid: id.value, callsign: callsign.value },
-        mapStore.worker
+        { reply_to: opts.reply_to, location }
     );
-
-    await followRoom();
 }
 
-async function deleteChats(ids: Array<string | number>): Promise<void> {
-    if (!room.value || !ids.length) return;
+async function editMessage(messageId: string | number, message: string): Promise<void> {
+    await guard(async () => await room.value?.chats.edit(String(messageId), message));
+}
 
-    loading.value = true;
+async function removeMessage(messageId: string | number): Promise<void> {
+    await guard(async () => await room.value?.chats.remove(String(messageId)));
+}
 
-    try {
-        await room.value.deleteChats(ids.map(String));
-    } catch (err) {
-        loading.value = false;
-        throw new Error(err instanceof Error ? err.message : String(err), { cause: err });
-    }
+async function reactMessage(messageId: string | number, emoji: string, active: boolean): Promise<void> {
+    await guard(async () => await room.value?.chats.react(String(messageId), emoji, active));
+}
 
-    await fetchChats();
+async function loadOlder(): Promise<void> {
+    await guard(async () => {
+        if (!room.value) return;
+        await room.value.chats.older();
+        more.value = room.value.chats.more;
+    });
 }
 
 async function fetchChats(): Promise<void> {
@@ -298,6 +416,7 @@ async function fetchChats(): Promise<void> {
     if (room.value) {
         try {
             await room.value.chats.refresh();
+            more.value = room.value.chats.more;
         } catch (err) {
             console.error(err);
         }

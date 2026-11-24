@@ -4,12 +4,13 @@ import { sql, eq, or, inArray } from 'drizzle-orm';
 import Config from '../../../common/config.js';
 import S3 from '../../../common/aws/s3.js';
 import {
-    Basemap, BasemapVector, Profile, ProfileSession, ProfileSetting, ProfileFile, ProfileChatroom, ProfileChat,
+    Basemap, BasemapVector, Profile, ProfileSession, ProfileSetting, ProfileFile, Chatroom, ChatroomMember, ChatMessage, ChatReaction,
     ProfileVideo, ProfileFeature, ProfileFusionSource, ProfileToken, ProfileInterest, ProfilePaging,
     ProfilePasskey, ProfilePasskeyChallenge, VideoLease, Errors, Import, Iconset, Icon,
     CoreEntity, CoreForm, CoreFormResponse, Connection, Layer, Data,
 } from '../../../common/schema.js';
 import { ProfileConfigDefaults } from './profile.js';
+import { profileUid } from '../../../common/control/takserver.js';
 import VideoServiceControl from './video-service.js';
 import ProfileOverlayControl from '../../../common/control/profile-overlay.js';
 import { revokeSessions } from '../user/session.js';
@@ -167,8 +168,19 @@ export default class UserControl {
             await tx.delete(Import).where(eq(Import.username, username));
             await tx.delete(Errors).where(eq(Errors.username, username));
 
-            await tx.delete(ProfileChat).where(eq(ProfileChat.username, username));
-            await tx.delete(ProfileChatroom).where(eq(ProfileChatroom.username, username));
+            const uid = profileUid(username);
+
+            await tx.delete(ChatMessage).where(eq(ChatMessage.sender_uid, uid));
+            await tx.delete(ChatReaction).where(eq(ChatReaction.uid, uid));
+            await tx.delete(ChatroomMember).where(eq(ChatroomMember.uid, uid));
+            await tx.delete(Chatroom).where(sql`
+                NOT EXISTS (
+                    SELECT 1
+                        FROM chatroom_member
+                        WHERE chatroom_member.chatroom = chatroom.id
+                            AND chatroom_member.username IS NOT NULL
+                )
+            `);
             await tx.delete(ProfileFeature).where(eq(ProfileFeature.username, username));
             await tx.delete(ProfileFusionSource).where(eq(ProfileFusionSource.username, username));
             await tx.delete(ProfileToken).where(eq(ProfileToken.username, username));
