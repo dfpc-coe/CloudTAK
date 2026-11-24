@@ -251,6 +251,14 @@ export default class ProfileOverlayControl {
         if (input.active) await this.activate(username, overlay.mode, overlay.id);
         if (overlay.mode === 'basemap') input.pos = -1;
 
+        if (
+            input.styles === undefined
+            && (overlay.mode === 'basemap' || overlay.mode === 'overlay')
+            && input.mode_id && input.mode_id !== overlay.mode_id
+        ) {
+            input.styles = (await this.config.models.Basemap.from(parseInt(input.mode_id))).styles;
+        }
+
         return await this.config.models.ProfileOverlay.commit(id, {
             ...input,
             styles: input.styles ? ProfileOverlayControl.normalizeStyles(id, input.styles) : undefined,
