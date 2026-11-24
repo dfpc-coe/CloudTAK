@@ -1,7 +1,12 @@
-import { server, stdurl, getRuntimeToken } from '../std.ts';
+import { server } from '../std.ts';
 import { db, type DBIcon, type DBIconset } from '../database.ts';
-import type { Iconset } from '../types.ts';
+import type { paths } from '@cloudtak/api-types';
+import type { Iconset, Icon as RemoteIcon } from '../types.ts';
 import IconsetCache from './iconset.ts';
+import Sprite from './sprite.ts';
+
+type IconCreate = paths['/api/iconset/{:iconset}/icon']['post']['requestBody']['content']['application/json'];
+type IconUpdate = paths['/api/iconset/{:iconset}/icon/{:icon}']['patch']['requestBody']['content']['application/json'];
 
 /** Built-in sprite ids that ship with the API and are mirrored to Dexie. */
 const BUILTIN_SPRITES = ['default'] as const;
@@ -42,6 +47,124 @@ export default class Icon {
      */
     static async list(iconsetUid: string): Promise<DBIcon[]> {
         return await db.icon.where('iconset').equals(iconsetUid).sortBy('path');
+    }
+
+    /** Folder portion of an icon path, '' when the icon sits at the iconset root */
+    static folder(path: string): string {
+        const idx = path.lastIndexOf('/');
+        return idx === -1 ? '' : path.slice(0, idx);
+    }
+
+    /** Final path segment of an icon path */
+    static leaf(path: string): string {
+        return path.slice(path.lastIndexOf('/') + 1);
+    }
+
+    static stripExt(name: string): string {
+        return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
+    }
+
+    /** Normalise a `<uid>/<path>.png` or `<uid>:<path>` reference to the `<uid>:<path>` cache key */
+    static key(icon: string): string {
+        return Icon.stripExt(icon.includes(':') ? icon : icon.replace('/', ':'));
+    }
+
+    /** Split an icon reference into its iconset uid and extensionless path */
+    static parse(icon: string): { iconset: string, path: string } | undefined {
+        const key = Icon.key(icon);
+        const separator = key.indexOf(':');
+        if (separator <= 0 || separator === key.length - 1) return undefined;
+
+        return {
+            iconset: key.slice(0, separator),
+            path: key.slice(separator + 1)
+        };
+    }
+
+    /** Fetch an icon from the server by row id or path */
+    static async fetch(iconset: string, icon: number | string): Promise<RemoteIcon> {
+        const { data, error } = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
+            params: { path: { ':iconset': iconset, ':icon': icon } }
+        });
+
+        if (error) throw new Error(error.message);
+        if (!data) throw new Error('Failed to fetch icon');
+
+        return data;
+    }
+
+    static async create(iconset: string, body: IconCreate, opts: { regen?: boolean } = {}): Promise<RemoteIcon> {
+        const { data, error } = await server.POST('/api/iconset/{:iconset}/icon', {
+            params: {
+                path: { ':iconset': iconset },
+                query: { regen: opts.regen ?? true }
+            },
+            body
+        });
+
+        if (error) throw new Error(error.message);
+        if (!data) throw new Error('Failed to create icon');
+
+        return data;
+    }
+
+    static async update(iconset: string, id: number, body: IconUpdate): Promise<RemoteIcon> {
+        const { data, error } = await server.PATCH('/api/iconset/{:iconset}/icon/{:icon}', {
+            params: { path: { ':iconset': iconset, ':icon': id } },
+            body
+        });
+
+        if (error) throw new Error(error.message);
+        if (!data) throw new Error('Failed to update icon');
+
+        return data;
+    }
+
+    static async delete(iconset: string, id: number): Promise<void> {
+        const { error } = await server.DELETE('/api/iconset/{:iconset}/icon/{:icon}', {
+            params: { path: { ':iconset': iconset, ':icon': id } }
+        });
+
+        if (error) throw new Error(error.message);
+    }
+
+    /** Server row id of a cached icon, resolved by path when the cached row predates it */
+    static async remoteId(icon: Pick<DBIcon, 'id' | 'iconset' | 'path'>): Promise<number> {
+        if (icon.id !== undefined) return icon.id;
+
+        return (await Icon.fetch(icon.iconset, icon.path)).id;
+    }
+
+    /**
+     * Rename an icon on the server, moving it between folders when the
+     * folder portion of `path` changes. The caller resyncs the iconset.
+     */
+    static async rename(icon: Pick<DBIcon, 'id' | 'iconset' | 'path'>, path: string): Promise<void> {
+        await Icon.update(icon.iconset, await Icon.remoteId(icon), { name: path });
+    }
+
+    /**
+     * Upload image files as `<folder>/<file name>`, then regenerate the
+     * spritesheet once. The caller resyncs the iconset.
+     */
+    static async upload(iconset: string, files: File[], folder = ''): Promise<void> {
+        try {
+            for (const file of files) {
+                const data = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(String(reader.result));
+                    reader.onerror = () => reject(reader.error ?? new Error(`Failed to read ${file.name}`));
+                    reader.readAsDataURL(file);
+                });
+
+                await Icon.create(iconset, {
+                    name: folder ? `${folder}/${file.name}` : file.name,
+                    data
+                }, { regen: false });
+            }
+        } finally {
+            await IconsetCache.regenerate(iconset);
+        }
     }
 
     /**
@@ -98,20 +221,11 @@ export default class Icon {
      * undefined when the icon can't be retrieved.
      */
     static async fetchRemote(id: string): Promise<Blob | undefined> {
-        const separator = id.indexOf(':');
-        if (separator <= 0 || separator === id.length - 1) return undefined;
-
-        const iconset = id.slice(0, separator);
-        const path = id.slice(separator + 1);
+        const ref = Icon.parse(id);
+        if (!ref) return undefined;
 
         try {
-            const { data: icon, error } = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
-                params: { path: { ':iconset': iconset, ':icon': path } }
-            });
-
-            if (error) return undefined;
-
-            return dataUrlToBlob(icon.data);
+            return dataUrlToBlob((await Icon.fetch(ref.iconset, ref.path)).data);
         } catch {
             return undefined;
         }
@@ -157,7 +271,9 @@ async function runDiff(): Promise<IconHydrateResult> {
         failed.push(iconset.uid);
     })));
 
-    await Promise.all(BUILTIN_SPRITES.map((id) => syncBuiltinSprite(id)));
+    await Promise.all(BUILTIN_SPRITES.map((id) => Sprite.get(id).catch((err) => {
+        console.error(`Failed to hydrate built-in sprite '${id}'`, err);
+    })));
 
     return {
         added,
@@ -165,42 +281,6 @@ async function runDiff(): Promise<IconHydrateResult> {
         removed,
         failed
     };
-}
-
-/**
- * Mirror a built-in spritesheet (PNG + JSON layout) into Dexie so the main
- * thread can serve it via the `cloudtak-sprite://` MapLibre protocol
- * without re-hitting the network on every page load.
- */
-async function syncBuiltinSprite(id: string): Promise<void> {
-    try {
-        if (await db.sprite.get(id)) return;
-
-        const token = await getRuntimeToken();
-        const jsonUrl = stdurl(`/api/iconset/${id}/sprite.json`);
-        const pngUrl = stdurl(`/api/iconset/${id}/sprite.png`);
-        const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-
-        const [jsonRes, pngRes] = await Promise.all([
-            fetch(jsonUrl, { headers }),
-            fetch(pngUrl, { headers })
-        ]);
-
-        if (!jsonRes.ok) throw new Error(`sprite json ${jsonRes.status}`);
-        if (!pngRes.ok) throw new Error(`sprite png ${pngRes.status}`);
-
-        const json = await jsonRes.json() as Record<string, unknown>;
-        const image = await pngRes.blob();
-
-        await db.sprite.put({
-            id,
-            updated: Date.now(),
-            json,
-            image
-        });
-    } catch (err) {
-        console.error(`Failed to hydrate built-in sprite '${id}'`, err);
-    }
 }
 
 async function syncIconset(iconset: Iconset): Promise<void> {
@@ -217,10 +297,11 @@ async function syncIconset(iconset: Iconset): Promise<void> {
         const sourcePath = icon.path && icon.path.startsWith(prefix)
             ? icon.path.slice(prefix.length)
             : icon.name;
-        const path = stripExt(sourcePath);
+        const path = Icon.stripExt(sourcePath);
 
         rows.push({
             name: `${iconset.uid}:${path}`,
+            id: icon.id,
             iconset: iconset.uid,
             path,
             type2525b: icon.type2525b ?? null,
@@ -238,10 +319,6 @@ async function syncIconset(iconset: Iconset): Promise<void> {
             icons_updated: iconset.updated
         });
     });
-}
-
-function stripExt(name: string): string {
-    return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
 }
 
 function dataUrlToBlob(data: string): Blob {

@@ -12,7 +12,8 @@ import { OriginMode } from '../base/cot.ts';
 import { WorkerMessageType } from '../utils/events.ts';
 import type { SyncTriggerReason, SyncTriggerBody } from '../utils/events.ts';
 import type { SyncEvent } from './atlas-sync.ts';
-import type { Feature, Import, Chat } from '../types.ts';
+import type { Feature, Import, ChatEvent, Chatroom as APIChatroom } from '../types.ts';
+import { storeChat } from '../base/chatroom-chats.ts';
 
 const RECONNECT_BACKOFF_STEP_MS = 5000;
 const RECONNECT_BACKOFF_MAX_MS = 30000;
@@ -374,45 +375,43 @@ export default class AtlasConnection {
                 } else {
                     console.warn('Unknown Task', JSON.stringify(task));
                 }
-            } else if (body.type === 'chat') {
-                const chat = body.data as Chat;
+            } else if (body.type === 'chatroom:message' || body.type === 'chatroom:message:update') {
+                const event = body.data as ChatEvent;
+                const message = event.message;
 
-                let chatroom = chat.chatroom;
+                if (!await db.chatroom.get(event.chatroom.id)) await Chatroom.from(event.chatroom.id);
 
-                try {
-                    const callsign = this.atlas.profile.profile_callsign?.value;
-                    const username = this.atlas.profile.username;
+                // A message already stored is a redelivery or a change - not a new message
+                const created = await storeChat(message);
 
-                    if (callsign && username && (chatroom === callsign || chatroom === `ANDROID-CloudTAK-${username}`)) {
-                        chatroom = chat.from.callsign;
+                if (created && body.type === 'chatroom:message') {
+                    const incoming = message.sender_uid !== this.atlas.profile.uid();
+
+                    await db.chatroom.where('id').equals(event.chatroom.id).modify(local => {
+                        if (message.created > local.updated) local.updated = message.created;
+                        if (incoming) local.unread = (local.unread || 0) + 1;
+                    });
+
+                    if (incoming && !event.chatroom.muted) {
+                        await TAKNotification.create(
+                            NotificationType.Chat,
+                            'New Chat Message',
+                            event.chatroom.type === 'direct'
+                                ? `${message.sender_callsign} says: ${message.body}`
+                                : `${message.sender_callsign} in ${event.chatroom.name} says: ${message.body}`,
+                            `/menu/chats/${event.chatroom.id}`,
+                            true
+                        );
                     }
-                } catch (err) {
-                    console.error('Error getting profile for chat routing', err);
                 }
+            } else if (body.type === 'chat') {
+                // The form of `chatroom:message` sent for CloudTAK <= 14.0 clients
+            } else if (body.type === 'chatroom') {
+                await Chatroom.store(body.data as APIChatroom);
+            } else if (body.type === 'chatroom:delete') {
+                const { id } = body.data as { id: string };
 
-                await Chatroom.load(chatroom, { reload: false });
-
-                await db.chatroom.where('id').equals(chatroom).modify(room => {
-                    room.updated = chat.time;
-                    room.unread = (room.unread || 0) + 1;
-                });
-
-                await db.chatroom_chats.put({
-                    id: chat.messageId,
-                    chatroom: chatroom,
-                    sender: chat.from.callsign,
-                    sender_uid: chat.from.uid,
-                    message: chat.message,
-                    created: chat.time
-                });
-
-                await TAKNotification.create(
-                    NotificationType.Chat,
-                    'New Chat Message',
-                    `${chat.from.callsign} to ${chat.chatroom} says: ${chat.message}`,
-                    `/menu/chats`,
-                    true
-                );
+                await Chatroom.forget([id]);
             } else if (body.type === 'chat:receipt') {
                 const receipt = body.data as {
                     messageId: string;
@@ -423,7 +422,7 @@ export default class AtlasConnection {
 
                 if (receipt.messageId && ChatStatusRank[receipt.status] !== undefined) {
                     const progress = (chat: { status?: ChatStatus, created?: string }) => {
-                        // Messages sort by created - adopt the server-assigned timestamp so
+                        // Mission Chat sorts by created - adopt the server-assigned timestamp so
                         // ordering doesn't depend on the local clock that stamped the optimistic copy
                         if (receipt.created) {
                             chat.created = receipt.created;
@@ -433,11 +432,6 @@ export default class AtlasConnection {
                             chat.status = receipt.status;
                         }
                     };
-
-                    await db.chatroom_chats
-                        .where('id')
-                        .equals(receipt.messageId)
-                        .modify(progress);
 
                     await db.subscription_chat
                         .where('id')
@@ -619,9 +613,11 @@ export default class AtlasConnection {
         }
         this.sendCOT({}, 'broadcast:claim');
     }
-    sendCOT(data: object, type = 'cot') {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    /** @returns false if the WebSocket was not open and nothing was sent */
+    sendCOT(data: object, type = 'cot'): boolean {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false;
         this.ws.send(JSON.stringify({ type, data }));
+        return true;
     }
 
 }

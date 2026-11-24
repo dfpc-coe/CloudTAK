@@ -43,7 +43,7 @@ function parseHillshade(input: HillshadeInput): HillshadeOptions {
 }
 
 export default async function router(schema: Schema) {
-    schema.get('/tiles/hillshade/:basemapid', {
+    await schema.get('/tiles/hillshade/:basemapid', {
         name: 'Get Hillshade TileJSON',
         group: 'HillshadeTiles',
         description: 'TileJSON for hillshade relief rendered from a raster-dem basemap. Supplied lighting options are carried onto the tile URLs',
@@ -80,7 +80,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/hillshade/:basemapid/tiles/:z/:x/:y', {
+    await schema.get('/tiles/hillshade/:basemapid/tiles/:z/:x/:y', {
         name: 'Get Hillshade Tile',
         group: 'HillshadeTiles',
         description: 'Transparent hillshade relief tile rendered from a raster-dem basemap',

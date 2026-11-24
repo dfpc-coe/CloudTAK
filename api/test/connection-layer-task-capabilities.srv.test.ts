@@ -26,7 +26,7 @@ test('Setup: Create Layer', async () => {
     }
 });
 
-test('GET: api/connection/1/layer/1/task/capabilities - single schema mapped to default', async () => {
+test('GET: api/connection/1/layer/1/task/capabilities - single schema is rejected', async () => {
     try {
         Sinon.stub(Lambda, 'invoke').callsFake(async (config, layerid, type) => {
             assert.equal(layerid, 1);
@@ -51,13 +51,14 @@ test('GET: api/connection/1/layer/1/task/capabilities - single schema mapped to 
             auth: {
                 bearer: flight.token.admin,
             },
-        }, true);
+        }, false);
 
-        assert.equal(res.status, 200);
-        assert.deepEqual(res.body.incoming.schema.output, [{
-            id: 'default',
-            schema: { type: 'object', properties: { name: { type: 'string' } } },
-        }]);
+        assert.equal(res.status, 400);
+        assert.deepEqual(res.body, {
+            status: 400,
+            message: 'Task declares a single Output schema - Named Output schemas are required',
+            messages: [],
+        });
     } catch (err) {
         assert.ifError(err);
     } finally {

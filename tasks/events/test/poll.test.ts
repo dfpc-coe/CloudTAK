@@ -90,7 +90,7 @@ test('Ensure Poll Triggers Job', async () => {
 
             await pool.close();
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
 
             return resolve();
         });

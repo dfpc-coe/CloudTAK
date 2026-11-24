@@ -10,7 +10,7 @@ import getElevationProfile, {
 } from '../lib/elevation.js';
 
 export default async function router(schema: Schema) {
-    schema.get('/tiles/profile/:username/:file', {
+    await schema.get('/tiles/profile/:username/:file', {
         name: 'Get TileJSON',
         group: 'ProfileTiles',
         description: 'Return TileJSON for a given file',
@@ -36,7 +36,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/profile/:username/:file/query', {
+    await schema.get('/tiles/profile/:username/:file/query', {
         name: 'Query',
         group: 'ProfileTiles',
         description: 'Return features for a given query',
@@ -68,7 +68,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/profile/:username/:file/:z/:x/:y/features', {
+    await schema.get('/tiles/profile/:username/:file/:z/:x/:y/features', {
         name: 'Get Features',
         group: 'ProfileTiles',
         description: 'Return features for a given zxy',
@@ -105,7 +105,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/profile/:username/:file/features', {
+    await schema.get('/tiles/profile/:username/:file/features', {
         name: 'Get Features by BBOX',
         group: 'ProfileTiles',
         description: 'Return features for a given bbox',
@@ -145,7 +145,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.post('/tiles/profile/:username/:file/elevation', {
+    await schema.post('/tiles/profile/:username/:file/elevation', {
         name: 'Get Elevation Profile',
         group: 'ProfileTiles',
         description: 'Return sampled elevation values for a LineString against a profile raster-dem PMTiles source',
@@ -199,7 +199,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
+    await schema.get('/tiles/profile/:username/:file/tiles/:z/:x/:y.:ext', {
         name: 'Get Tile',
         group: 'ProfileTiles',
         description: 'Return tile for a given zxy',

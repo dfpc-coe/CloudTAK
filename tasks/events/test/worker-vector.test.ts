@@ -30,7 +30,7 @@ for (const fixturename of await fsp.readdir(new URL('./fixtures/transform-vector
         t.after(() => {
             Sinon.restore();
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         mockPool.intercept({

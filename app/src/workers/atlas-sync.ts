@@ -220,6 +220,8 @@ export default class AtlasSync {
             // SubscriptionFeature.refresh() posts Mission_Change_Feature so
             // the main thread repaints the mission overlay
             await sub.refresh({ refreshMission: true });
+
+            await this.atlas.db.adoptMissionFeatures(guid);
         }));
 
         const guids = [...subscribed].map(({ guid }) => guid);

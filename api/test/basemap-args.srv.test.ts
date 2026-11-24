@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
+import { basemapTileJSON } from '../stateless/lib/tilejson.js';
 
 const flight = new Flight();
 
@@ -58,13 +59,11 @@ test('POST: api/basemap - args are stored and returned', async () => {
     });
 });
 
-test('GET: api/basemap/:id/tiles - args are applied to the tile template', async () => {
-    const res = await flight.fetch('/api/basemap/2/tiles', {
-        method: 'GET',
-        auth: { bearer: flight.token.admin },
-    }, true);
+test('TileJSON: args are applied to the tile template', async () => {
+    const basemap = await flight.config!.models.Basemap.from(2);
+    const tilejson = await basemapTileJSON(flight.config!, basemap, { upstreamToken: flight.token.admin });
 
-    assert.deepEqual(res.body.tiles, [
+    assert.deepEqual(tilejson.tiles, [
         `${flight.base}/tiles/basemap/2/tiles/{z}/{x}/{y}?layer=27%3A30%3Affeb3bc7&layer=30%3A35%3Aff9800c7&format=png`,
     ]);
 });
@@ -80,12 +79,10 @@ test('PATCH: api/basemap - args are replaced wholesale', async () => {
 
     assert.deepEqual(res.body.args, { layer: '35:90:f44336' });
 
-    const tiles = await flight.fetch('/api/basemap/2/tiles', {
-        method: 'GET',
-        auth: { bearer: flight.token.admin },
-    }, true);
+    const basemap = await flight.config!.models.Basemap.from(2);
+    const tilejson = await basemapTileJSON(flight.config!, basemap, { upstreamToken: flight.token.admin });
 
-    assert.deepEqual(tiles.body.tiles, [`${flight.base}/tiles/basemap/2/tiles/{z}/{x}/{y}?layer=35%3A90%3Af44336`]);
+    assert.deepEqual(tilejson.tiles, [`${flight.base}/tiles/basemap/2/tiles/{z}/{x}/{y}?layer=35%3A90%3Af44336`]);
 });
 
 test('POST: api/basemap - args values must be strings or string arrays', async () => {

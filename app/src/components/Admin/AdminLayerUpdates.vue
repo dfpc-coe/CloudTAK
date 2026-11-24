@@ -118,6 +118,7 @@
 
         <LayerTaskUpdateModal
             v-if='taskUpdate'
+            :key='taskUpdate.layer.id'
             :layer='taskUpdate.layer'
             :update='taskUpdate.update'
             :auto='bulk'

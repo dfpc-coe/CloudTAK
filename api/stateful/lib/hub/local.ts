@@ -137,6 +137,12 @@ export default class LocalHub implements HubClient {
             }
         }
 
+        if (req.confirm) {
+            if (!client?.ready) throw new Err(503, null, 'TAK Connection is not ready');
+            await client.tak.write(req.cots, { stripFlow: true });
+            return;
+        }
+
         if (!client) {
             if (req.ifPooled) return;
             throw new Err(200, null, 'Received but Connection Paused');

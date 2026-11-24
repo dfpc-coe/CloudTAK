@@ -155,7 +155,12 @@ const router = VueRouter.createRouter({
                 }]
             },{
                 path: 'config',
-                name: 'admin-config',
+                redirect: () => {
+                    return { name: 'admin-overview' };
+                }
+            },{
+                path: 'config/:section',
+                name: 'admin-overview-config',
                 component: () => import('../../components/Admin/AdminConfig.vue')
             },{
                 path: 'geofence',

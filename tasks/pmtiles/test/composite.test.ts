@@ -113,7 +113,7 @@ test('render: modulate darkens a layer and keeps four channels', async () => {
     const px = await pixel(out);
     assert.equal(px.length, 4);
     assert.equal(px[3], 255);
-    assert.ok(px[0] < 150 && px[0] > 50, `darkened: ${px}`);
+    assert.ok(px[0] < 150 && px[0] > 50, `darkened: ${px.join(",")}`);
 });
 
 test('render: sources are resized to the composite tilesize', async () => {

@@ -16,6 +16,6 @@ export function fromProtocol(basemap: BasemapConfig): BasemapProtocol {
         case 'featureserver': return new FeatureServerBasemap(basemap);
         case 'hosted': return new HostedBasemap(basemap);
         case 'composite': return new CompositeBasemap(basemap);
-        default: throw new Err(400, null, `Unsupported basemap protocol: ${basemap.protocol}`);
+        default: throw new Err(400, null, `Unsupported basemap protocol: ${String(basemap.protocol)}`);
     }
 }

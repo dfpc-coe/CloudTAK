@@ -65,7 +65,7 @@ export type CoreDeviceList = paths["/api/core/device"]["get"]["responses"]["200"
 export type CoreEntity = paths["/api/core/event/{:event}"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityList = paths["/api/core/event"]["get"]["responses"]["200"]["content"]["application/json"];
 export type CoreEntityLink = CoreEntity["links"][0];
-export type CoreEntityExternalId = Exclude<NonNullable<paths["/api/core/event/{:event}"]["patch"]["requestBody"]["content"]["application/json"]["external_id"]>, string>;
+export type CoreEntityExternalId = NonNullable<paths["/api/core/event/{:event}"]["patch"]["requestBody"]["content"]["application/json"]["external_id"]>;
 export type CoreEntityStyle = CoreEntity["style"];
 export type CoreEntityMission = CoreEntity["missions"][0];
 export type CoreEntityBoardSummary = CoreEntity["boards"][0];
@@ -152,7 +152,7 @@ export type IconList = paths["/api/icon"]["get"]["responses"]["200"]["content"][
 export type AttachmentList = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Attachment = paths["/api/attachment"]["get"]["responses"]["200"]["content"]["application/json"]["items"][0]
 
-export type TileJSON = paths["/api/basemap/{:basemapid}/tiles"]["get"]["responses"]["200"]["content"]["application/json"]
+export type TileJSON = OverlayTileJSON
 
 export type Basemap = paths["/api/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type BasemapList = paths["/api/basemap"]["get"]["responses"]["200"]["content"]["application/json"]
@@ -172,32 +172,25 @@ export type PaletteFeatureList = {
     items: Array<PaletteFeature>;
 }
 
-export type Chat = {
-    chatroom: string;
-    messageId: string;
-    from: {
-        callsign: string;
-        uid: string;
-    };
-    message: string;
-    time: string;
-}
+export type Chatroom = paths["/api/chatroom/{:chatroom}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ChatroomList = paths["/api/chatroom"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ChatMessageList = paths["/api/chatroom/{:chatroom}/message"]["get"]["responses"]["200"]["content"]["application/json"]
+export type ChatMessage = ChatMessageList["items"][0]
 
-export type APIProfileChat = {
-    id: number;
-    read: boolean;
-    username: string;
-    chatroom: string;
-    sender_callsign: string;
-    sender_uid: string;
-    created: string;
-    updated: string;
-    message_id: string;
-    message: string;
-    status?: string | null;
+/** WebSocket `chatroom:message` & `chatroom:message:update` events */
+export type ChatEvent = {
+    message: ChatMessage;
+    chatroom: {
+        id: string;
+        type: Chatroom["type"];
+        name: string;
+        muted: boolean;
+    };
 }
 
 export type MissionTemplate = paths["/api/template/mission/{:mission}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type PluginList = paths["/api/plugin"]["get"]["responses"]["200"]["content"]["application/json"]
+export type Plugin = PluginList["items"][0]
 export type MissionTemplateList = paths["/api/template/mission"]["get"]["responses"]["200"]["content"]["application/json"]
 export type MissionTemplateLog = paths["/api/template/mission/{:mission}/log/{:log}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type MissionTemplateLogList = paths["/api/template/mission/{:mission}/log"]["get"]["responses"]["200"]["content"]["application/json"]
@@ -205,8 +198,6 @@ export type MissionTemplateLogList = paths["/api/template/mission/{:mission}/log
 export type Profile = paths["/api/profile"]["get"]["responses"]["200"]["content"]["application/json"]
 export type Profile_Update = paths["/api/profile"]["patch"]["requestBody"]["content"]["application/json"]
 
-export type ProfileChatroomList = paths["/api/profile/chatroom"]["get"]["responses"]["200"]["content"]["application/json"]
-export type ProfileChatList = paths["/api/profile/chatroom/{:chatroom}/chat"]["get"]["responses"]["200"]["content"]["application/json"]
 
 export type ProfileVideoList = paths["/api/profile/video"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileVideo = paths["/api/profile/video/{:id}"]["get"]["responses"]["200"]["content"]["application/json"]
@@ -258,7 +249,6 @@ export type ProfilePagingList = paths["/api/profile/paging"]["get"]["responses"]
 export type ProfilePaging = ProfilePagingList["items"][0]
 export type ProfilePaging_Create = paths["/api/profile/paging"]["post"]["requestBody"]["content"]["application/json"]
 
-export type SearchReverse = paths["/api/search/reverse/{:longitude}/{:latitude}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseSun = paths["/api/search/reverse/{:longitude}/{:latitude}/sun"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseMagnetic = paths["/api/search/reverse/{:longitude}/{:latitude}/magnetic"]["get"]["responses"]["200"]["content"]["application/json"]
 export type SearchReverseWeather = paths["/api/search/reverse/{:longitude}/{:latitude}/weather"]["get"]["responses"]["200"]["content"]["application/json"]

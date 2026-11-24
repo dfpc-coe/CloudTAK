@@ -1,135 +1,77 @@
 import { mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
+import { nextTick, reactive } from 'vue';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const GET = vi.fn();
+const push = vi.fn();
+const route = reactive<{ params: { section?: string } }>({ params: {} });
 
 vi.mock('../../std.ts', () => ({
     server: { GET: (...args: unknown[]) => GET(...args) },
     stdurl: (url: string) => new URL(url, 'http://localhost')
 }));
 
+vi.mock('vue-router', () => ({
+    useRoute: () => route,
+    useRouter: () => ({ push })
+}));
+
 import AdminConfig from './AdminConfig.vue';
+import { sections } from './AdminConfig/sections.ts';
 
-const ALL = [
-    'Login Page',
-    'Search Providers',
-    'Routing Providers',
-    'Media Server',
-    'Plugin Proxy',
-    'Retention',
-    'Notifications',
-    'Display Defaults',
-    'External Applications',
-    'Core Events',
-    'TAK User Groups',
-    'Map Settings',
-    'COTAK OAuth Provider',
-    'SCIM User Provisioning',
-    'CoTURN Server'
-];
-
-function mountConfig(): VueWrapper {
+function mountConfig(section: string): VueWrapper {
     GET.mockResolvedValue({ data: undefined, error: { message: 'Not Loaded' } });
+    route.params = { section };
 
     return mount(AdminConfig, { attachTo: document.body });
-}
-
-function visible(wrapper: VueWrapper): string[] {
-    return wrapper.findAll('.card-body > .slidedown')
-        .filter(section => section.isVisible())
-        .map(section => section.find('.slidedown__header label').text());
-}
-
-async function filter(wrapper: VueWrapper, value: string): Promise<void> {
-    await wrapper.find('input').setValue(value);
 }
 
 describe('Admin/AdminConfig', () => {
     afterEach(() => {
         GET.mockReset();
+        push.mockReset();
         document.body.innerHTML = '';
     });
 
-    it('lists every section in order by default', async () => {
-        const wrapper = mountConfig();
+    it('renders every section on its own route', async () => {
+        for (const section of sections) {
+            const wrapper = mountConfig(section.slug);
 
-        expect(visible(wrapper)).toEqual(ALL);
-        expect(wrapper.text()).not.toContain('No Matching Settings');
-    });
+            expect(wrapper.find('.card-title').text(), section.slug).toBe(section.label);
+            expect(wrapper.text(), section.slug).not.toContain('Unknown Setting');
 
-    it('shows an icon beside every section title', async () => {
-        const wrapper = mountConfig();
-
-        const headers = wrapper.findAll('.slidedown__header');
-        expect(headers.length).toBeGreaterThanOrEqual(ALL.length);
-
-        for (const header of headers) {
-            expect(header.element.firstElementChild?.tagName.toLowerCase(), header.text()).toBe('svg');
+            wrapper.unmount();
         }
     });
 
-    it('groups the search providers under a single section', async () => {
-        const wrapper = mountConfig();
+    it('loads the section without a collapsible wrapper', async () => {
+        const wrapper = mountConfig('retention');
 
-        expect(visible(wrapper)).not.toContain('ArcGIS Online');
-        expect(visible(wrapper)).not.toContain('OpenStreetMap');
+        expect(wrapper.find('.slidedown').exists()).toBe(false);
+        await nextTick();
+        expect(wrapper.find('.card-header [title="Edit"]').exists()).toBe(true);
+        expect(GET).toHaveBeenCalled();
     });
 
-    it('filters sections by name regardless of case', async () => {
-        const wrapper = mountConfig();
+    it('renders Plugins as a section', async () => {
+        const wrapper = mountConfig('plugins');
 
-        await filter(wrapper, 'providers');
-        expect(visible(wrapper)).toEqual(['Search Providers', 'Routing Providers']);
-
-        await filter(wrapper, 'RETENTION');
-        expect(visible(wrapper)).toEqual(['Retention']);
+        expect(wrapper.find('.slidedown').exists()).toBe(false);
+        expect(GET).toHaveBeenCalledWith('/api/plugin', expect.anything());
     });
 
-    it('filters sections by the settings they contain', async () => {
-        const wrapper = mountConfig();
+    it('returns to the overview', async () => {
+        const wrapper = mountConfig('scim');
 
-        await filter(wrapper, 'photon');
-        expect(visible(wrapper)).toEqual(['Search Providers']);
-
-        await filter(wrapper, 'arcgis');
-        expect(visible(wrapper)).toEqual(['Search Providers', 'Routing Providers']);
-
-        await filter(wrapper, 'firebase');
-        expect(visible(wrapper)).toEqual(['Notifications']);
+        await wrapper.find('[data-config="back"]').trigger('click');
+        expect(push).toHaveBeenCalledWith('/admin');
     });
 
-    it('requires every term to match', async () => {
-        const wrapper = mountConfig();
+    it('shows an empty state for an unknown section', async () => {
+        const wrapper = mountConfig('nope');
 
-        await filter(wrapper, 'arcgis routing');
-        expect(visible(wrapper)).toEqual(['Routing Providers']);
-    });
-
-    it('shows an empty state and recovers when cleared', async () => {
-        const wrapper = mountConfig();
-
-        await filter(wrapper, 'nothing matches this');
-        expect(visible(wrapper)).toEqual([]);
-        expect(wrapper.text()).toContain('No Matching Settings');
-
-        await filter(wrapper, '   ');
-        expect(visible(wrapper)).toEqual(ALL);
-        expect(wrapper.text()).not.toContain('No Matching Settings');
-    });
-
-    it('keeps a section open while it is filtered out', async () => {
-        const wrapper = mountConfig();
-
-        const section = wrapper.findAll('.card-body > .slidedown')[5];
-        await section.find('.slidedown__header').trigger('click');
-        expect(section.classes()).toContain('slidedown--expanded');
-
-        await filter(wrapper, 'photon');
-        expect(section.isVisible()).toBe(false);
-
-        await filter(wrapper, '');
-        expect(section.isVisible()).toBe(true);
-        expect(section.classes()).toContain('slidedown--expanded');
+        expect(wrapper.find('.card-title').text()).toBe('Settings');
+        expect(wrapper.text()).toContain('Unknown Setting');
     });
 });
