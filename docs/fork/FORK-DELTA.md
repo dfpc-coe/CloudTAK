@@ -595,32 +595,33 @@ use. Drop it if upstream ever supports a shared terrain source.
 
 ### Server-side elevation
 
-`api/stateless/lib/terrain.ts`, `api/stateless/lib/interface-basemap.ts`,
-`api/stateless/routes/search.ts`,
-`app/src/components/CloudTAK/Query/Elevation.vue`
+`api/stateless/lib/terrain.ts`, `api/stateless/routes/search.ts`,
+`app/src/components/CloudTAK/Query/Elevation.vue`, test `api/test/terrain.test.ts`
 
 `Elevation.vue` used MapLibre's `queryTerrainElevation()`, which only returns a
 value once 3D terrain rendering is active — a GPU-heavy mode not otherwise needed
 for a one-off lookup, and reported to crash some hardware.
 
-`BasemapProtocol.tileBuffer()` fetches a single tile's bytes in-process by reusing
-each protocol's existing `_tile()` behind a minimal in-memory `Response` stand-in,
-so it works for any protocol with no per-protocol changes. `getElevation()`
-resolves the configured `map::terrain` basemap, computes the covering tile and
-pixel via `pointToTileFraction()`, decodes with `sharp`, and applies the Mapbox
-Terrain-RGB or Terrarium formula according to the basemap's `encoding`. Wired into
-`GET /search/reverse/:longitude/:latitude/elevation`, falling back to the
-client-supplied `elevation` param when no terrain basemap is configured.
+`getElevation()` resolves the `map::terrain` basemap and asks the tile server for the elevation
+(`POST /tiles/basemap/:id/elevation`, `BASEMAP_TILES_URL`). The tile server fetches the tile through
+its own proxy route, decodes it according to the basemap's encoding (Mapbox Terrain-RGB or
+Terrarium) and reads the pixel the point falls in. It is wired into
+`GET /search/reverse/:longitude/:latitude/elevation`, which falls back to the client-supplied
+`elevation` param when no value comes back.
 
-See [`README-SERVER-SIDE-ELEVATION.md`](README-SERVER-SIDE-ELEVATION.md).
+- The request carries the token of the user that asked, so the tile server applies the same access
+  rules as for that user's own tile requests.
+- The endpoint samples along a line, so the API sends a line from the point to a point 0.000001
+  degrees away and reads the first sample (distance 0), which is the point itself. The same point
+  twice finds no tile to read.
+- The zoom is `min(basemap.maxzoom, 15)`. The tile server would otherwise use the basemap's maxzoom.
+- Any failure (no terrain basemap, 4xx or 5xx, timeout, no data at the point) gives `null`.
+- Before v14.0.0 the API decoded the tile itself (`tileBuffer()` on the basemap protocols,
+  `tilebelt.ts` and `sharp`). Upstream removed the API tile code in v14.0.0, so we moved to the
+  tile server instead of keeping a copy of it. The tile server skips fully transparent pixels,
+  which the old code decoded as an elevation.
 
-**Depends on API code upstream removed.** v14.0.0 deleted the API tile proxy (the
-`/api/basemap/:id/tiles` routes, `tile()`/`_tile()` on the protocols and `tilebelt.ts`), because
-tiles are served by the PMTiles tile server. `tileBuffer()` is built on that code, so the sync
-keeps our copies of `interface-basemap.ts`, `basemap/{zxy,hosted}.ts` and `tilebelt.ts`, without
-the routes. Moving `getElevation()` to the tile server's `POST /tiles/basemap/:id/elevation`
-would let all of it go. That endpoint takes a line and a token, so it needs a small adapter.
-
+See [`README-SERVER-SIDE-ELEVATION.md`](README-SERVER-SIDE-ELEVATION.md) for the original problem.
 
 ### Query Mode tides
 `api/stateless/lib/{tides,coast,coastline-data}.ts`, `api/stateless/routes/search.ts`,
@@ -690,7 +691,6 @@ non-default named sprites.
 
 ### Basemap tile proxy: upstream User-Agent, Referer and errors
 
-`api/stateless/routes/basemap.ts`, `api/stateless/lib/basemap/{zxy,hosted}.ts`,
 `tasks/pmtiles/routes/basemap.ts`, `tasks/pmtiles/lib/basemap.ts`,
 `tasks/pmtiles/lib/basemap/protocol.ts`
 
@@ -705,22 +705,16 @@ User-Agent and relay that 403, which looked like a CloudTAK auth failure.
 - An upstream status of 400 or above, other than 404, becomes a 502 naming the
   upstream host. The upstream body is never relayed.
 
-**Update (v14.0.0 sync): the API route is gone.** Upstream removed the
-`/api/basemap/:id/tiles` and `/api/basemap/:id/tiles/:z/:x/:y` routes, so only the tile server
-serves proxied tiles now. `api/stateless/lib/basemap/{zxy,hosted}.ts` keep their `_tile()` only
-for server-side elevation (see below), and the header and 502 fix there is no longer reachable
-from a client. The sprite routes in `api/stateless/routes/basemap.ts` are ours and stay.
+**The API copy is gone (v14.0.0 sync).** Upstream removed the `/api/basemap/:id/tiles` and
+`/api/basemap/:id/tiles/:z/:x/:y` routes and the tile code of the protocols, and we dropped our
+copy of it as well (`zxy.ts`, `hosted.ts` and `interface-basemap.ts` are upstream's again). Only
+the tile server proxies tiles now, so the fix lives there: the headers come from
+`Basemap.upstreamHeaders()` and the 502 mapping from `BasemapProtocol.pipe()`. Check both after a
+sync, as upstream has not fixed the bug itself. The LINZ sprite routes in
+`api/stateless/routes/basemap.ts` are ours and stay.
 
-**Two copies must stay in step.** Since v13.117.0 proxied tiles are served by the
-tile server (`BASEMAP_TILES_URL`), not the API, so the API route above only
-serves clients that still use the old URL. The v13.117.0 sync lost this fix for
-the tile server until it was ported there. Upstream has the bug in both places
-and has not fixed it, so check both after a sync. On the tile server the
-headers come from `Basemap.upstreamHeaders()` and the 502 mapping lives in
-`BasemapProtocol.pipe()`.
-
-Tests: `api/test/basemap-zxy-proxy.test.ts`, `tasks/pmtiles/test/basemap-proxy.test.ts`
-and the two header and 502 cases in `tasks/pmtiles/test/basemap-tiles.srv.test.ts`.
+Tests: `tasks/pmtiles/test/basemap-proxy.test.ts` and the two header and 502 cases in
+`tasks/pmtiles/test/basemap-tiles.srv.test.ts`.
 
 ---
 

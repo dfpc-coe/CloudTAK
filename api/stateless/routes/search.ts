@@ -234,7 +234,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             // rendering (map.setTerrain()) to be active - a GPU-heavy mode that
             // isn't otherwise needed for a one-off lookup, and unreliable on
             // constrained hardware. The server now independently looks up
-            // elevation by decoding the raster-dem tile directly (getElevation()),
+            // elevation from the raster-dem basemap through the tile server (getElevation()),
             // so this is only used if that lookup can't produce a value (e.g. no
             // terrain basemap configured).
             elevation: Type.Optional(Type.Number()),
@@ -247,7 +247,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const user = await Auth.as_user(config, req);
             const elevationUnit = await config.models.ProfileConfig.from(user.email).then(p => p['display::elevation'] as string).catch(() => 'feet');
 
-            const meters = await getElevation(config, req.params.longitude, req.params.latitude)
+            const meters = await getElevation(config, user.token, req.params.longitude, req.params.latitude)
                 ?? (req.query.elevation !== undefined ? req.query.elevation / 1.5 : null);
 
             const elevation = meters !== null

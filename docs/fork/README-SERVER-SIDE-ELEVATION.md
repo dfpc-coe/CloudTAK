@@ -1,5 +1,9 @@
 
 # Server-Side Elevation Lookup (068)
+> **Changed by the v14.1.0 sync.** The problem and the reason for a server-side lookup still
+> hold, but the API no longer decodes the tile itself. `tileBuffer()` and `tilebelt.ts` are gone
+> and `getElevation()` asks the tile server's elevation endpoint instead. See the Server-side
+> elevation section of [`FORK-DELTA.md`](FORK-DELTA.md).
 
 > **Historical patch numbers.** The `NNN-name.patch` identifiers used below refer
 > to a patch set that was deleted at v13.70.0 — only 8 of its 45 files still

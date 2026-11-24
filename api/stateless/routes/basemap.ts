@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
@@ -28,7 +27,6 @@ import { isEsriLayerURL } from '../lib/tilejson.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
 import * as Default from '../lib/limits.js';
 
-const pkg = JSON.parse(String(fs.readFileSync(new URL('../../package.json', import.meta.url))));
 
 const AugmentedBasemapResponse = Type.Composite([
     Type.Omit(BasemapResponse, ['bounds', 'center']),

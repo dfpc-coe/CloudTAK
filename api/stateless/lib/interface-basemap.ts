@@ -1,8 +1,5 @@
-import { tileToBBOX } from './tilebelt.js';
-import { bbox } from '@turf/bbox';
 import { InferSelectModel } from 'drizzle-orm';
-import type { BBox, Geometry } from 'geojson';
-import type { Response } from 'express';
+import type { BBox } from 'geojson';
 import Config from '../../common/config.js';
 import { Basemap } from '../../common/schema.js';
 import { Static, Type } from '@sinclair/typebox';
@@ -34,22 +31,12 @@ export interface TileJSONInterface {
     vector_layers?: Array<Static<typeof TileJSON_VectorLayer>>;
 }
 
-export interface TileOpts {
-    headers?: Record<string, string | undefined>;
-}
-
 /**
  * Generic interface for a basemap protocol implementation.
  */
 export interface BasemapProtocolInterface {
     actions(): Static<typeof TileJSONActions>;
     isValidURL(str: string): void;
-
-    tile(
-        z: number, x: number, y: number,
-        res: Response,
-        opts?: TileOpts
-    ): Promise<void>;
 
     featureQuery?(
         polygon: Static<typeof Feature.Polygon>
@@ -63,10 +50,9 @@ export interface BasemapProtocolInterface {
 /**
  * @class
  *
- * Base class for all basemap protocol implementations. Provides shared utility
- * methods and a tile() facade that handles common pre-processing (header
- * normalisation and bounds checking) before delegating to the protocol-specific
- * _tile() implementation.
+ * Base class for all basemap protocol implementations - URL validation,
+ * TileJSON construction and feature actions. Tiles are served by the PMTiles
+ * tile server
  */
 export class BasemapProtocol implements BasemapProtocolInterface {
     basemap?: InferSelectModel<typeof Basemap>;
@@ -84,15 +70,7 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     static isValidStyle(type: string, layers: Array<unknown>): void {
         const sources: Record<string, unknown> = {};
         for (const l of layers as Array<Record<string, string>>) {
-            if (l.source === undefined) continue; // background layers have no source
-            if (!sources[l.source]) {
-                // hillshade layers require a raster-dem source regardless of the
-                // basemap's own type — register them correctly so validation passes.
-                // '__terrain__' is a sentinel meaning "use whatever raster-dem source
-                // is active at runtime" — always treat it as raster-dem.
-                const isHillshadeOrTerrain = l.type === 'hillshade' || l.source === '__terrain__';
-                sources[l.source] = { type: isHillshadeOrTerrain ? 'raster-dem' : type };
-            }
+            if (!sources[l.source]) sources[l.source] = { type };
         }
 
         const errors = validateStyleMin({
@@ -174,29 +152,11 @@ export class BasemapProtocol implements BasemapProtocolInterface {
         const type = config.type || 'raster';
         const isVectorType = type !== 'raster' && type !== 'raster-dem';
 
-        // Only advertise vector_layers when we actually know them.
-        //
-        // Upstream v13.70.0 defaults this to [{ id: 'out', fields: {} }], which
-        // is CloudTAK's own ETL convention - its generated vector tiles really do
-        // put everything in a layer called `out` (see `sourceLayer: 'out'` in
-        // app/src/base/overlay-class.ts). It is wrong for any basemap that
-        // proxies third-party vector tiles: LINZ topographic-v2 serves `land`,
-        // `water_polygons`, `streets`, `pois` and fourteen others.
-        //
-        // There is no vector_layers column on the basemaps table, so
-        // config.vector_layers is always undefined for a database-backed
-        // basemap and the wrong default always won. MapLibre 6.x validates
-        // `source-layer` against this list and fires an error event per layer,
-        // so a 287-layer LINZ style produced ~285 console errors on every load.
-        // The layers still render - MapLibre warns rather than skipping - but the
-        // noise buried a real error (see the hillshade DEM source fix).
-        //
-        // v13.26.0 emitted no vector_layers at all, so nothing was validated.
-        // Omitting when unknown restores that, and is strictly more permissive:
-        // every frontend consumer already guards with Array.isArray().
         let vector_layers: Array<Static<typeof TileJSON_VectorLayer>> | undefined;
-        if (isVectorType && config.vector_layers) {
-            vector_layers = [...config.vector_layers];
+        if (isVectorType) {
+            vector_layers = config.vector_layers
+                ? [...config.vector_layers]
+                : [{ id: 'out', fields: {} }];
         }
 
         return {
@@ -218,39 +178,6 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     }
 
     /**
-     * Convert ZXY tile coordinates to a WGS-84 bounding box
-     *
-     * @param z - Zoom level
-     * @param x - Tile column
-     * @param y - Tile row
-     */
-    static extent(z: number, x: number, y: number): Array<number> {
-        return tileToBBOX([x, y, z]);
-    }
-
-    /**
-     * Generate a Bing Maps style quadkey from ZXY tile coordinates
-     *
-     * @param z - Zoom level
-     * @param x - Tile column
-     * @param y - Tile row
-     */
-    static quadkey(z: number, x: number, y: number): string {
-        const quadKey = [];
-        for (let i = z; i > 0; i--) {
-            let digit = 0;
-            const mask = 1 << (i - 1);
-            if ((x & mask) !== 0) digit++;
-            if ((y & mask) !== 0) {
-                digit++;
-                digit++;
-            }
-            quadKey.push(digit);
-        }
-        return quadKey.join('');
-    }
-
-    /**
      * Return the feature actions supported by this protocol.
      * Subclasses that support feature querying should override this method.
      */
@@ -267,134 +194,4 @@ export class BasemapProtocol implements BasemapProtocolInterface {
     featureFetch?(
         id: string
     ): Promise<Static<typeof MultiGeoJSONFeature>>;
-
-    /**
-     * Proxy a tile request to the upstream source.
-     *
-     * Handles common pre-processing (header normalisation and optional bounds
-     * checking) before delegating to the protocol-specific _tile() method.
-     */
-    async tile(
-        z: number, x: number, y: number,
-        res: Response,
-        opts?: TileOpts,
-    ): Promise<void> {
-        const headers: Record<string, string | undefined> = { ...opts?.headers };
-        for (const key of Object.keys(headers)) {
-            if (!headers[key]) delete headers[key];
-        }
-
-        const bounds = this.basemap?.bounds ? bbox(this.basemap.bounds as Geometry) : undefined;
-        if (bounds && bounds.length === 4) {
-            const tileBbox = tileToBBOX([x, y, z]);
-            const [minLon, minLat, maxLon, maxLat] = bounds;
-            const [tileMinLon, tileMinLat, tileMaxLon, tileMaxLat] = tileBbox;
-
-            if (tileMaxLat < minLat || tileMinLat > maxLat) {
-                res.status(404).send('Tile outside bounds');
-                return;
-            }
-
-            const lonInBox = minLon <= maxLon
-                ? tileMinLon <= maxLon && tileMaxLon >= minLon
-                : tileMinLon <= maxLon || tileMaxLon >= minLon;
-
-            if (!lonInBox) {
-                res.status(404).send('Tile outside bounds');
-                return;
-            }
-        }
-
-        return this._tile(z, x, y, res, { headers });
-    }
-
-    protected async _tile(
-        z: number, x: number, y: number,
-        res: Response,
-        opts: Required<TileOpts>,
-    ): Promise<void> {
-        void z;
-        void x;
-        void y;
-        void res;
-        void opts;
-        throw new Err(501, null, 'Protocol does not implement tile()');
-    }
-
-    /**
-     * Fetch a single tile's raw bytes in-process, without an HTTP round trip.
-     *
-     * Reuses tile() (and therefore each protocol's _tile() implementation)
-     * unmodified by handing it a minimal in-memory stand-in for Express's
-     * Response object. This lets any existing protocol (ZXY, Hosted,
-     * ImageServer, MapServer, FeatureServer, ...) be used for server-side
-     * tile consumption — e.g. decoding a raster-dem tile for elevation
-     * lookups — without duplicating each protocol's URL-building/fetch logic.
-     *
-     * @param z - Zoom level
-     * @param x - Tile column
-     * @param y - Tile row
-     */
-    async tileBuffer(z: number, x: number, y: number): Promise<Buffer> {
-        const chunks: Buffer[] = [];
-        let statusCode = 200;
-        let settled = false;
-
-        const capture = new Promise<Buffer>((resolve, reject) => {
-            const finish = () => {
-                if (settled) return;
-                settled = true;
-                if (statusCode >= 300) {
-                    reject(new Err(statusCode, null, `Tile fetch failed with status ${statusCode}`));
-                } else {
-                    resolve(Buffer.concat(chunks));
-                }
-            };
-
-            const fail = (err: unknown) => {
-                if (settled) return;
-                settled = true;
-                reject(err instanceof Error ? err : new Error(String(err)));
-            };
-
-            // Minimal Response stand-in: only the members every _tile()
-            // implementation in this codebase actually calls.
-            const mockRes = {
-                writeHead: (code: number) => {
-                    statusCode = code;
-                    return mockRes;
-                },
-                write: (chunk: Buffer | string) => {
-                    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-                    return true;
-                },
-                end: (chunk?: Buffer | string) => {
-                    if (chunk) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-                    finish();
-                    return mockRes;
-                },
-                status: (code: number) => {
-                    statusCode = code;
-                    return {
-                        send: (body?: unknown) => {
-                            if (body) chunks.push(Buffer.from(typeof body === 'string' ? body : JSON.stringify(body)));
-                            finish();
-                        },
-                        json: (body?: unknown) => {
-                            if (body) chunks.push(Buffer.from(JSON.stringify(body)));
-                            finish();
-                        },
-                    };
-                },
-                json: (body?: unknown) => {
-                    if (body) chunks.push(Buffer.from(JSON.stringify(body)));
-                    finish();
-                },
-            } as unknown as Response;
-
-            this.tile(z, x, y, mockRes).catch(fail);
-        });
-
-        return capture;
-    }
 }
