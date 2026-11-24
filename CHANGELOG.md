@@ -24,6 +24,8 @@
 
 ### Pending Release
 
+- :bug:  Ensure styles array is reset on any basemap change - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2066
+
 ### v14.1.0 - 2026-11-24
 
 - :tada: Chatrooms are now stored by CloudTAK and shared by their members instead of mirrored per user from GeoChat - users of the same server message each other directly, everyone else is reached through GeoChat on the TAK Server - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1147
