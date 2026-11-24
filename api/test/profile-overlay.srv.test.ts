@@ -593,6 +593,97 @@ test('POST: api/profile/overlay - style layer ids are scoped to the overlay', as
     }
 });
 
+test('PATCH: api/profile/overlay - switching basemap replaces styles with the new basemap\'s', async () => {
+    let id: number | undefined;
+
+    try {
+        const vector = await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Switch Vector Basemap',
+                url: 'https://tiles.example.com/switch-vector/{z}/{x}/{y}',
+                protocol: 'zxy',
+                type: 'vector',
+                sharing_enabled: false,
+                styles: [
+                    { id: 'background', type: 'background', paint: { 'background-color': '#dddddd' } },
+                    { id: 'roads', type: 'line', source: 'basemap', 'source-layer': 'roads' },
+                ],
+            },
+        }, true);
+
+        const raster = await flight.fetch('/api/basemap', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: 'Switch Raster Basemap',
+                url: 'https://tiles.example.com/switch-raster/{z}/{x}/{y}',
+                protocol: 'zxy',
+                type: 'raster',
+                sharing_enabled: false,
+            },
+        }, true);
+
+        const post = await flight.fetch('/api/profile/overlay', {
+            method: 'POST',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: vector.body.name,
+                mode: 'basemap',
+                mode_id: String(vector.body.id),
+                type: 'vector',
+                url: `/api/basemap/${vector.body.id}/tiles`,
+                styles: vector.body.styles,
+            },
+        }, true);
+        id = post.body.id;
+
+        const styles = [
+            { id: `${id}-background`, type: 'background', paint: { 'background-color': '#dddddd' } },
+            { id: `${id}-roads`, type: 'line', source: String(id), 'source-layer': 'roads' },
+        ];
+
+        assert.deepEqual(post.body.styles, styles);
+
+        const toRaster = await flight.fetch(`/api/profile/overlay/${id}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: raster.body.name,
+                type: 'raster',
+                mode_id: String(raster.body.id),
+                url: `/api/basemap/${raster.body.id}/tiles`,
+            },
+        }, true);
+
+        assert.equal(toRaster.body.type, 'raster');
+        assert.deepEqual(toRaster.body.styles, []);
+
+        const toVector = await flight.fetch(`/api/profile/overlay/${id}`, {
+            method: 'PATCH',
+            auth: { bearer: flight.token.admin },
+            body: {
+                name: vector.body.name,
+                type: 'vector',
+                mode_id: String(vector.body.id),
+                url: `/api/basemap/${vector.body.id}/tiles`,
+            },
+        }, true);
+
+        assert.deepEqual(toVector.body.styles, styles);
+    } catch (err) {
+        assert.ifError(err);
+    } finally {
+        if (id !== undefined) {
+            await flight.fetch(`/api/profile/overlay?id=${id}`, {
+                method: 'DELETE',
+                auth: { bearer: flight.token.admin },
+            }, false);
+        }
+    }
+});
+
 test('PATCH: api/profile/overlay/order', async () => {
     const created: Array<number> = [];
 
