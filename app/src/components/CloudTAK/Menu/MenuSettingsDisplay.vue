@@ -48,8 +48,13 @@
                                 </div>
                             </div>
                             <div class='col-12'>
+                                <CoordinateFormatSelect
+                                    v-if='item.key === "display_coordinate"'
+                                    v-model='(profile as any)[item.key]'
+                                    :options='item.options || []'
+                                />
                                 <TablerEnum
-                                    v-if='item.type === "enum"'
+                                    v-else-if='item.type === "enum"'
                                     v-model='(profile as any)[item.key]'
                                     :options='item.options'
                                 />
@@ -95,6 +100,7 @@ import {
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
+import CoordinateFormatSelect from '../../util/CoordinateFormatSelect.vue';
 import type { Profile, Profile_Update } from '../../../types.ts';
 import {
     TablerEnum,

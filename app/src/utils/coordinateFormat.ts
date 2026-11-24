@@ -3,11 +3,11 @@ import { convert } from 'geo-coordinates-parser';
 export type CoordMode = 'dd' | 'dm' | 'dms' | 'mgrs' | 'utm';
 
 export const COORD_MODES: Array<{ value: CoordMode; label: string; title: string }> = [
-    { value: 'dd',   label: 'DD',   title: 'Decimal Degrees' },
-    { value: 'dm',   label: 'DM',   title: 'Degrees Minutes' },
-    { value: 'dms',  label: 'DMS',  title: 'Degrees Minutes Seconds' },
-    { value: 'mgrs', label: 'MGRS', title: 'Military Grid Reference System' },
-    { value: 'utm',  label: 'UTM',  title: 'Universal Transverse Mercator' },
+    { value: 'dd',   label: 'DD',   title: 'Decimal Degrees (DD)' },
+    { value: 'dm',   label: 'DM',   title: 'Degrees & Decimal Minutes (DM)' },
+    { value: 'dms',  label: 'DMS',  title: 'Degrees, Minutes, Seconds (DMS)' },
+    { value: 'mgrs', label: 'MGRS', title: 'Military Grid Reference System (MGRS)' },
+    { value: 'utm',  label: 'UTM',  title: 'Universal Transverse Mercator (UTM)' },
 ];
 
 const K0 = 0.9996;
