@@ -64,7 +64,10 @@
                     <div class='fw-bold small mb-1'>
                         <span v-text='chat.sender || "Unknown"' />
                     </div>
-                    <div v-text='chat.message' />
+                    <div
+                        class='chat-message'
+                        v-text='chat.message'
+                    />
                     <div
                         class='text-end'
                         style='font-size: 0.75rem; opacity: 0.75;'
@@ -76,7 +79,10 @@
                     class='ms-auto cloudtak-accent px-2 py-2 rounded'
                     style='max-width: 80%;'
                 >
-                    <div v-text='chat.message' />
+                    <div
+                        class='chat-message'
+                        v-text='chat.message'
+                    />
                     <div
                         class='d-flex align-items-center justify-content-end'
                         style='font-size: 0.75rem; opacity: 0.75;'
@@ -298,6 +304,11 @@ defineExpose({ scrollToBottom });
 </script>
 
 <style scoped>
+.chat-message {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
 @keyframes float {
     0% {
         transform: translateX(-50%) translateY(0);
