@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - 'app/android/**'
+      - '.github/gradle/ci-init.gradle'
       - 'app/capacitor.config.json'
       - 'app/package.json'
       - 'app/package-lock.json'
@@ -41,6 +42,13 @@ jobs:
           cache-dependency-path: |
             app/android/**/*.gradle*
             app/android/gradle/wrapper/gradle-wrapper.properties
+
+      # Maven Central answers GitHub's hosted runners with 429 Too Many Requests. The init script
+      # points the build at Google's mirror of it
+      - name: Use a mirror of Maven Central
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cp .github/gradle/ci-init.gradle ~/.gradle/init.d/ci-init.gradle
 
       - name: Install dependencies
         working-directory: app
