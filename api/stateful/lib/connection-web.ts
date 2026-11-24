@@ -5,6 +5,8 @@ import type { Feature } from '@tak-ps/node-cot';
 import WebSocket from 'ws';
 import { ConnectionClient } from './connection-pool.js';
 import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
+import { ProfileConnConfig } from '../../common/connection-config.js';
+import { profileCallsign } from '../../common/control/takserver.js';
 import { rawDataToString } from '../../common/stringify.js';
 
 export class ConnectionWebSocket {
@@ -37,6 +39,13 @@ export class ConnectionWebSocket {
                     } else if (msg.type === 'chat') {
                         let chat: DirectChat | MissionChat;
 
+                        const profile = client.config instanceof ProfileConnConfig ? client.config : undefined;
+
+                        // The sender is who the connection belongs to, never who the browser claims to be
+                        const from: { uid: string; callsign: string } = profile
+                            ? { uid: profile.uid(), callsign: await profileCallsign(profile.config, profile.id) }
+                            : { uid: String(msg.data.from.uid), callsign: String(msg.data.from.callsign) };
+
                         if (msg.data.mission) {
                             const serverUrl = new URL(client.config.config.server.url);
                             const apiUrl = new URL(String(client.config.config.server.api));
@@ -47,45 +56,62 @@ export class ConnectionWebSocket {
 
                             chat = new MissionChat({
                                 from: {
-                                    uid: msg.data.from.uid,
+                                    uid: from.uid,
                                 },
                                 mission: {
                                     name: msg.data.chatroom,
                                     id: missionId,
                                     guid: msg.data.guid,
                                 },
-                                senderCallsign: msg.data.from.callsign,
+                                senderCallsign: from.callsign,
                                 message: msg.data.message,
                                 messageId: msg.data.messageId,
                                 parent: msg.data.parent,
                                 groupOwner: msg.data.groupOwner,
                             });
                         } else {
-                            chat = new DirectChat(msg.data);
+                            chat = new DirectChat({ ...msg.data, from });
                         }
 
                         if (msg.data.location && msg.data.location[0] !== 0 && msg.data.location[1] !== 0) {
                             chat.position(msg.data.location);
                         }
 
-                        void client.tak.write([chat], { stripFlow: true });
-
                         const feat = await CoTParser.to_geojson(chat);
                         const messageId = feat.properties.chat ? (feat.properties.chat.messageId || randomUUID()) : randomUUID();
 
-                        const stored = await client.config.config.models.ProfileChat.generate({
-                            username: String(client.config.id),
-                            chatroom: msg.data.chatroom,
-                            sender_callsign: msg.data.from.callsign,
-                            sender_uid: msg.data.from.uid,
-                            message_id: messageId,
-                            message: msg.data.message,
-                            status: ProfileChatStatus.SENT,
-                        });
+                        let status = ProfileChatStatus.FAILED;
 
-                        // Confirm to all of the user's clients that the message reached the server
-                        // Includes the server-assigned created (normalized to ISO 8601) so clients can
-                        // replace their optimistic local-clock timestamp with the authoritative one
+                        if (client.ready) {
+                            try {
+                                await client.tak.write([chat], { stripFlow: true });
+                                status = ProfileChatStatus.SENT;
+                            } catch (err) {
+                                console.error(`Error: Failed to write Chat ${messageId}:`, err);
+                            }
+                        }
+
+                        let created = new Date().toISOString();
+
+                        // Mission chat is stored by the Mission, not the profile
+                        if (profile && !msg.data.mission) {
+                            const stored = await client.config.config.models.ProfileChat.ingest({
+                                username: profile.id,
+                                chatroom: msg.data.chatroom,
+                                sender_callsign: from.callsign,
+                                sender_uid: from.uid,
+                                message_id: messageId,
+                                message: msg.data.message,
+                                read: true,
+                                status,
+                            }, { restatus: true });
+
+                            created = new Date(stored.chat.created).toISOString();
+                        }
+
+                        // Tell all of the user's clients whether the message reached the TAK Server
+                        // Includes the server-assigned created so clients can replace their
+                        // optimistic local-clock timestamp with the authoritative one
                         for (const wsClient of (client.config.config.wsClients.get(String(client.config.id)) || [])) {
                             if (!wsClient.events.includes(WebSocket_Event.MAP)) continue;
 
@@ -95,9 +121,9 @@ export class ConnectionWebSocket {
                                     connection: client.config.id,
                                     data: {
                                         messageId,
-                                        status: ProfileChatStatus.SENT,
+                                        status,
                                         chatroom: msg.data.chatroom,
-                                        created: new Date(stored.created).toISOString(),
+                                        created,
                                     },
                                 }));
                             }

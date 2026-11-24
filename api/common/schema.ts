@@ -390,6 +390,10 @@ export const ProfileChat = pgTable('profile_chats', {
 
     // Delivery status of an outgoing message: sent, pending, failed, delivered, read
     status: text().$type<ProfileChatStatus>(),
+}, (table) => {
+    return {
+        username_message_idx: uniqueIndex('profile_chats_username_message_id_idx').on(table.username, table.message_id),
+    };
 });
 
 export const VideoLease = pgTable('video_lease', {

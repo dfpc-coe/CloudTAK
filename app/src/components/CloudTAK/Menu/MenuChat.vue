@@ -30,6 +30,7 @@
                 placeholder='Send Message...'
                 @send='sendMessage'
                 @delete='deleteChats'
+                @retry='retryMessage'
                 @at-bottom='onAtBottom'
             />
         </template>
@@ -147,23 +148,35 @@ watch(() => route.params.chatroom, async (newChatroom) => {
     await fetchChats();
 });
 
+function routeRecipient(): { uid: string; callsign: string } | undefined {
+    if (!route.query.uid || !route.query.callsign) return;
+
+    return {
+        uid: normalizeRouteQuery(route.query.uid),
+        callsign: normalizeRouteQuery(route.query.callsign)
+    };
+}
+
+async function retryMessage(messageId: string | number): Promise<void> {
+    if (!room.value) return;
+
+    await room.value.chats.retry(
+        String(messageId),
+        { uid: id.value, callsign: callsign.value },
+        mapStore.worker,
+        routeRecipient()
+    );
+}
+
 async function sendMessage(message: string): Promise<void> {
     if (!message.trim().length) return;
     if (!room.value) return;
-
-    let recipient: { uid: string; callsign: string } | undefined;
-    if (route.query.uid && route.query.callsign) {
-        recipient = {
-            uid: normalizeRouteQuery(route.query.uid),
-            callsign: normalizeRouteQuery(route.query.callsign)
-        };
-    }
 
     await room.value.chats.send(
         message,
         { uid: id.value, callsign: callsign.value },
         mapStore.worker,
-        recipient
+        routeRecipient()
     );
 
     if (route.params.chatroom === 'new') {

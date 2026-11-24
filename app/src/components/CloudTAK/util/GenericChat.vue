@@ -116,6 +116,14 @@
                                 class='text-azure'
                             />
                         </span>
+                        <button
+                            v-if='chat.status === ChatStatus.Failed'
+                            class='btn btn-sm btn-link p-0 ms-2'
+                            style='font-size: 0.75rem;'
+                            @click.stop='emit("retry", chat.id)'
+                        >
+                            Retry
+                        </button>
                     </div>
                 </div>
             </div>
@@ -199,6 +207,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
     send: [message: string];
     delete: [ids: Array<string | number>];
+    retry: [id: string | number];
     'at-bottom': [atBottom: boolean];
 }>();
 

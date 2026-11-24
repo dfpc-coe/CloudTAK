@@ -375,29 +375,32 @@ export default class AtlasConnection {
                     console.error('Error getting profile for chat routing', err);
                 }
 
-                await Chatroom.load(chatroom, { reload: false });
+                // A message already stored is a redelivery - not a new message
+                if (!await db.chatroom_chats.get(chat.messageId)) {
+                    await Chatroom.load(chatroom, { reload: false });
 
-                await db.chatroom.where('id').equals(chatroom).modify(room => {
-                    room.updated = chat.time;
-                    room.unread = (room.unread || 0) + 1;
-                });
+                    await db.chatroom.where('id').equals(chatroom).modify(room => {
+                        room.updated = chat.time;
+                        room.unread = (room.unread || 0) + 1;
+                    });
 
-                await db.chatroom_chats.put({
-                    id: chat.messageId,
-                    chatroom: chatroom,
-                    sender: chat.from.callsign,
-                    sender_uid: chat.from.uid,
-                    message: chat.message,
-                    created: chat.time
-                });
+                    await db.chatroom_chats.put({
+                        id: chat.messageId,
+                        chatroom: chatroom,
+                        sender: chat.from.callsign,
+                        sender_uid: chat.from.uid,
+                        message: chat.message,
+                        created: chat.time
+                    });
 
-                await TAKNotification.create(
-                    NotificationType.Chat,
-                    'New Chat Message',
-                    `${chat.from.callsign} to ${chat.chatroom} says: ${chat.message}`,
-                    `/menu/chats`,
-                    true
-                );
+                    await TAKNotification.create(
+                        NotificationType.Chat,
+                        'New Chat Message',
+                        `${chat.from.callsign} to ${chat.chatroom} says: ${chat.message}`,
+                        `/menu/chats`,
+                        true
+                    );
+                }
             } else if (body.type === 'chat:receipt') {
                 const receipt = body.data as {
                     messageId: string;
@@ -568,9 +571,11 @@ export default class AtlasConnection {
     }
 
 
-    sendCOT(data: object, type = 'cot') {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    /** @returns false if the WebSocket was not open and nothing was sent */
+    sendCOT(data: object, type = 'cot'): boolean {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return false;
         this.ws.send(JSON.stringify({ type, data }));
+        return true;
     }
 
 }

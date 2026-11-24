@@ -1444,6 +1444,11 @@
         "query": false,
         "res": true
     },
+    "POST /profile/chatroom/:chatroom/read": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /profile/chatroom/:chatroom/chat": {
         "body": false,
         "query": true,
