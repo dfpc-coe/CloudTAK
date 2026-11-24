@@ -125,6 +125,16 @@ const ids = {
 };
 
 test('Open the WebSocket of a user', async () => {
+    const capture = (socket: { on(event: 'data', listener: (chunk: Buffer) => void): unknown }) => {
+        socket.on('data', (chunk) => {
+            written += String(chunk);
+        });
+    };
+
+    // The connection of a user can finish its handshake after the WebSocket reports it is connected
+    for (const socket of flight.tak.streamingSockets) capture(socket);
+    flight.tak.streaming.on('secureConnection', capture);
+
     const url = new URL(flight.base.replace(/^http/, 'ws'));
     url.searchParams.append('format', 'geojson');
     url.searchParams.append('connection', 'admin@example.com');
@@ -142,12 +152,6 @@ test('Open the WebSocket of a user', async () => {
     });
 
     await next('connected');
-
-    for (const socket of flight.tak.streamingSockets) {
-        socket.on('data', (chunk) => {
-            written += String(chunk);
-        });
-    }
 });
 
 test('TAK: a Direct GeoChat is stored once and acknowledged', async () => {
