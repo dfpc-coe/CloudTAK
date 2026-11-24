@@ -31,6 +31,9 @@ type ProjectedSystem = {
     converter: proj4.Converter;
 };
 
+/** Shown for a position outside the area a coordinate system covers */
+export const OUTSIDE_AREA = '--';
+
 const projected = shallowReactive(new Map<string, ProjectedSystem>());
 
 /**
@@ -78,10 +81,8 @@ const NORTHING_SETS = ['ABCDEFGHJKLMNPQRSTUV', 'FGHJKLMNPQRSTUVABCDE'] as const;
 export function formatCoordPair(lat: number, lng: number, mode: CoordMode, truncate?: number): string {
     const system = projected.get(mode);
     if (system) {
-        // Outside the system's area of use the position is shown as decimal degrees
-        const text = asProjected(system, lat, lng);
-        if (text) return text;
-        mode = 'dd';
+        // Outside the system's area of use there is no position to show
+        return asProjected(system, lat, lng) ?? OUTSIDE_AREA;
     } else if (!BUILTIN_COORD_MODES.some((builtin) => builtin.value === mode)) {
         // A mode the server no longer offers
         mode = 'dd';
@@ -114,7 +115,7 @@ export function parseCoordPair(text: string, mode?: CoordMode): [number, number]
 
     const system = mode === undefined ? undefined : projected.get(mode);
     if (system) {
-        return parseProjectedOrDegrees(system, raw);
+        return parseProjected(system, raw);
     }
 
     if (mode === 'utm') {
@@ -218,21 +219,6 @@ function parseProjected(system: ProjectedSystem, text: string): [number, number]
     }
 
     return [lat, wrapLongitude(lng)];
-}
-
-/** Outside a system's area of use positions are shown as degrees, so accept those as well */
-function parseProjectedOrDegrees(system: ProjectedSystem, text: string): [number, number] {
-    try {
-        return parseProjected(system, text);
-    } catch (err) {
-        try {
-            const [lat, lng] = parseDegrees(text);
-            if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return [lat, lng];
-        } catch {
-            // Fall through to report the problem with the projected coordinate
-        }
-        throw err;
-    }
 }
 
 function parseDegrees(text: string): [number, number] {

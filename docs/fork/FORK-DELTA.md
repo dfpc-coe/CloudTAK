@@ -1244,8 +1244,7 @@ upper bound, hours limits, possible double counting with ArcGIS traffic).
   loaded names instead of an enum. Removing a system from the file leaves existing
   profiles on it, and those users see decimal degrees.
 - Positions show as `E 1748500  N 5427000`. Outside the system's `bounds` the
-  position shows as decimal degrees, and the field accepts degrees as well, so a
-  point outside the area never disappears. Input accepts `E 1748500 N 5427000`,
+  position shows as `--`. Input accepts `E 1748500 N 5427000`,
   `1748500E 5427000N`, `1748500, 5427000` and the same with northing first.
 - Projected systems only (metres). A geographic system cannot be added this way.
 - The app loads the list after login (`loadCoordinateSystems()`), so offline

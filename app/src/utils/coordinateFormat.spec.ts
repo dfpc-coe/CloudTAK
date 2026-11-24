@@ -113,12 +113,10 @@ describe('coordinateFormat - NZTM', () => {
         expect(parseCoordPair(formatted, 'NZTM')[1]).toBeCloseTo(-176.5, 4);
     });
 
-    it('shows degrees outside the area of use and accepts them back', () => {
+    it('shows -- outside the area of use', () => {
         // Denver
-        const formatted = formatCoordPair(39.739236, -104.990251, 'NZTM');
-        expect(formatted).toBe('39.739236, -104.990251');
-        expect(validateCoordPair(formatted, 'NZTM')).toBe('');
-        expect(parseCoordPair(formatted, 'NZTM')).toEqual([39.739236, -104.990251]);
+        expect(formatCoordPair(39.739236, -104.990251, 'NZTM')).toBe('--');
+        expect(validateCoordPair('--', 'NZTM')).not.toBe('');
     });
 
     it('formats as degrees when the server stops offering the system', () => {
