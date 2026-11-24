@@ -71,26 +71,30 @@
                                 />
                                 <span class='mx-2'>Edit</span>
                             </div>
-                            <!-- TablerDelete's confirm modal only closes on unmount -
-                                 the key remounts it once the clear empties the Column -->
-                            <TablerDelete
-                                :key='`clear-${column.events.length}`'
-                                class='event-board-menu-delete'
-                                :class='{ "cloudtak-hover": column.events.length > 0 }'
-                                displaytype='menu'
-                                label='Clear'
+                            <div
+                                class='col-12 d-flex align-items-center px-2 py-2'
+                                :class='{ "cursor-pointer cloudtak-hover": column.events.length > 0 }'
                                 title='Clear Column'
-                                :disabled='column.events.length === 0'
-                                @delete='clearColumn(column)'
-                            />
-                            <TablerDelete
+                                @click='column.events.length > 0 && (confirmClear = column)'
+                            >
+                                <IconTrash
+                                    :size='20'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Clear</span>
+                            </div>
+                            <div
                                 v-if='column.type !== "nominated"'
-                                class='cloudtak-hover event-board-menu-delete'
-                                displaytype='menu'
-                                label='Delete Column'
+                                class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
                                 title='Delete Column'
-                                @delete='deleteColumn(column)'
-                            />
+                                @click='confirmDelete = column'
+                            >
+                                <IconTrash
+                                    :size='20'
+                                    stroke='1'
+                                />
+                                <span class='mx-2'>Delete Column</span>
+                            </div>
                         </template>
                     </TablerDropdown>
                 </div>
@@ -223,6 +227,22 @@
         @close='editColumn = undefined'
     />
 
+    <TablerDelete
+        :open='!!confirmClear'
+        displaytype='none'
+        label='Clear'
+        @update:open='confirmClear = undefined'
+        @delete='confirmClear && clearColumn(confirmClear)'
+    />
+
+    <TablerDelete
+        :open='!!confirmDelete'
+        displaytype='none'
+        label='Delete Column'
+        @update:open='confirmDelete = undefined'
+        @delete='confirmDelete && deleteColumn(confirmDelete)'
+    />
+
     <FormWizard
         v-if='formWizard'
         :event-id='formWizard.eventId'
@@ -252,6 +272,7 @@ import EditColumnModal from './EditColumnModal.vue';
 import {
     IconPlus,
     IconPencil,
+    IconTrash,
     IconChevronUp,
     IconChevronDown,
     IconDotsVertical,
@@ -284,6 +305,8 @@ const emit = defineEmits<{
 
 const adding = ref<string | undefined>();
 const editColumn = ref<BoardColumn | undefined>();
+const confirmClear = ref<BoardColumn | undefined>();
+const confirmDelete = ref<BoardColumn | undefined>();
 
 /** A drop held back by required Forms - `apply` finishes the move once the wizard completes */
 const formWizard = ref<{
@@ -311,7 +334,7 @@ const scroller = ref<HTMLElement | undefined>();
 
 /** True while an interaction holds state a background refresh would discard */
 const busy = computed<boolean>(() => {
-    return !!(drag.value || columnDrag.value || formWizard.value || editColumn.value || adding.value !== undefined);
+    return !!(drag.value || columnDrag.value || formWizard.value || editColumn.value || confirmClear.value || confirmDelete.value || adding.value !== undefined);
 });
 
 defineExpose({ busy });
@@ -485,6 +508,8 @@ async function deleteColumn(column: BoardColumn): Promise<void> {
         columns.value = columns.value.filter((c) => c.id !== column.id);
     } catch (err) {
         fail(err);
+    } finally {
+        confirmDelete.value = undefined;
     }
 }
 
@@ -516,6 +541,8 @@ async function clearColumn(column: BoardColumn): Promise<void> {
     } catch (err) {
         fail(err);
         emit('refresh');
+    } finally {
+        confirmClear.value = undefined;
     }
 }
 

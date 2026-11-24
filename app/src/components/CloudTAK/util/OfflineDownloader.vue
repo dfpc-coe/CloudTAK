@@ -36,10 +36,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, onMounted, toRaw } from 'vue';
-import * as Comlink from 'comlink';
+import { ref, computed, toRaw } from 'vue';
 import type { ProfileFile } from '../../../types.ts';
 import { useMapStore } from '../../../stores/map.ts';
+import { offlineTileDownloads, downloadOfflineTiles } from '../../../stores/modules/offline-tiles.ts';
 import { TablerProgress } from '@tak-ps/vue-tabler';
 import {
     IconCircleCheck,
@@ -56,10 +56,12 @@ const emit = defineEmits<{
 
 const mapStore = useMapStore();
 
-const available = ref(false);
-const downloading = ref(false);
-const progress = ref(0);
+const stored = ref(false);
 const error = ref<string | null>(null);
+
+const available = computed(() => stored.value || mapStore.offlineTiles.has(props.asset.id));
+const progress = computed(() => offlineTileDownloads.get(props.asset.id) ?? 0);
+const downloading = computed(() => offlineTileDownloads.has(props.asset.id));
 
 const label = computed(() => {
     if (downloading.value) return 'Downloading for Offline Use';
@@ -67,28 +69,18 @@ const label = computed(() => {
     return 'Make Available Offline';
 });
 
-onMounted(async () => {
-    available.value = await mapStore.worker.tiles.has(props.asset.id);
-});
-
 async function download() {
     if (downloading.value || available.value) return;
 
-    downloading.value = true;
-    progress.value = 0;
     error.value = null;
 
     try {
-        await mapStore.worker.tiles.download(toRaw(props.asset), Comlink.proxy((percent: number) => {
-            progress.value = percent;
-        }));
+        await downloadOfflineTiles(toRaw(props.asset));
 
-        available.value = true;
+        stored.value = true;
         emit('done', props.asset);
     } catch (err) {
         error.value = err instanceof Error ? err.message : String(err);
-    } finally {
-        downloading.value = false;
     }
 }
 </script>

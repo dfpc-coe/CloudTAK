@@ -133,6 +133,27 @@
                                 </div>
                             </TablerBorder>
                         </div>
+
+                        <div class='col-12'>
+                            <TablerBorder class='cloudtak-accent'>
+                                <template #label>
+                                    <p class='text-uppercase text-secondary small mb-0'>
+                                        Quick Actions
+                                    </p>
+                                </template>
+
+                                <button
+                                    class='btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2'
+                                    @click='dropPoint'
+                                >
+                                    <IconMapPinPlus
+                                        :size='20'
+                                        stroke='1'
+                                    />
+                                    <span>Drop Point</span>
+                                </button>
+                            </TablerBorder>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -143,7 +164,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { server } from '../../../std.ts';
 import IconCache from '../../../base/icon.ts';
 import IconsetCache from '../../../base/iconset.ts';
 import { useMapStore } from '../../../stores/map.ts';
@@ -157,7 +177,9 @@ import {
     TablerInput,
     TablerUploadLogo
 } from '@tak-ps/vue-tabler';
-import { IconPencil } from '@tabler/icons-vue';
+import { IconPencil, IconMapPinPlus } from '@tabler/icons-vue';
+import { DrawToolMode } from '../../../stores/modules/draw.ts';
+import { useAppStore } from '../../../stores/app.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ProfileConfig from '../../../base/profile.ts';
 import type { Iconset } from '../../../types.ts';
@@ -174,6 +196,7 @@ interface IconDraft {
 const route = useRoute();
 const router = useRouter();
 const mapStore = useMapStore();
+const appStore = useAppStore();
 
 const loading = ref(true);
 const isSystemAdmin = ref(false);
@@ -215,7 +238,7 @@ async function refresh(): Promise<void> {
         } else {
             disabled.value = false;
             revokeIconObjectUrl();
-            icon.value = { name: '', data: '', type2525b: null, iconset: String(route.params.iconset) };
+            icon.value = { name: newIconFolder(), data: '', type2525b: null, iconset: String(route.params.iconset) };
         }
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
@@ -225,53 +248,26 @@ async function refresh(): Promise<void> {
 }
 
 async function submit(): Promise<void> {
+    const uid = String(route.params.iconset);
+
     if (icon.value.id) {
-        const res = await server.PATCH('/api/iconset/{:iconset}/icon/{:icon}', {
-            params: {
-                path: {
-                    ':iconset': String(route.params.iconset),
-                    ':icon': icon.value.id
-                }
-            },
-            body: {
-                name: icon.value.name,
-                data: icon.value.data,
-                type2525b: icon.value.type2525b
-            }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-        if (!res.data) throw new Error('Failed to update icon');
-
-        icon.value = normalizeRemoteIcon(res.data);
+        icon.value = normalizeRemoteIcon(await IconCache.update(uid, icon.value.id, {
+            name: icon.value.name,
+            ...(icon.value.data.startsWith('data:') ? { data: icon.value.data } : {}),
+            type2525b: icon.value.type2525b
+        }));
     } else {
-        const res = await server.POST('/api/iconset/{:iconset}/icon', {
-            params: {
-                path: {
-                    ':iconset': String(route.params.iconset)
-                },
-                query: {
-                    regen: true
-                }
-            },
-            body: {
-                name: icon.value.name,
-                data: icon.value.data,
-                type2525b: icon.value.type2525b
-            }
-        });
-
-        if (res.error) throw new Error(res.error.message);
-        if (!res.data) throw new Error('Failed to create icon');
-
-        const created = res.data;
-        icon.value = normalizeRemoteIcon(created);
+        icon.value = normalizeRemoteIcon(await IconCache.create(uid, {
+            name: icon.value.name,
+            data: icon.value.data,
+            type2525b: icon.value.type2525b
+        }));
     }
 
-    await mapStore.worker.sync.syncIconset(String(route.params.iconset));
+    await mapStore.icons.refresh(String(route.params.iconset));
     disabled.value = true;
 
-    const routeIcon = stripExt(icon.value.name);
+    const routeIcon = IconCache.stripExt(icon.value.name);
     if (String(route.params.icon) !== routeIcon) {
         await router.replace(`/menu/iconset/${route.params.iconset}/${encodeURIComponent(routeIcon)}`);
     }
@@ -290,19 +286,7 @@ async function fetch(): Promise<void> {
         throw new Error('Icon not available offline. Refresh to sync this iconset.');
     }
 
-    const result = await server.GET('/api/iconset/{:iconset}/icon/{:icon}', {
-        params: {
-            path: {
-                ':iconset': String(route.params.iconset),
-                ':icon': String(route.params.icon)
-            }
-        }
-    });
-
-    if (result.error) throw new Error(result.error.message);
-    if (!result.data) throw new Error('Failed to fetch icon');
-
-    icon.value = normalizeRemoteIcon(result.data);
+    icon.value = normalizeRemoteIcon(await IconCache.fetch(String(route.params.iconset), String(route.params.icon)));
 }
 
 async function fetchIconset(): Promise<void> {
@@ -319,18 +303,8 @@ async function deleteIcon(): Promise<void> {
     if (!icon.value.id) throw new Error('Icon cannot be deleted until it has been synced from the server.');
 
     loading.value = true;
-    const res = await server.DELETE('/api/iconset/{:iconset}/icon/{:icon}', {
-        params: {
-            path: {
-                ':iconset': String(route.params.iconset),
-                ':icon': icon.value.id
-            }
-        }
-    });
-
-    if (res.error) throw new Error(res.error.message);
-
-    await mapStore.worker.sync.syncIconset(String(route.params.iconset));
+    await IconCache.delete(String(route.params.iconset), icon.value.id);
+    await mapStore.icons.refresh(String(route.params.iconset));
     router.push(`/menu/iconset/${route.params.iconset}`);
 }
 
@@ -339,7 +313,7 @@ async function syncIconset(): Promise<void> {
     syncError.value = undefined;
 
     try {
-        await mapStore.worker.sync.syncIconset(String(route.params.iconset));
+        await mapStore.icons.refresh(String(route.params.iconset));
     } catch (err) {
         syncError.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -362,7 +336,7 @@ function currentIconCacheKey(): string | undefined {
     if (isLegacyNumericRoute()) return undefined;
 
     const raw = decodeURIComponent(String(route.params.icon));
-    return `${String(route.params.iconset)}:${stripExt(raw)}`;
+    return IconCache.key(`${String(route.params.iconset)}:${raw}`);
 }
 
 function isLegacyNumericRoute(): boolean {
@@ -374,6 +348,7 @@ function toIconDraft(iconRow: DBIcon): IconDraft {
     iconObjectUrl.value = URL.createObjectURL(iconRow.data);
 
     return {
+        id: iconRow.id,
         name: iconRow.path,
         data: iconObjectUrl.value,
         iconset: iconRow.iconset,
@@ -390,15 +365,23 @@ function normalizeRemoteIcon(remote: IconDraft): IconDraft {
         remote.data = `data:image/png;base64,${remote.data}`;
     }
 
-    remote.name = stripExt(remote.name);
+    remote.name = IconCache.stripExt(remote.name);
     return remote;
 }
 
-function stripExt(name: string): string {
-    return name.replace(/\.(png|svg|jpg|jpeg|gif)$/i, '');
+async function dropPoint(): Promise<void> {
+    await mapStore.draw.start(DrawToolMode.POINT, {
+        icon: IconCache.key(`${String(route.params.iconset)}:${icon.value.name}`)
+    });
+
+    if (appStore.isMobileDetected) await router.push('/');
+}
+
+function newIconFolder(): string {
+    return route.params.icon === 'new' && route.query.folder ? `${String(route.query.folder)}/` : '';
 }
 
 function updateName(name: string): void {
-    icon.value.name = name;
+    icon.value.name = `${newIconFolder()}${name}`;
 }
 </script>

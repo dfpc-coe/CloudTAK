@@ -131,6 +131,9 @@ const error = ref('');
 const working = ref<PermissionKey | undefined>();
 const disclosure = ref<LocationDisclosureStage | undefined>();
 
+let removeLifecycleListeners: (() => void) | undefined;
+let unmounted = false;
+
 const permissionDescriptors: PermissionDescriptor[] = [{
     key: 'notification',
     title: 'Notifications',
@@ -239,6 +242,18 @@ onMounted(async () => {
     removeResumeListener = await addAppLifecycleListeners({ resume: () => { void refreshStatuses(); } });
     await refreshStatuses();
     loading.value = false;
+
+    // Pick up changes made in system settings
+    const remove = await addAppLifecycleListeners({
+        resume: () => { void refreshStatuses(); }
+    });
+    if (unmounted) remove();
+    else removeLifecycleListeners = remove;
+});
+
+onBeforeUnmount(() => {
+    unmounted = true;
+    removeLifecycleListeners?.();
 });
 onBeforeUnmount(() => removeResumeListener?.());
 
@@ -299,19 +314,17 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
     }
 }
 
-// Native prompts are only ever shown for location, and only from behind the
-// disclosure; a denied permission is re-granted from system settings.
+// Native location prompts are only shown from behind the disclosure; a
+// denied permission is re-granted from system settings.
 function offersNativeRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
     if (!isNativePlatform()) return false;
-    if (type === 'location') return status === 'prompt' || status === 'denied';
+    if (type === 'location' || type === 'camera' || type === 'notification') {
+        return status === 'prompt' || status === 'denied';
+    }
     if (type === 'backgroundLocation') {
         return deviceStore.permissions.location === 'granted'
             && ['prompt', 'when_in_use', 'denied'].includes(status);
     }
-    // Camera and notifications are asked for directly. Android stops showing the
-    // prompt once it has been refused, so a denied one opens the system settings
-    // instead (see runRequest), as location does
-    if (type === 'camera' || type === 'notification') return status === 'prompt' || status === 'denied';
     return false;
 }
 
@@ -381,21 +394,18 @@ async function runRequest(type: PermissionKey): Promise<void> {
     working.value = type;
 
     try {
+        if (isNativePlatform() && deviceStore.permissions[type] === 'denied') {
+            await deviceStore.geolocation.openNativeSettings();
+            return;
+        }
+
         switch (type) {
             case 'location':
-                if (isNativePlatform() && deviceStore.permissions.location === 'denied') {
-                    await deviceStore.geolocation.openNativeSettings();
-                    break;
-                }
                 await deviceStore.geolocation.request(() => {
                     void mapStore.startLocationWatch();
                 });
                 break;
             case 'backgroundLocation':
-                if (deviceStore.permissions.backgroundLocation === 'denied') {
-                    await deviceStore.geolocation.openNativeSettings();
-                    break;
-                }
                 await deviceStore.geolocation.requestBackground();
                 break;
             case 'camera':

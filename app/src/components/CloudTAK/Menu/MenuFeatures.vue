@@ -56,13 +56,16 @@
                     <div
                         style='min-width: 200px;'
                     >
-                        <TablerDelete
-                            displaytype='menu'
-                            class='cloudtak-hover'
-                            label='Delete All Features'
-                            @click.stop
-                            @delete='deleteFeatures'
-                        />
+                        <div
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='confirmDelete = true'
+                        >
+                            <IconTrash
+                                :size='32'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Delete All Features</span>
+                        </div>
                     </div>
                 </template>
             </TablerDropdown>
@@ -209,6 +212,12 @@
             </template>
         </template>
     </MenuTemplate>
+    <TablerDelete
+        v-model:open='confirmDelete'
+        displaytype='none'
+        label='Delete All Features'
+        @delete='deleteFeatures'
+    />
     <TablerModal
         v-if='folderModal.shown'
     >
@@ -379,6 +388,7 @@ const folderModal = ref<{
 const dragging = ref(false);
 const draggedId = ref<string | undefined>();
 const loading = ref(true);
+const confirmDelete = ref(false);
 
 const sortOptions = ['Newest → Oldest', 'Oldest → Newest', 'Alphabetical A→Z', 'Alphabetical Z→A'];
 const sort = ref('Newest → Oldest');
@@ -737,11 +747,9 @@ async function deleteFeatures(): Promise<void> {
         });
 
         await FeatureManager.delete();
-
+    } finally {
         loading.value = false;
-    } catch (err) {
-        loading.value = false;
-        throw err;
+        confirmDelete.value = false;
     }
 }
 

@@ -21,6 +21,7 @@
                 :error='error'
                 :can-send='canSend'
                 @send='onSend'
+                @retry='onRetry'
             />
         </template>
     </MenuTemplate>
@@ -73,6 +74,14 @@ onMounted(async () => {
 async function onSend(message: string): Promise<void> {
     await props.subscription.chat.send(
         message,
+        { uid: myUID.value, callsign: callsign.value },
+        mapStore.worker
+    );
+}
+
+async function onRetry(id: string | number): Promise<void> {
+    await props.subscription.chat.retry(
+        String(id),
         { uid: myUID.value, callsign: callsign.value },
         mapStore.worker
     );

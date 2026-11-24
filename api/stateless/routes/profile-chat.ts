@@ -1,18 +1,23 @@
 import { Type } from '@sinclair/typebox';
-import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
-import { ProfileChat } from '../../common/schema.js';
 import Err from '@openaddresses/batch-error';
 import { StandardResponse } from '../../common/types.js';
+import LegacyChatControl from '../../common/chat/legacy.js';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import * as Default from '../lib/limits.js';
 
+/**
+ * Chat routes of CloudTAK <= 14.0, served from Chatrooms for clients that have not updated
+ */
 export default async function router(schema: Schema, config: ConfigStateless) {
+    const legacy = new LegacyChatControl(config);
+
     await schema.get('/profile/chatroom', {
         name: 'Get Chatrooms',
         group: 'ProfileChats',
-        description: 'Get User\'s Profile Chats',
+        description: 'Deprecated: use GET /chatroom',
+        deprecated: true,
         res: Type.Object({
             total: Type.Integer(),
             items: Type.Array(Type.Object({
@@ -24,14 +29,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const chats = await config.models.ProfileChat.chats(user.email);
+            const rooms = await legacy.rooms(user.email);
 
             res.json({
-                total: chats.total,
-                items: chats.items.map(c => ({
-                    id: c.chatroom,
-                    chatroom: c.chatroom,
-                    updated: c.created,
+                total: rooms.length,
+                items: rooms.map((room) => ({
+                    id: room.chatroom,
+                    chatroom: room.chatroom,
+                    updated: room.updated,
                 })),
             });
         } catch (err) {
@@ -42,7 +47,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/profile/chatroom', {
         name: 'Delete Chatrooms',
         group: 'ProfileChats',
-        description: 'Delete User\'s Chats',
+        description: 'Deprecated: use DELETE /chatroom/:chatroom',
+        deprecated: true,
         query: Type.Object({
             chatroom: Type.Union([Type.String(), Type.Array(Type.String())]),
         }),
@@ -51,20 +57,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (typeof req.query.chatroom === 'string') {
-                req.query.chatroom = [req.query.chatroom];
-            }
-
-            for (const chatroom of req.query.chatroom) {
-                await config.models.ProfileChat.delete(sql`
-                    username = ${user.email}
-                    AND chatroom = ${chatroom}
-                `);
-            }
+            await legacy.leave(user.email, typeof req.query.chatroom === 'string' ? [req.query.chatroom] : req.query.chatroom);
 
             res.json({
                 status: 200,
-                message: `Deleted Chatrooms`,
+                message: 'Deleted Chatrooms',
             });
         } catch (err) {
             Err.respond(err, res);
@@ -72,9 +69,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     });
 
     await schema.delete('/profile/chatroom/:chatroom', {
-        name: 'Delete Chats',
+        name: 'Delete Chatroom',
         group: 'ProfileChats',
-        description: 'Delete User\'s Chats',
+        description: 'Deprecated: use DELETE /chatroom/:chatroom',
+        deprecated: true,
         params: Type.Object({
             chatroom: Type.String(),
         }),
@@ -83,14 +81,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            await config.models.ProfileChat.delete(sql`
-                username = ${user.email}
-                AND chatroom = ${req.params.chatroom}
-            `);
+            await legacy.leave(user.email, [req.params.chatroom]);
 
             res.json({
                 status: 200,
-                message: `Deleted Chatroom`,
+                message: 'Deleted Chatroom',
             });
         } catch (err) {
             Err.respond(err, res);
@@ -100,7 +95,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.get('/profile/chatroom/:chatroom/chat', {
         name: 'Get Chats',
         group: 'ProfileChats',
-        description: 'Get User\'s Chats',
+        description: 'Deprecated: use GET /chatroom/:chatroom/message',
+        deprecated: true,
         params: Type.Object({
             chatroom: Type.String(),
         }),
@@ -108,10 +104,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             limit: Default.Limit,
             page: Default.Page,
             order: Default.Order,
-            sort: Type.String({
-                default: 'created',
-                enum: Object.keys(ProfileChat),
-            }),
+            sort: Type.Optional(Type.String()),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -120,17 +113,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const chats = await config.models.ProfileChat.list({
-                limit: req.query.limit,
-                page: req.query.page,
-                order: req.query.order,
-                sort: req.query.sort,
-                where: sql`
-                    username = ${user.email}
-                    AND chatroom = ${req.params.chatroom}
-                `,
-            });
-            res.json(chats);
+
+            res.json(await legacy.messages(user.email, req.params.chatroom, req.query.limit));
         } catch (err) {
             Err.respond(err, res);
         }
@@ -139,7 +123,8 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     await schema.delete('/profile/chatroom/:chatroom/chat', {
         name: 'Delete Chats',
         group: 'ProfileChats',
-        description: 'Delete User\'s Chats',
+        description: 'Deprecated: use DELETE /chatroom/:chatroom/message/:message',
+        deprecated: true,
         params: Type.Object({
             chatroom: Type.String(),
         }),
@@ -151,20 +136,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            if (typeof req.query.chat === 'string') {
-                req.query.chat = [req.query.chat];
-            }
-
-            for (const chat of req.query.chat) {
-                await config.models.ProfileChat.delete(sql`
-                    username = ${user.email}
-                    AND message_id = ${chat}
-                `);
-            }
+            await legacy.remove(user.email, req.params.chatroom, typeof req.query.chat === 'string' ? [req.query.chat] : req.query.chat);
 
             res.json({
                 status: 200,
-                message: `Deleted Chats`,
+                message: 'Deleted Chats',
             });
         } catch (err) {
             Err.respond(err, res);

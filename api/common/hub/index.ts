@@ -62,6 +62,9 @@ export type SubmitCotsRequest = {
         source: 'gps' | 'manual' | 'none';
         accuracy?: number | null;
     };
+
+    /** Reject unless the CoTs were written to a TAK connection that is ready for them */
+    confirm?: boolean;
 };
 
 export interface HubClient {

@@ -24,7 +24,7 @@ import { Basemap } from '../../common/schema.js';
 import { toEnum, Basemap_Format, Basemap_Protocol, Basemap_Scheme, Basemap_Type, Basemap_FeatureAction, AllBoolean, AllBooleanCast, BasemapTerrain_Encoding } from '../../common/enums.js';
 import { EsriBase, EsriProxyLayer } from '../lib/esri.js';
 import { isWMTSCapabilities, isWMSCapabilities, parseWMTSCapabilities } from '../lib/wmts.js';
-import { AugmentedTileJSON, basemapTileJSON, isEsriLayerURL } from '../lib/tilejson.js';
+import { isEsriLayerURL } from '../lib/tilejson.js';
 import { isSafeUrl } from '@tak-ps/node-safeurl';
 import * as Default from '../lib/limits.js';
 
@@ -864,44 +864,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.get('/basemap/:basemapid/tiles', {
-        name: 'Get Basemap TileJSON',
-        group: 'BaseMap',
-        description: 'Get a basemap tilejson',
-        params: Type.Object({
-            basemapid: Type.Integer({ minimum: 1 }),
-        }),
-        query: Type.Object({
-            token: Type.Optional(Type.String()),
-        }),
-        res: AugmentedTileJSON,
-        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
-    }, async (req, res) => {
-        try {
-            const auth = await Auth.is_auth(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
-                ],
-            });
-
-            const basemap = await config.models.Basemap.from(req.params.basemapid);
-
-            assertBasemapAccess(auth, basemap);
-
-            const tilejson = await basemapTileJSON(config, basemap, {
-                token: req.query.token,
-                upstreamToken: auth.token,
-            });
-
-            res.json({
-                ...tilejson,
-                actions: fromProtocol(basemap.protocol, basemap).actions(),
-            });
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
     await schema.get('/basemap/sprite/:name.json', {
         name: 'Get Named Sprite JSON',
         group: 'BaseMap',
@@ -1058,51 +1020,6 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const buffer = Buffer.from(await upstream.arrayBuffer());
             res.type('png').send(buffer);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/basemap/:basemapid/tiles/:z/:x/:y', {
-        name: 'Get Basemap Tile',
-        group: 'BaseMap',
-        description: 'Get a basemap tile',
-        params: Type.Object({
-            basemapid: Type.Integer({ minimum: 1 }),
-            z: Type.Integer({ minimum: 0 }),
-            x: Type.Integer({ minimum: 0 }),
-            y: Type.Integer({ minimum: 0 }),
-        }),
-        query: Type.Object({
-            token: Type.Optional(Type.String()),
-        }),
-        security: Auth.security({ resources: [AuthResourceAccess.BASEMAP], token: true }),
-    }, async (req, res) => {
-        try {
-            const auth = await Auth.is_auth(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.BASEMAP, id: req.params.basemapid },
-                ],
-            });
-
-            const basemap = await config.models.Basemap.from(req.params.basemapid);
-
-            assertBasemapAccess(auth, basemap);
-
-            return await fromProtocol(basemap.protocol, basemap).tile(
-                req.params.z,
-                req.params.x,
-                req.params.y,
-                res,
-                {
-                    headers: {
-                        'user-agent': `CloudTAK/${pkg.version} (+${config.API_URL})`,
-                        'referer': `${config.API_URL}/`,
-                        'accept': req.headers['accept'],
-                        'accept-language': req.headers['accept-language'],
-                    },
-                },
-            );
         } catch (err) {
             Err.respond(err, res);
         }

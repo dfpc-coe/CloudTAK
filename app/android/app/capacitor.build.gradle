@@ -16,6 +16,7 @@ dependencies {
     implementation project(':capacitor-camera')
     implementation project(':capacitor-clipboard')
     implementation project(':capacitor-device')
+    implementation project(':capacitor-filesystem')
     implementation project(':capacitor-geolocation')
     implementation project(':capacitor-haptics')
     implementation project(':capacitor-keyboard')
@@ -24,6 +25,7 @@ dependencies {
     implementation project(':capawesome-capacitor-network')
     implementation project(':capgo-background-geolocation')
     implementation project(':capgo-capacitor-compass')
+    implementation project(':capgo-capacitor-downloader')
     implementation project(':capgo-capacitor-updater')
 
 }

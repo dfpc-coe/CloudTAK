@@ -614,6 +614,14 @@ client-supplied `elevation` param when no terrain basemap is configured.
 
 See [`README-SERVER-SIDE-ELEVATION.md`](README-SERVER-SIDE-ELEVATION.md).
 
+**Depends on API code upstream removed.** v14.0.0 deleted the API tile proxy (the
+`/api/basemap/:id/tiles` routes, `tile()`/`_tile()` on the protocols and `tilebelt.ts`), because
+tiles are served by the PMTiles tile server. `tileBuffer()` is built on that code, so the sync
+keeps our copies of `interface-basemap.ts`, `basemap/{zxy,hosted}.ts` and `tilebelt.ts`, without
+the routes. Moving `getElevation()` to the tile server's `POST /tiles/basemap/:id/elevation`
+would let all of it go. That endpoint takes a line and a token, so it needs a small adapter.
+
+
 ### Query Mode tides
 `api/stateless/lib/{tides,coast,coastline-data}.ts`, `api/stateless/routes/search.ts`,
 `scripts/build-coastline.mjs`,
@@ -696,6 +704,12 @@ User-Agent and relay that 403, which looked like a CloudTAK auth failure.
   `package.json` is `0.0.0`.
 - An upstream status of 400 or above, other than 404, becomes a 502 naming the
   upstream host. The upstream body is never relayed.
+
+**Update (v14.0.0 sync): the API route is gone.** Upstream removed the
+`/api/basemap/:id/tiles` and `/api/basemap/:id/tiles/:z/:x/:y` routes, so only the tile server
+serves proxied tiles now. `api/stateless/lib/basemap/{zxy,hosted}.ts` keep their `_tile()` only
+for server-side elevation (see below), and the header and 502 fix there is no longer reachable
+from a client. The sprite routes in `api/stateless/routes/basemap.ts` are ours and stay.
 
 **Two copies must stay in step.** Since v13.117.0 proxied tiles are served by the
 tile server (`BASEMAP_TILES_URL`), not the API, so the API route above only
@@ -837,52 +851,36 @@ Other channel pickers (`GroupSelect`, `GroupSelectDropdown`,
 
 ## Chat
 
-`api/stateful/lib/connection-web.ts`, `api/stateful/lib/connection-pool.ts`,
-`app/src/base/chatroom.ts`, `app/src/base/chatroom-chats.ts`,
-`app/src/components/CloudTAK/Menu/MenuChat.vue`,
-`app/src/components/CloudTAK/Notifications.vue`
+`api/common/chat/tak.ts`
 
-**Directed-chat routing is a security fix, not a tidy-up.** The plugin
-dest-routing block used to *replace* the UID-based `<marti><dest uid="..."/>` with
-a callsign-only dest. TAK Server resolves callsign destinations through a single
-global, non-unique `callsign -> subscription` map, and CloudTAK gives every new
-profile the same default callsign (`"CloudTAK User"`) — so a directed chat could
-reach the wrong user. It now uses `chat.addDest({ callsign })` to add the callsign
-dest *alongside* the UID dest. UID-based explicit brokering still wins for
-routing, and plugins reading `xmlDetail` still find a callsign.
+Upstream v14.1.0 replaced the chat implementation: Chatrooms are stored by
+CloudTAK and shared by their members, sent over `POST /api/chatroom/:chatroom/message`
+and received as `chatroom:message` events. The sync to v14.1.0 took that code as it is,
+and most of what this section used to carry is no longer needed:
 
-A bare `<dest callsign="...">` sibling under `<detail>` was also dropped. It had
-been added on the assumption that TAK Server strips `<marti>` before building
-`xmlDetail`; checking TAK Server's own source
-(`StreamingProtoBufHelper.cot2protoBuf()`, `takserver-plugins`) shows it extracts
-a fixed allowlist and passes everything else, `<marti>` included, through
-unmodified. The `addDest()` call alone suffices.
+- The `from.uid` in the WebSocket echo, the merge-instead-of-replace `refresh()`, the local
+  delete after `deleteChats()`, the `chatroom.updated` timestamp, the `/new` route showing an
+  empty chat and the `skipNextRefresh` race were all fixes to code that upstream removed.
+  The new code stores messages by id and only moves a delivery status forward.
+- The debug `console.log` of Data Sync chat payloads is gone upstream.
+- The worker no longer calls `Chatroom.load()`. `Chatroom.from()` still fetches a Chatroom it
+  does not know yet, which works because `std.ts` reads the token from `db.config` in a worker.
 
-Other fixes in this area:
+**Still carried: the callsign dest on a direct chat.** `directChat()` in
+`api/common/chat/tak.ts` adds `chat.addDest({ callsign })` next to the UID dest that
+`DirectChat` sets. TAK Server plugins such as tak-gpt route by callsign, searching the whole
+`xmlDetail` string for `dest callsign="..."`, and `<marti>` is passed through into `xmlDetail`
+unmodified (checked against TAK Server's `StreamingProtoBufHelper.cot2protoBuf()`).
 
-- `connection-pool.ts` includes `from.uid` in the WebSocket `chat` push echoed to
-  the sender. Without it the client's optimistic local echo was overwritten with
-  `sender_uid === undefined`, rendering your own message on the wrong side until
-  reload.
-- `Chatroom.deleteChats()` deletes the message ids from `db.chatroom_chats` after
-  the server delete succeeds. This gap exists upstream too but is invisible there,
-  because upstream's wipe-and-repopulate `refresh()` incidentally covers it.
-- `chatroom-chats.ts`'s `refresh()` indexes `items[0]`, the newest message, when
-  updating `chatroom.updated`. It used to take the last item, the oldest in the
-  page.
-- `MenuChat.vue` keys its local-DB subscription and server refresh off the
-  resolved chatroom name rather than the literal `'new'` URL segment. Every
-  "start chat" button routes via `/menu/chats/new?callsign=...`, so an existing
-  conversation opened that way showed empty.
-- `sendMessage()` sets a `skipNextRefresh` flag before navigating away from
-  `/new`, so the post-send refresh cannot race the TAK Server echo and roll back
-  optimistic state.
-- A debug `console.log(JSON.stringify(feat))` that logged full mission-chat
-  payloads, message text included, to server logs was removed.
+The UID dest must stay: it is what TAK Server's explicit brokering delivers a directed chat by
+and client UIDs are unique. Callsigns are user-editable and not unique (every new CloudTAK
+profile defaults to "CloudTAK User"), and TAK Server resolves them through one global
+callsign to subscription map, so a callsign-only dest can misroute a message to another user.
+No callsign dest is added when the callsign is only the UID. Test: `api/test/chat-tak.test.ts`.
 
-See [`README-CHAT-FUNCTIONALITY.md`](README-CHAT-FUNCTIONALITY.md),
+The earlier fixes are described in [`README-CHAT-FUNCTIONALITY.md`](README-CHAT-FUNCTIONALITY.md),
 [`README-CHAT-ECHO-SENDER-UID.md`](README-CHAT-ECHO-SENDER-UID.md) and
-[`README-CHAT-DELETE-LOCAL-SYNC.md`](README-CHAT-DELETE-LOCAL-SYNC.md).
+[`README-CHAT-DELETE-LOCAL-SYNC.md`](README-CHAT-DELETE-LOCAL-SYNC.md), kept as a record.
 
 ---
 
@@ -1127,13 +1125,13 @@ additions that would need to be proposed upstream separately.
   returns the creator's token only on creation. Without it, subscribing to the new Data Sync
   failed with "No token role provided" and the New Data Sync dialog stayed open. Remove this
   once node-tak keeps the token.
-- **Invite QR code.** `MissionInfo.vue` fetches the QR with a normal request that carries the
-  `MissionAuthorization` header and shows it from a blob URL. It was an `<img src>` with the
-  login token in the query string. An `<img>` cannot send the header, so the API fell back to
-  the token stored on the user's overlay, which a password protected Data Sync refused with
-  a 403. The route itself is unchanged from upstream.
-  The code sits on a white frame with 2.5rem padding in both themes. It used to be inverted in
-  dark mode, which no QR reader can decode, and had less than the 4 modules of quiet zone.
+- **Invite QR code.** Upstream v14.1.0 fixed the same bug the same way (a normal request
+  with the `MissionAuthorization` header, shown from a blob URL, and no login token in the
+  URL), so the sync took upstream's script. What we keep is the presentation in
+  `MissionInfo.vue`: the code sits on a white frame with 2.5rem padding in both themes.
+  Upstream still inverts it in dark mode, which no QR reader can decode, and the code has less
+  than the 4 modules of quiet zone it needs. On a later sync keep our `invite-qr-frame` markup
+  and styles and take the rest from upstream.
 - `api/derived-types.d.ts` was edited by hand for the consolidated `PATCH` (the password
   routes removed, `password` added to the body). Upstream's regenerated copy now has these
   fields. Regenerate it from Test after deploying.
@@ -1239,6 +1237,14 @@ upper bound, hours limits, possible double counting with ArcGIS traffic).
   (`KNOWN_EPSG`, currently 2193). A `maxLongitude` below `minLongitude` means the area
   crosses the antimeridian. Invalid entries (duplicate or built-in name, no
   definition, definition that fails to project) are logged and skipped.
+- **British National Grid is deliberately not taken.** Upstream v13.125.0 added `bng` to
+  `COORD_MODES`, with the grid maths in `coordinateFormat.ts`. We keep our own versions of
+  `app/src/utils/coordinateFormat.{ts,spec.ts}`, `Coordinate.vue`, `Coordinate.spec.ts`,
+  `GPSPanelCoordinates.vue` and `api/test/config-default-units.srv.test.ts`, and remove `BNG`
+  from `Profile_Coordinate` in `api/common/enums.ts`. Our tests use `BNG` as the example of an
+  unknown coordinate format (`config-coordinate-systems.srv.test.ts`, `coordinate-systems.test.ts`),
+  so they fail if it is added back. Upstream commit `2dc23196d` is the only one that touches these
+  files for it, so on a later sync keep our side and drop `bng` from `api/derived-types.d.ts`.
 - The system's `name` is what a profile stores in `display_coordinate`
   (`display::coordinate`), so the API validates against the built-in modes plus the
   loaded names instead of an enum. Removing a system from the file leaves existing
@@ -1332,6 +1338,14 @@ cover at all.
    MIGRATIONS_JOURNAL=<journal for the target version> node scripts/check-migrations.mjs
    ```
 
+4. **Check what upstream dropped from `api/package.json`.** A removed dependency merges
+   cleanly even when we still import it. v14.0.0 dropped `pem` and `@types/pem` (used by
+   `api/common/admin-cert.ts` and `authentik-provider.ts`) and `proj4` (used by
+   `api/common/coordinate-systems.ts`), and `@types/tz-lookup`. All were put back. `tsc --noEmit`
+   catches it.
+5. **Check renamed constants in code we added next to upstream's.** `SVG_RENDER_WIDTH` became
+   `SVG_RENDER_SIZE` in `icons.ts`, and our raster resize still used the old name. Only
+   `npm run check` (vue-tsc) finds that.
 3. **Keep the paths in this document current.** It is keyed by real paths, and
    upstream restructures directories — that is precisely what invalidated the
    patch files it replaced. After a sync that moves files, re-run the `git diff`

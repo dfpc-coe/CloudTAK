@@ -44,10 +44,6 @@ test('GET: api/openapi - operation level security', async () => {
             { layerAuth: ['search:read'] },
             { bearerAuth: [] },
         ]);
-        assert.deepEqual(res.body.paths['/api/search/reverse/{:longitude}/{:latitude}'].get.security, [
-            { layerAuth: ['search:read'] },
-            { bearerAuth: [] },
-        ]);
         assert.deepEqual(res.body.paths['/api/search/suggest'].get.security, [
             { layerAuth: ['search:read'] },
             { bearerAuth: [] },

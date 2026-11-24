@@ -3,176 +3,135 @@ import type { DBChatroom } from '../database.ts';
 import { server } from '../std.ts';
 import ChatroomChats from './chatroom-chats.ts';
 import type { Observable } from 'dexie';
-import type {
-    ProfileChatroomList,
-    ProfileChatList
-} from '../types.ts';
+import type { Chatroom as APIChatroom, ChatroomList } from '../types.ts';
+
+export type ChatroomContact = { uid: string, callsign: string };
 
 /**
- * High Level Wrapper around the Profile Chatroom API
+ * High Level Wrapper around the Chatroom API
+ *
+ * A Chatroom is shared by its Members - users of this server are reached directly,
+ * every other Member through GeoChat on the TAK Server
  */
 export default class Chatroom {
+    id: string;
     name: string;
+    type: DBChatroom['type'];
     chats: ChatroomChats;
 
-    constructor(
-        name: string
-    ) {
-        this.name = name;
-        this.chats = new ChatroomChats(name);
+    constructor(room: Pick<DBChatroom, 'id' | 'name' | 'type'>) {
+        this.id = room.id;
+        this.name = room.name;
+        this.type = room.type;
+        this.chats = new ChatroomChats(room.id);
     }
 
     static liveUnreadCount(): Observable<number> {
         return liveQuery(async () => {
             const chatrooms = await db.chatroom.toArray();
-            return chatrooms.reduce((acc, room) => acc + (room.unread || 0), 0);
+            return chatrooms.reduce((acc, room) => acc + (room.muted ? 0 : (room.unread || 0)), 0);
         });
     }
 
-    /**
-     * Return a Chatroom instance if one already exists in the local DB,
-     */
-    static async from(
-        name: string,
-    ): Promise<Chatroom | undefined> {
-        const exists = await db.chatroom
-            .get(name)
-
-        if (!exists) {
-            return;
-        }
-
-        return new Chatroom(
-            exists.name,
-        );
+    static live(id: string): Observable<DBChatroom | undefined> {
+        return liveQuery(async () => await db.chatroom.get(id));
     }
 
     /**
-     * Loads an existing Chatroom from the local DB and refresh it.
+     * Store a Chatroom from the server, keeping what is only tracked locally
      */
-    static async load(
-        name: string,
-        opts: {
-            reload?: boolean,
-        } = {}
-    ): Promise<Chatroom> {
-        const exists = await this.from(name);
+    static async store(room: APIChatroom): Promise<DBChatroom> {
+        const existing = await db.chatroom.get(room.id);
+        const stored: DBChatroom = { ...room, synced: existing?.synced };
 
-        if (exists) {
-            if (opts.reload !== false) {
-                await exists.refresh();
-            }
+        await db.chatroom.put(stored);
 
-            return exists;
-        } else {
-            const room = new Chatroom(name);
+        return stored;
+    }
 
-            await db.chatroom.put({
-                id: room.name,
-                name: room.name,
-                created: new Date().toISOString(),
-                updated: new Date().toISOString(),
-                last_read: null
+    static async from(id: string): Promise<Chatroom | undefined> {
+        let room = await db.chatroom.get(id);
+
+        if (!room) {
+            const res = await server.GET('/api/chatroom/{:chatroom}', {
+                params: { path: { ':chatroom': id } }
             });
 
-            await room.refresh();
+            if (res.error) return undefined;
 
-            return room;
+            room = await Chatroom.store(res.data);
         }
-    }
 
-    static async delete(names: string[]): Promise<void> {
-        const res = await server.DELETE('/api/profile/chatroom', {
-            params: { query: { chatroom: names } }
-        });
-
-        if (res.error && res.response.status !== 404) throw new Error(res.error.message);
-
-        await db.chatroom.bulkDelete(names);
+        return new Chatroom(room);
     }
 
     /**
-     * Reload the Chatroom from the local Database
+     * The 1:1 Chatroom with a Contact, created on first use
      */
-    async reload(): Promise<void> {
-        const exists = await db.chatroom
-            .get(this.name)
-
-        if (exists) {
-            this.name = exists.name;
-        }
-    };
-
-    /**
-     * Perform a hard refresh of the Chatroom from the Server
-     */
-    async refresh(): Promise<void> {
-        await this.fetch();
-    };
-
-    async fetch(): Promise<void> {
-        const res = await server.GET('/api/profile/chatroom');
-
-        if (res.error) throw new Error(res.error.message);
-
-        const found = res.data.items.find((c) => c.chatroom === this.name);
-        if (found) {
-            this.name = found.chatroom;
-        }
-    }
-
-    async getChats(): Promise<ProfileChatList> {
-        const res = await server.GET('/api/profile/chatroom/{:chatroom}/chat', {
-            params: {
-                path: { ':chatroom': this.name },
-                query: { limit: 100, page: 0, order: 'desc', sort: 'created' }
-            }
+    static async direct(contact: ChatroomContact): Promise<Chatroom> {
+        const res = await server.POST('/api/chatroom', {
+            body: { type: 'direct', member: contact }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        return res.data;
+        return new Chatroom(await Chatroom.store(res.data));
     }
-    async deleteChats(ids: string[]): Promise<void> {
-        const res = await server.DELETE('/api/profile/chatroom/{:chatroom}/chat', {
-            params: {
-                path: { ':chatroom': this.name },
-                query: { chat: ids }
-            }
+
+    static async group(name: string, members: Array<ChatroomContact>): Promise<Chatroom> {
+        const res = await server.POST('/api/chatroom', {
+            body: { type: 'group', name, members }
         });
 
         if (res.error) throw new Error(res.error.message);
 
-        // ChatroomChats.refresh() only ever adds server messages to the local
-        // DB, it never deletes local rows the server no longer has (this is
-        // intentional - it avoids dropping a just-sent message that TAK Server
-        // hasn't echoed back yet). That means this explicit local delete is the
-        // only place a chat deletion is ever reconciled locally - without it,
-        // a deleted message keeps rendering from IndexedDB even though the
-        // server-side row is gone. Mirrors the pattern already used by the
-        // static delete() method above for whole-chatroom deletion.
-        await db.chatroom_chats.bulkDelete(ids);
+        return new Chatroom(await Chatroom.store(res.data));
+    }
+
+    async update(body: { name?: string, muted?: boolean }): Promise<void> {
+        const res = await server.PATCH('/api/chatroom/{:chatroom}', {
+            params: { path: { ':chatroom': this.id } },
+            body
+        });
+
+        if (res.error) throw new Error(res.error.message);
+
+        this.name = res.data.name;
+        await Chatroom.store(res.data);
     }
 
     /**
-     * List all locally stored chatrooms
+     * Replace the Members of a Group - only its owner can
      */
-    static async localList(): Promise<Set<{
-        name: string;
-    }>> {
-        const list = await db.chatroom.toArray();
+    async members(members: Array<ChatroomContact>): Promise<void> {
+        const res = await server.PUT('/api/chatroom/{:chatroom}/member', {
+            params: { path: { ':chatroom': this.id } },
+            body: { members }
+        });
 
-        const names = new Set<{
-            name: string;
-        }>();
+        if (res.error) throw new Error(res.error.message);
 
-        for (const sub of list) {
-            names.add({
-                name: sub.name,
+        await Chatroom.store(res.data);
+    }
+
+    static async forget(ids: string[]): Promise<void> {
+        await db.chatroom_chats.where('chatroom').anyOf(ids).delete();
+        await db.chatroom.bulkDelete(ids);
+    }
+
+    /**
+     * Leave Chatrooms - the owner of a Group deletes it for every Member
+     */
+    static async delete(ids: string[]): Promise<void> {
+        for (const id of ids) {
+            const res = await server.DELETE('/api/chatroom/{:chatroom}', {
+                params: { path: { ':chatroom': id } }
             });
+
+            if (res.error && res.response.status !== 404) throw new Error(res.error.message);
         }
 
-        return names;
+        await Chatroom.forget(ids);
     }
 
     static async list(filter?: string): Promise<DBChatroom[]> {
@@ -187,39 +146,21 @@ export default class Chatroom {
         return (await collection.sortBy('updated')).reverse();
     }
 
-    static async sync(): Promise<ProfileChatroomList> {
-        const res = await server.GET('/api/profile/chatroom');
+    static async sync(): Promise<ChatroomList> {
+        const res = await server.GET('/api/chatroom');
 
         if (res.error) throw new Error(res.error.message);
 
         const list = res.data;
 
-        const serverNames = new Set(list.items.map(c => c.chatroom));
-        const local = await db.chatroom.toArray();
+        const remote = new Set(list.items.map((room) => room.id));
+        const stale = (await db.chatroom.toArray())
+            .map((room) => room.id)
+            .filter((id) => !remote.has(id));
 
-        for (const chat of local) {
-            if (!serverNames.has(chat.name)) {
-                await db.chatroom.delete(chat.id);
-            }
-        }
+        if (stale.length) await Chatroom.forget(stale);
 
-        for (const chat of list.items) {
-            const externalChat = chat as { chatroom: string, updated?: string };
-            const exists = await db.chatroom.get(chat.chatroom);
-            if (!exists) {
-                await db.chatroom.put({
-                    id: chat.chatroom,
-                    name: chat.chatroom,
-                    created: externalChat.updated || new Date().toISOString(),
-                    updated: externalChat.updated || new Date().toISOString(),
-                    last_read: null
-                });
-            } else if (externalChat.updated && new Date(externalChat.updated).getTime() > new Date(exists.updated).getTime()) {
-                await db.chatroom.update(chat.chatroom, {
-                    updated: externalChat.updated
-                });
-            }
-        }
+        for (const room of list.items) await Chatroom.store(room);
 
         return list;
     }

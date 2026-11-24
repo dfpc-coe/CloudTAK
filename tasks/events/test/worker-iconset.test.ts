@@ -45,7 +45,7 @@ test(`Worker Iconset Import: OSM.zip`, async (t) => {
     t.after(() => {
         Sinon.restore();
         setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
+        void mockAgent.close();
     });
 
     const mockPool = mockAgent.get('http://localhost:5001');

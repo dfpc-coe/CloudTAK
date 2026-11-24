@@ -1,42 +1,61 @@
 <template>
     <div>
         <div class='card-header'>
-            <h3 class='card-title'>
-                CloudTAK Settings
-            </h3>
-        </div>
-        <div class='card-body row'>
-            <div class='col-12 px-3 pb-2'>
-                <TablerInput
-                    v-model='filter'
-                    icon='search'
-                    placeholder='Filter settings...'
+            <TablerIconButton
+                title='Back to Overview'
+                class='me-2'
+                data-config='back'
+                @click='router.push("/admin")'
+            >
+                <IconCircleArrowLeft
+                    :size='32'
+                    stroke='1'
                 />
-            </div>
-
-            <component
-                :is='section.component'
-                v-for='section in sections'
-                v-show='matches(section)'
-                :key='section.label'
+            </TablerIconButton>
+            <h3
+                class='card-title'
+                v-text='active ? active.label : "Settings"'
             />
+            <div
+                id='admin-config-actions'
+                class='ms-auto btn-list'
+            />
+        </div>
 
-            <TablerNone
-                v-if='!sections.some(matches)'
-                label='No Matching Settings'
-                :create='false'
+        <TablerNone
+            v-if='!active'
+            label='Unknown Setting'
+            :create='false'
+        />
+        <component
+            :is='components[active.slug]'
+            v-else-if='active.slug === "plugins"'
+        />
+        <div
+            v-else
+            class='card-body'
+        >
+            <component
+                :is='components[active.slug]'
+                :key='active.slug'
             />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, markRaw } from 'vue';
+import { computed } from 'vue';
 import type { Component } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import {
     TablerNone,
-    TablerInput,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
+import {
+    IconCircleArrowLeft,
+} from '@tabler/icons-vue';
+import { sections } from './AdminConfig/sections.ts';
+import AdminPlugins from './AdminPlugins.vue';
 import ConfigLogin from './AdminConfig/ConfigLogin.vue';
 import ConfigSearch from './AdminConfig/ConfigSearch.vue';
 import ConfigRouting from './AdminConfig/ConfigRouting.vue';
@@ -53,32 +72,27 @@ import ConfigProvider from './AdminConfig/ConfigProvider.vue';
 import ConfigScim from './AdminConfig/ConfigScim.vue';
 import ConfigCoturn from './AdminConfig/ConfigCoturn.vue';
 
-type Section = { label: string, keywords: string[], component: Component };
+const route = useRoute();
+const router = useRouter();
 
-const filter = ref('');
+const components: Record<string, Component> = {
+    login: ConfigLogin,
+    search: ConfigSearch,
+    routing: ConfigRouting,
+    media: ConfigMedia,
+    plugins: AdminPlugins,
+    proxy: ConfigProxy,
+    retention: ConfigRetention,
+    notifications: ConfigNotifications,
+    display: ConfigDisplay,
+    applications: ConfigApplications,
+    events: ConfigCoreEntities,
+    groups: ConfigGroups,
+    map: ConfigMap,
+    provider: ConfigProvider,
+    scim: ConfigScim,
+    coturn: ConfigCoturn,
+};
 
-const sections: Section[] = [
-    { label: 'Login Page', keywords: ['logo', 'brand', 'background', 'sso', 'oidc', 'passkey', 'token', 'session', 'signup'], component: markRaw(ConfigLogin) },
-    { label: 'Search Providers', keywords: ['geocoding', 'geocode', 'arcgis', 'agol', 'esri', 'openstreetmap', 'osm', 'photon'], component: markRaw(ConfigSearch) },
-    { label: 'Routing Providers', keywords: ['route', 'directions', 'travel', 'arcgis', 'agol', 'esri'], component: markRaw(ConfigRouting) },
-    { label: 'Media Server', keywords: ['video', 'mediamtx', 'stream', 'proxy'], component: markRaw(ConfigMedia) },
-    { label: 'Plugin Proxy', keywords: ['whitelist', 'url'], component: markRaw(ConfigProxy) },
-    { label: 'Retention', keywords: ['chat', 'import', 'feature', 'deleted', 'days'], component: markRaw(ConfigRetention) },
-    { label: 'Notifications', keywords: ['email', 'push', 'sms', 'firebase'], component: markRaw(ConfigNotifications) },
-    { label: 'Display Defaults', keywords: ['units', 'coordinate', 'distance', 'speed', 'elevation', 'projection', 'text', 'zoom', 'stale', 'rotation'], component: markRaw(ConfigDisplay) },
-    { label: 'External Applications', keywords: ['application', 'link', 'logo'], component: markRaw(ConfigApplications) },
-    { label: 'Core Events', keywords: ['event', 'type', 'icon', 'symbol'], component: markRaw(ConfigCoreEntities) },
-    { label: 'TAK User Groups', keywords: ['group', 'team', 'colour', 'color'], component: markRaw(ConfigGroups) },
-    { label: 'Map Settings', keywords: ['basemap', 'terrain', 'center', 'zoom', 'pitch', 'bearing'], component: markRaw(ConfigMap) },
-    { label: 'COTAK OAuth Provider', keywords: ['oauth', 'client', 'secret'], component: markRaw(ConfigProvider) },
-    { label: 'SCIM User Provisioning', keywords: ['scim', 'provisioning', 'bearer', 'token'], component: markRaw(ConfigScim) },
-    { label: 'CoTURN Server', keywords: ['coturn', 'turn', 'webrtc', 'secret'], component: markRaw(ConfigCoturn) },
-];
-
-function matches(section: Section): boolean {
-    const terms = filter.value.toLowerCase().split(/\s+/).filter(Boolean);
-    const haystack = [section.label, ...section.keywords].join(' ').toLowerCase();
-
-    return terms.every(term => haystack.includes(term));
-}
+const active = computed(() => sections.find(section => section.slug === route.params.section));
 </script>

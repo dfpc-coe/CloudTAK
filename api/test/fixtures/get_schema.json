@@ -1,14 +1,4 @@
 {
-    "GET /schema": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /openapi": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /agency": {
         "body": false,
         "query": true,
@@ -59,16 +49,6 @@
         "query": true,
         "res": true
     },
-    "GET /basemap/:basemapid/tiles": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /basemap/:basemapid/tiles/:z/:x/:y": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
     "POST /basemap/:basemapid/feature": {
         "body": true,
         "query": false,
@@ -81,6 +61,61 @@
     },
     "DELETE /basemap/:basemapid": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /chatroom": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /chatroom/:chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /chatroom/:chatroom": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /chatroom/:chatroom": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /chatroom/:chatroom/member": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /chatroom/:chatroom/message": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /chatroom/:chatroom/message": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /chatroom/:chatroom/message/:message": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /chatroom/:chatroom/message/:message": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /chatroom/:chatroom/message/:message/reaction": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -819,11 +854,6 @@
         "query": true,
         "res": true
     },
-    "GET /fonts/:fontstack/:start-:end.pbf": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
     "GET /geofence": {
         "body": false,
         "query": false,
@@ -1394,6 +1424,41 @@
         "query": false,
         "res": true
     },
+    "GET /plugin": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /plugin/:plugin": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /plugin": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /plugin/:plugin": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /plugin/:plugin": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /plugin/:plugin/bundle": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /plugin/:plugin/bundle": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /profile/asset": {
         "body": false,
         "query": true,
@@ -1759,6 +1824,16 @@
         "query": false,
         "res": true
     },
+    "GET /schema": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /openapi": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /swagger": {
         "body": false,
         "query": false,
@@ -1907,11 +1982,6 @@
     "GET /search": {
         "body": false,
         "query": false,
-        "res": true
-    },
-    "GET /search/reverse/:longitude/:latitude": {
-        "body": false,
-        "query": true,
         "res": true
     },
     "GET /search/reverse/:longitude/:latitude/sun": {

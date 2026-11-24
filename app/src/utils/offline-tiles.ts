@@ -1,9 +1,10 @@
 /*
-* Shared OPFS layout for PMTiles assets cached for offline use. Imported by
-* both the Atlas worker (which writes) and the main thread (which reads).
+* Shared layout for PMTiles assets cached for offline use. Imported by both
+* the Atlas worker and the main thread. Archives live in OPFS, or on the
+* native filesystem when downloaded by the Capacitor background downloader;
+* which one is recorded on the asset's profile_file row.
 */
 
-import KV from '../base/kv.ts';
 import { tileTypeExt, type Header } from 'pmtiles';
 import type { OverlayTileJSON } from '../types.ts';
 
@@ -16,8 +17,8 @@ export function offlineTilesFileName(assetId: string): string {
     return `${assetId}.pmtiles`;
 }
 
-export function offlineTilesSizeKey(assetId: string): string {
-    return `pmtiles::size::${assetId}`;
+export function pmtilesSize(asset: { artifacts: Array<{ ext: string; size?: number }> }): number | undefined {
+    return asset.artifacts.find((artifact) => artifact.ext === '.pmtiles')?.size;
 }
 
 export function profileAssetIdFromUrl(url: string | null | undefined): string | undefined {
@@ -51,21 +52,12 @@ export async function offlineTilesHandle(assetId: string): Promise<FileSystemFil
     }
 }
 
-/**
- * A file only counts once its byte size matches the size recorded when the
- * download completed - a crash mid-stream leaves a truncated archive behind.
- */
-export async function hasCompleteOfflineTiles(assetId: string): Promise<boolean> {
-    const expected = Number(await KV.value(offlineTilesSizeKey(assetId)));
-    if (!expected) return false;
-
-    const handle = await offlineTilesHandle(assetId);
-    if (!handle) return false;
-
+export async function removeOfflineTilesFile(assetId: string): Promise<void> {
     try {
-        return (await handle.getFile()).size === expected;
+        const dir = await offlineTilesDirectory();
+        await dir.removeEntry(offlineTilesFileName(assetId));
     } catch {
-        return false;
+        // Not stored in OPFS
     }
 }
 

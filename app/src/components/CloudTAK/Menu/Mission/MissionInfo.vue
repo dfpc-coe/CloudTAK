@@ -328,7 +328,7 @@
 
                         <button
                             class='btn w-100 d-flex align-items-center justify-content-center gap-2 invite-qr-btn'
-                            @click='showQR = true'
+                            @click='openQR'
                         >
                             <IconQrcode
                                 :size='20'
@@ -365,7 +365,7 @@
             type='button'
             class='btn-close'
             aria-label='Close'
-            @click='showQR = false'
+            @click='closeQR'
         />
         <div class='modal-header invite-qr-header'>
             <div class='d-flex align-items-center'>
@@ -380,21 +380,21 @@
             </div>
         </div>
         <div class='modal-body invite-qr-body'>
-            <div class='col-12 text-center'>
-                <TablerLoading
-                    v-if='qr.loading'
-                    desc='Loading QR Code...'
-                />
-                <TablerAlert
-                    v-else-if='qr.error'
-                    :err='qr.error'
-                />
-                <div
-                    v-else-if='qr.url'
-                    class='invite-qr-frame'
-                >
+            <TablerAlert
+                v-if='qrError'
+                :err='qrError'
+            />
+            <TablerLoading
+                v-else-if='!missionQRURL'
+                desc='Loading QR Code...'
+            />
+            <div
+                v-else
+                class='col-12 text-center'
+            >
+                <div class='invite-qr-frame'>
                     <img
-                        :src='qr.url'
+                        :src='missionQRURL'
                         class='invite-qr-image img-fluid'
                         alt='Invite QR Code'
                     >
@@ -457,10 +457,10 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import type { MissionRoleType, MissionSubscriptions } from '../../../../types.ts';
 import { useRoute, useRouter } from 'vue-router';
-import { stdurl, getRuntimeToken, bearer, fetchWithTimeout } from '../../../../std.ts'
+import { std, stdurl } from '../../../../std.ts'
 import Subscription from '../../../../base/subscription.ts';
 import MissionTemplate from '../../../../base/mission-template.ts';
 import CopyField from '../../util/CopyField.vue';
@@ -508,45 +508,42 @@ function fail(err: unknown): void {
     error.value = err instanceof Error ? err : new Error(String(err));
 }
 
-const qr = ref<{ url?: string; loading: boolean; error?: Error }>({ loading: false });
+const missionQRURL = ref<string | undefined>(undefined);
+const qrError = ref<Error | undefined>(undefined);
 
-function releaseQR(): void {
-    if (qr.value.url) URL.revokeObjectURL(qr.value.url);
-    qr.value = { loading: false };
-}
+let qrSeq = 0;
 
-/**
- * Fetch the invite QR code through a normal request instead of an <img src>.
- * An <img> cannot send the MissionAuthorization header, so a password protected
- * Data Sync was refused with 403. It also keeps the login token out of the URL.
- */
-async function loadQR(): Promise<void> {
-    releaseQR();
-    qr.value = { loading: true };
+async function openQR(): Promise<void> {
+    const seq = ++qrSeq;
+
+    qrError.value = undefined;
+    showQR.value = true;
 
     try {
-        const token = await getRuntimeToken();
-        const res = await fetchWithTimeout(20000)(
-            stdurl(`/api/marti/missions/${encodeURIComponent(props.subscription.guid)}/qr`),
-            { headers: { ...bearer(token), ...props.subscription.headers() } },
-        );
+        const res = await std(`/api/marti/missions/${encodeURIComponent(props.subscription.guid)}/qr`, {
+            headers: props.subscription.headers()
+        }) as Response;
 
-        if (!res.ok) {
-            let message = `Failed to load QR code (${res.status})`;
-            try {
-                const body = await res.json() as { message?: string };
-                if (body.message) message = body.message;
-            } catch {
-                // Not a JSON error body, keep the status message
-            }
-            throw new Error(message);
+        const url = URL.createObjectURL(await res.blob());
+
+        if (seq === qrSeq) {
+            missionQRURL.value = url;
+        } else {
+            URL.revokeObjectURL(url);
         }
-
-        qr.value = { url: URL.createObjectURL(await res.blob()), loading: false };
     } catch (err) {
-        qr.value = { loading: false, error: err instanceof Error ? err : new Error(String(err)) };
+        if (seq === qrSeq) qrError.value = err instanceof Error ? err : new Error(String(err));
     }
 }
+
+function closeQR(): void {
+    qrSeq++;
+    showQR.value = false;
+    if (missionQRURL.value) URL.revokeObjectURL(missionQRURL.value);
+    missionQRURL.value = undefined;
+}
+
+onBeforeUnmount(closeQR);
 
 const keywords = computed(() => {
     if (!Array.isArray(props.subscription.meta.keywords)) return [];
@@ -719,17 +716,6 @@ async function saveKeywords(nextKeywords: string[]): Promise<void> {
 }
 
 const showQR = ref(false);
-
-watch(showQR, (open) => {
-    if (open) {
-        loadQR();
-    } else {
-        releaseQR();
-    }
-});
-
-onUnmounted(releaseQR);
-
 const route = useRoute();
 const router = useRouter();
 
@@ -887,12 +873,14 @@ async function subscribe(next: boolean) {
     background: #fff;
     border-radius: 0.5rem;
 }
+
 .invite-qr-image {
     display: block;
     width: 100%;
     max-width: 100%;
     height: auto;
 }
+
 @media (max-width: 576px) {
     .invite-qr-frame {
         padding: 1.5rem;

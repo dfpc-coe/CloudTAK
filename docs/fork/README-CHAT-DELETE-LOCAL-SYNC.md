@@ -1,5 +1,8 @@
 
 # Chat Delete Not Reflected Locally (067)
+> **Superseded by the v14.1.0 sync.** Upstream replaced the chat implementation, so the code
+> this describes is gone, apart from the callsign dest in `api/common/chat/tak.ts`
+> (`directChat()`). See the Chat section of [`FORK-DELTA.md`](FORK-DELTA.md). Kept as a record.
 
 > **Historical patch numbers.** The `NNN-name.patch` identifiers used below refer
 > to a patch set that was deleted at v13.70.0 — only 8 of its 45 files still

@@ -90,8 +90,6 @@ export default async function buildApi(config: Config): Promise<express.Applicat
         },
     );
 
-    app.use('/fonts', express.static('fonts/'));
-
     app.use(history({
         rewrites: [{
             from: /.*\/js\/.*$/,

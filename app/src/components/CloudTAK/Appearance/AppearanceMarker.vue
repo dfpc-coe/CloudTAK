@@ -49,7 +49,7 @@
                     <TablerEnum
                         v-else
                         :model-value='setName'
-                        :options='sets.map((set) => set.name)'
+                        :options='setNames'
                         @update:model-value='selectSet($event)'
                     />
                 </div>
@@ -142,7 +142,7 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { computed, watch } from 'vue';
 import { IconInfoCircle } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -153,8 +153,8 @@ import {
 } from '@tak-ps/vue-tabler';
 import ColorSwatches from './ColorSwatches.vue';
 import Icon from '../../../base/icon.ts';
-import Iconset from '../../../base/iconset.ts';
-import type { DBIcon, DBIconset } from '../../../database.ts';
+import { useIconsetIcons } from '../../../utils/iconset-icons.ts';
+import type { DBIcon } from '../../../database.ts';
 import type { Marker } from '../../../utils/appearance.ts';
 
 const MARKERS: Array<{ value: Marker; label: string }> = [
@@ -184,105 +184,18 @@ const emit = defineEmits<{
     (e: 'update:opacity', opacity: number): void;
 }>();
 
-const loading = ref({ sets: false, icons: false });
-const sets = ref<DBIconset[]>([]);
-const setUid = ref('');
-const icons = ref<DBIcon[]>([]);
-const urls = ref<Map<string, string>>(new Map());
-const iconFilter = ref('');
-
-const setName = computed<string>(() => sets.value.find((set) => set.uid === setUid.value)?.name || '');
-
-const filteredIcons = computed<DBIcon[]>(() => {
-    const f = iconFilter.value.trim().toLowerCase();
-    if (!f) return icons.value;
-    return icons.value.filter((icon) => icon.path.toLowerCase().includes(f));
-});
+const {
+    loading, sets, setName, setNames, filter: iconFilter, filtered: filteredIcons, urls, load, follow, selectSet
+} = useIconsetIcons();
 
 watch(() => props.marker, async (marker) => {
-    if (marker === 'icon') await load();
+    if (marker === 'icon') await load(props.icon);
 }, { immediate: true });
 
-watch(() => props.icon, async (icon) => {
-    // Picking an icon from a different set (or an initial icon) follows it
-    const uid = icon?.split(':')[0];
-    if (uid && uid !== setUid.value && sets.value.some((set) => set.uid === uid)) {
-        setUid.value = uid;
-        await fetchIcons();
-    }
-});
-
-onMounted(async () => {
-    if (props.marker === 'icon') await load();
-});
-
-onUnmounted(() => {
-    revoke();
-});
+watch(() => props.icon, follow);
 
 function iconLabel(icon: DBIcon): string {
-    const parts = icon.path.split('/');
-    return parts[parts.length - 1].replace(/\.png$/i, '');
-}
-
-function revoke(): void {
-    for (const url of urls.value.values()) URL.revokeObjectURL(url);
-    urls.value = new Map();
-}
-
-async function load(): Promise<void> {
-    if (sets.value.length) return;
-
-    loading.value.sets = true;
-
-    try {
-        sets.value = await Iconset.list();
-    } finally {
-        loading.value.sets = false;
-    }
-
-    const fromIcon = props.icon?.split(':')[0];
-
-    if (fromIcon && sets.value.some((set) => set.uid === fromIcon)) {
-        setUid.value = fromIcon;
-    } else if (sets.value.length) {
-        setUid.value = sets.value[0].uid;
-    }
-
-    await fetchIcons();
-}
-
-async function selectSet(name: string): Promise<void> {
-    const set = sets.value.find((set) => set.name === name);
-    if (!set || set.uid === setUid.value) return;
-
-    setUid.value = set.uid;
-    await fetchIcons();
-}
-
-async function fetchIcons(): Promise<void> {
-    if (!setUid.value) {
-        icons.value = [];
-        return;
-    }
-
-    loading.value.icons = true;
-
-    try {
-        const uid = setUid.value;
-        const list = await Icon.list(uid);
-        if (uid !== setUid.value) return;
-
-        revoke();
-
-        const next = new Map<string, string>();
-        for (const icon of list) next.set(icon.name, URL.createObjectURL(icon.data));
-
-        icons.value = list;
-        urls.value = next;
-    } finally {
-        loading.value.icons = false;
-    }
+    return Icon.leaf(icon.path);
 }
 </script>
 
