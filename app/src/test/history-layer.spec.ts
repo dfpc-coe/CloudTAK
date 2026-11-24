@@ -28,6 +28,19 @@ describe('historyUidFeatures', () => {
         expect(two.size).toBe(3);
     });
 
+    it('lets a styler recolour individual points but not the trail', () => {
+        const styled = historyUidFeatures(
+            'alpha',
+            [row('alpha', 1000, 1), row('alpha', 2000, 2)],
+            { color: '#00ff00' } as DBBreadcrumb,
+            (r) => r.time === 2000 ? { color: '#0000ff' } : undefined,
+        );
+
+        expect(styled.get('alpha@1970-01-01T00:00:01.000Z')?.properties.color).toBe('#00ff00');
+        expect(styled.get('alpha@1970-01-01T00:00:02.000Z')?.properties.color).toBe('#0000ff');
+        expect(styled.get(trailFeatureId('alpha'))?.properties.color).toBe('#00ff00');
+    });
+
     it('draws legacy coordinates only while the uid has no points', () => {
         const trail = { uid: 'bravo', callsign: 'B', coordinates: [[0, 0], [1, 1]] } as DBBreadcrumb;
         expect(historyUidFeatures('bravo', [], trail).get(trailFeatureId('bravo'))?.properties.legacy).toBe(true);

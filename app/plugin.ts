@@ -11,7 +11,7 @@ import { db, type DBFeature, type DBFeatureHistory, FeatureHistorySource } from 
 import FeatureHistory, { type FeatureHistory_ListOptions } from './src/base/feature-history.ts';
 import ProfileConfig from './src/base/profile.ts';
 import type { Profile } from './src/types.ts';
-import type { HistoryPopupRenderer } from './src/stores/modules/history.ts';
+import type { HistoryPopupRenderer, HistoryPointStyler, HistoryPointStyle } from './src/stores/modules/history.ts';
 import { liveQuery } from 'dexie';
 import { from, type Observable } from 'rxjs';
 import * as mapgl from 'maplibre-gl';
@@ -24,7 +24,7 @@ export type { BottomBarItemConfig };
 export type { DBFeature };
 export type { DBFeatureHistory };
 export type { FeatureHistory_ListOptions };
-export type { HistoryPopupRenderer };
+export type { HistoryPopupRenderer, HistoryPointStyler, HistoryPointStyle };
 export type { Profile };
 export { FeatureHistorySource };
 
@@ -428,6 +428,32 @@ export class PluginAPI {
                     remove: (key: string): void => {
                         try {
                             mapStore.history.removePopup(key);
+                        } catch {
+                            // Ignore error if the map is not loaded
+                        }
+                    },
+                },
+                /**
+                 * Per-point styling of history points on the map
+                 */
+                style: {
+                    /**
+                     * Register a styler for history points. Stylers run in
+                     * registration order and the first to return a style wins;
+                     * return nothing to keep the trail's own colour
+                     * @param key    Unique key for the styler
+                     * @param styler Returns style overrides for a point
+                     */
+                    set: (key: string, styler: HistoryPointStyler): void => {
+                        mapStore.history.setStyle(key, styler);
+                    },
+                    /**
+                     * Remove a previously registered styler
+                     * @param key The styler key
+                     */
+                    remove: (key: string): void => {
+                        try {
+                            mapStore.history.removeStyle(key);
                         } catch {
                             // Ignore error if the map is not loaded
                         }

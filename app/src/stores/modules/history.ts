@@ -25,6 +25,11 @@ const STYLE_ID = 'cloudtak-history-style';
  */
 export type HistoryPopupRenderer = (row: DBFeatureHistory) => string | HTMLElement | null | undefined;
 
+export type HistoryPointStyle = { color?: string };
+
+/** Returns style overrides for a history point, or nothing to keep the trail's */
+export type HistoryPointStyler = (row: DBFeatureHistory) => HistoryPointStyle | null | undefined;
+
 export type HistoryFeature = GeoJSONFeature<GeoJSONGeometry, Record<string, unknown>> & { id: string };
 
 /** What one UID currently contributes to the source, keyed by feature id */
@@ -47,7 +52,7 @@ export function trailFeatureId(uid: string): string {
  * recorded before history points existed only has legacy coordinates, which
  * are drawn as a line until the UID gains points.
  */
-export function historyUidFeatures(uid: string, rows: DBFeatureHistory[], trail?: DBBreadcrumb): HistoryUidFeatures {
+export function historyUidFeatures(uid: string, rows: DBFeatureHistory[], trail?: DBBreadcrumb, styler?: HistoryPointStyler): HistoryUidFeatures {
     const features: HistoryUidFeatures = new Map();
     const color = (trail && trail.color) || HISTORY_DEFAULT_COLOR;
 
@@ -69,7 +74,7 @@ export function historyUidFeatures(uid: string, rows: DBFeatureHistory[], trail?
                 callsign: row.callsign,
                 time: row.time,
                 source: row.source,
-                color,
+                color: (styler && styler(row)?.color) || color,
             },
             geometry: { type: 'Point', coordinates: position },
         });
@@ -97,7 +102,7 @@ export function historyUidFeatures(uid: string, rows: DBFeatureHistory[], trail?
 }
 
 /** Every UID's features as one collection - the initial load and the fallback path */
-export function historyCollection(rows: DBFeatureHistory[], trails: DBBreadcrumb[]): FeatureCollection<GeoJSONGeometry, Record<string, unknown>> {
+export function historyCollection(rows: DBFeatureHistory[], trails: DBBreadcrumb[], styler?: HistoryPointStyler): FeatureCollection<GeoJSONGeometry, Record<string, unknown>> {
     const byUid = new Map<string, DBFeatureHistory[]>();
     for (const row of rows) {
         const list = byUid.get(row.uid);
@@ -115,7 +120,7 @@ export function historyCollection(rows: DBFeatureHistory[], trails: DBBreadcrumb
 
     const features: HistoryFeature[] = [];
     for (const [uid, list] of byUid) {
-        features.push(...historyUidFeatures(uid, list, trailByUid.get(uid)).values());
+        features.push(...historyUidFeatures(uid, list, trailByUid.get(uid), styler).values());
     }
 
     return { type: 'FeatureCollection', features };
@@ -206,6 +211,9 @@ export default class HistoryLayer {
     /** Plugin popup renderers, tried in insertion order before the default body */
     renderers: Map<string, HistoryPopupRenderer>;
 
+    /** Plugin point stylers, tried in insertion order - the first to return a style wins */
+    stylers: Map<string, HistoryPointStyler>;
+
     private rows: Map<string, DBFeatureHistory>;
     private byUid: Map<string, HistoryUidFeatures>;
     /** Resolved CoT type names, so a hover never waits on the taxonomy lookup */
@@ -223,6 +231,8 @@ export default class HistoryLayer {
     constructor(mapStore: ReturnType<typeof useMapStore>) {
         this.mapStore = mapStore;
         this.renderers = new Map();
+        this.stylers = new Map();
+        this.pointStyle = this.pointStyle.bind(this);
         this.rows = new Map();
         this.byUid = new Map();
         this.typeNames = new Map();
@@ -346,7 +356,7 @@ export default class HistoryLayer {
                 db.breadcrumb.get(`${uid}.track`),
             ]);
 
-            const next = historyUidFeatures(uid, rows, trail);
+            const next = historyUidFeatures(uid, rows, trail, this.pointStyle);
             const diff = historyDiff(this.byUid.get(uid), next);
 
             for (const id of this.byUid.get(uid)?.keys() ?? []) {
@@ -376,7 +386,7 @@ export default class HistoryLayer {
         this.rows = new Map(rows.map((row) => [row.id, row]));
         this.byUid = new Map();
 
-        const collection = historyCollection(rows, trails);
+        const collection = historyCollection(rows, trails, this.pointStyle);
         for (const feature of collection.features as HistoryFeature[]) {
             const uid = String(feature.properties.uid);
             let features = this.byUid.get(uid);
@@ -448,6 +458,27 @@ export default class HistoryLayer {
 
     removePopup(key: string): void {
         this.renderers.delete(key);
+    }
+
+    /** Register a point styler and redraw every trail with it */
+    setStyle(key: string, styler: HistoryPointStyler): void {
+        this.stylers.set(key, styler);
+        this.onChange({ uids: [], removed: [], all: true });
+    }
+
+    removeStyle(key: string): void {
+        if (this.stylers.delete(key)) this.onChange({ uids: [], removed: [], all: true });
+    }
+
+    pointStyle(row: DBFeatureHistory): HistoryPointStyle | undefined {
+        for (const styler of this.stylers.values()) {
+            try {
+                const style = styler(row);
+                if (style) return style;
+            } catch (err) {
+                console.error('History point styler failed', err);
+            }
+        }
     }
 
     /** Open the properties the CoT reported at this point in the feature viewer */
