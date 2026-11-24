@@ -6,6 +6,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../../common/auth.js';
 import type ConfigStateless from '../config.js';
 import { FullConfig } from '../../common/types.js';
+import { CoordinateSystem, coordinateSystems, isCoordinateMode } from '../../common/coordinate-systems.js';
 import { FullConfigDefaults } from '../../common/defaults.js';
 import { vpcAddresses } from '../lib/aws/lambda.js';
 import process from 'node:process';
@@ -139,6 +140,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 }
             }
 
+            const coordinate = req.body['display::coordinate'];
+            if (coordinate !== undefined && !isCoordinateMode(coordinate)) {
+                throw new Err(400, null, `Unknown coordinate format: ${coordinate}`);
+            }
+
             if (req.body['map::basemap'] !== undefined && req.body['map::basemap'] !== null) {
                 let basemap;
                 try {
@@ -210,6 +216,22 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             await Auth.as_user(config, req);
 
             res.json(await profileControl.defaultUnits());
+        } catch (err) {
+            Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/config/coordinate-systems', {
+        name: 'Coordinate Systems',
+        group: 'Config',
+        description: 'Additional coordinate reference systems offered next to the built-in coordinate formats',
+        res: Type.Object({
+            crs: Type.Array(CoordinateSystem),
+        }),
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+            res.json({ crs: coordinateSystems() });
         } catch (err) {
             Err.respond(err, res);
         }

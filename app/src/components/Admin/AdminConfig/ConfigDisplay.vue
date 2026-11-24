@@ -59,7 +59,15 @@
                         :key='key'
                         class='col-lg-12'
                     >
+                        <CoordinateFormatSelect
+                            v-if='key === "display::coordinate"'
+                            v-model='config[key]'
+                            :label='labelForKey(key)'
+                            :options='displayOptions[key]'
+                            :disabled='!edit'
+                        />
                         <TablerEnum
+                            v-else
                             v-model='config[key]'
                             :label='labelForKey(key)'
                             :options='displayOptions[key]'
@@ -74,8 +82,10 @@
 
 <script setup lang="ts">
 import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
+import CoordinateFormatSelect from '../../util/CoordinateFormatSelect.vue';
 import { ref, watch, onMounted } from 'vue';
 import { server } from '../../../std.ts';
+import { loadCoordinateSystems } from '../../../utils/coordinateSystems.ts';
 import type { paths } from '@cloudtak/api-types';
 import {
     TablerLoading,
@@ -184,6 +194,8 @@ async function fetch(): Promise<void> {
     displayOptions.value = createDisplayOptions();
 
     try {
+        // Names for the coordinate systems the server offers
+        await loadCoordinateSystems();
         const { data, error } = await server.GET('/api/config/display');
         if (error) throw new Error(error.message);
 

@@ -1221,6 +1221,35 @@ Drop this when upstream gives the trail its own entry points from the CoT and th
 **Not done:** delay minutes as ArcGIS added-cost barriers. See the risks (an "up to"
 upper bound, hours limits, possible double counting with ArcGIS traffic).
 ---
+## Coordinate formats
+`api/common/coordinate-systems.ts`, `api/config/coordinate-systems.json`,
+`api/stateless/routes/config.ts` (`GET /api/config/coordinate-systems`),
+`app/src/utils/{coordinateFormat,coordinateSystems}.ts`,
+`app/src/components/util/CoordinateFormatSelect.vue`
+- The format dropdowns in user display settings and `/admin/config` show the full
+  names ("Degrees & Decimal Minutes (DM)"). The same names are the hover text on
+  the DD/DM/DMS/MGRS/UTM tabs. The names live in `COORD_MODES`.
+- Projected coordinate systems are offered next to the built-in formats from a JSON
+  file, bundled as `api/config/coordinate-systems.json` (NZTM). Point
+  `CLOUDTAK_COORDINATE_SYSTEMS_FILE` at another file to replace it; it is read once
+  at start, so restart the API after changing it. The field names follow the
+  `coordinateReferenceSystems` XML used by other TAK tooling:
+  `{ "crs": [{ "name", "title", "epsg", "proj4", "bounds": { minLongitude, minLatitude, maxLongitude, maxLatitude } }] }`.
+  Each entry needs a `proj4` definition or an `epsg` code the server knows
+  (`KNOWN_EPSG`, currently 2193). A `maxLongitude` below `minLongitude` means the area
+  crosses the antimeridian. Invalid entries (duplicate or built-in name, no
+  definition, definition that fails to project) are logged and skipped.
+- The system's `name` is what a profile stores in `display_coordinate`
+  (`display::coordinate`), so the API validates against the built-in modes plus the
+  loaded names instead of an enum. Removing a system from the file leaves existing
+  profiles on it, and those users see decimal degrees.
+- Positions show as `E 1748500  N 5427000`. Outside the system's `bounds` the
+  position shows as `--`. Input accepts `E 1748500 N 5427000`,
+  `1748500E 5427000N`, `1748500, 5427000` and the same with northing first.
+- Projected systems only (metres). A geographic system cannot be added this way.
+- The app loads the list after login (`loadCoordinateSystems()`), so offline
+  starts show the built-in formats only.
+
 ## Terminology and UI
 
 `app/src/components/CloudTAK/MainMenuContents.vue`,

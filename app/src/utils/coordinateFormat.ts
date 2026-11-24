@@ -1,14 +1,60 @@
 import { convert } from 'geo-coordinates-parser';
+import proj4 from 'proj4';
+import { shallowReactive, reactive } from 'vue';
+import type { paths } from '@cloudtak/api-types';
 
-export type CoordMode = 'dd' | 'dm' | 'dms' | 'mgrs' | 'utm';
+export type BuiltinCoordMode = 'dd' | 'dm' | 'dms' | 'mgrs' | 'utm';
 
-export const COORD_MODES: Array<{ value: CoordMode; label: string; title: string }> = [
-    { value: 'dd',   label: 'DD',   title: 'Decimal Degrees' },
-    { value: 'dm',   label: 'DM',   title: 'Degrees Minutes' },
-    { value: 'dms',  label: 'DMS',  title: 'Degrees Minutes Seconds' },
-    { value: 'mgrs', label: 'MGRS', title: 'Military Grid Reference System' },
-    { value: 'utm',  label: 'UTM',  title: 'Universal Transverse Mercator' },
+/**
+ * A built-in mode, or the name of a coordinate system the server offers
+ * (see setCoordinateSystems), ie "NZTM"
+ */
+export type CoordMode = string;
+
+export type CoordSystem = paths['/api/config/coordinate-systems']['get']['responses']['200']['content']['application/json']['crs'][number];
+
+type CoordModeInfo = { value: CoordMode; label: string; title: string };
+
+export const BUILTIN_COORD_MODES: Array<CoordModeInfo> = [
+    { value: 'dd',   label: 'DD',   title: 'Decimal Degrees (DD)' },
+    { value: 'dm',   label: 'DM',   title: 'Degrees & Decimal Minutes (DM)' },
+    { value: 'dms',  label: 'DMS',  title: 'Degrees, Minutes, Seconds (DMS)' },
+    { value: 'mgrs', label: 'MGRS', title: 'Military Grid Reference System (MGRS)' },
+    { value: 'utm',  label: 'UTM',  title: 'Universal Transverse Mercator (UTM)' },
 ];
+
+/** Every mode the user can pick: the built-ins followed by the server's coordinate systems */
+export const COORD_MODES: Array<CoordModeInfo> = reactive([...BUILTIN_COORD_MODES]);
+
+type ProjectedSystem = {
+    crs: CoordSystem;
+    converter: proj4.Converter;
+};
+
+/** Shown for a position outside the area a coordinate system covers */
+export const OUTSIDE_AREA = '--';
+
+const projected = shallowReactive(new Map<string, ProjectedSystem>());
+
+/**
+ * Register the additional coordinate systems the server offers. Replaces any
+ * registered earlier. A system whose definition proj4 rejects is skipped.
+ */
+export function setCoordinateSystems(systems: Array<CoordSystem>): void {
+    projected.clear();
+    COORD_MODES.splice(0, COORD_MODES.length, ...BUILTIN_COORD_MODES);
+
+    for (const crs of systems) {
+        if (BUILTIN_COORD_MODES.some((mode) => mode.value === crs.name.toLowerCase())) continue;
+
+        try {
+            projected.set(crs.name, { crs, converter: proj4('EPSG:4326', crs.proj4) });
+            COORD_MODES.push({ value: crs.name, label: crs.name, title: `${crs.title} (${crs.name})` });
+        } catch (err) {
+            console.error(`Ignoring coordinate system ${crs.name}:`, err);
+        }
+    }
+}
 
 const K0 = 0.9996;
 const E = 0.00669438;
@@ -33,6 +79,15 @@ const NORTHING_SETS = ['ABCDEFGHJKLMNPQRSTUV', 'FGHJKLMNPQRSTUVABCDE'] as const;
  * @param truncate - optional decimal precision for DD mode
  */
 export function formatCoordPair(lat: number, lng: number, mode: CoordMode, truncate?: number): string {
+    const system = projected.get(mode);
+    if (system) {
+        // Outside the system's area of use there is no position to show
+        return asProjected(system, lat, lng) ?? OUTSIDE_AREA;
+    } else if (!BUILTIN_COORD_MODES.some((builtin) => builtin.value === mode)) {
+        // A mode the server no longer offers
+        mode = 'dd';
+    }
+
     if (mode === 'dd') {
         if (truncate !== undefined) {
             const factor = Math.pow(10, truncate);
@@ -56,6 +111,11 @@ export function parseCoordPair(text: string, mode?: CoordMode): [number, number]
 
     if (!raw) {
         throw new Error('Coordinates are required');
+    }
+
+    const system = mode === undefined ? undefined : projected.get(mode);
+    if (system) {
+        return parseProjected(system, raw);
     }
 
     if (mode === 'utm') {
@@ -99,6 +159,66 @@ export function validateCoordPair(text: string, mode?: CoordMode): string {
     } catch (err) {
         return err instanceof Error ? err.message : String(err);
     }
+}
+
+function inBounds(bounds: CoordSystem['bounds'], lat: number, lng: number): boolean {
+    if (lat < bounds.minLatitude || lat > bounds.maxLatitude) return false;
+
+    const wrapped = wrapLongitude(lng);
+
+    // A maxLongitude below minLongitude means the area crosses the antimeridian
+    return bounds.minLongitude <= bounds.maxLongitude
+        ? wrapped >= bounds.minLongitude && wrapped <= bounds.maxLongitude
+        : wrapped >= bounds.minLongitude || wrapped <= bounds.maxLongitude;
+}
+
+function asProjected(system: ProjectedSystem, lat: number, lng: number): string | undefined {
+    if (!inBounds(system.crs.bounds, lat, lng)) return;
+
+    const [easting, northing] = system.converter.forward([wrapLongitude(lng), lat]);
+    if (!Number.isFinite(easting) || !Number.isFinite(northing)) return;
+
+    return `E ${Math.round(easting)}  N ${Math.round(northing)}`;
+}
+
+function projectedExample(system: ProjectedSystem): string {
+    const { minLongitude, maxLongitude, minLatitude, maxLatitude } = system.crs.bounds;
+    const lng = maxLongitude >= minLongitude
+        ? (minLongitude + maxLongitude) / 2
+        : wrapLongitude((minLongitude + maxLongitude + 360) / 2);
+
+    return asProjected(system, (minLatitude + maxLatitude) / 2, lng) || 'E 0  N 0';
+}
+
+/**
+ * Accepts an easting and northing in metres, ie "E 1748500 N 5427000",
+ * "1748500E 5427000N", "1748500 E, 5427000 N", "1748500, 5427000". A letter
+ * labels the number it touches, a letter between two numbers labels the next
+ * one. Unlabelled numbers are easting then northing.
+ */
+function parseProjected(system: ProjectedSystem, text: string): [number, number] {
+    const pattern = /\s*([EN])?\s*(-?\d+(?:\.\d+)?)(?:([EN])|\s*([EN])(?=\s*(?:,|$)))?\s*,?/iy;
+    const found: Array<{ value: number; label?: string }> = [];
+
+    while (pattern.lastIndex < text.length) {
+        const match = pattern.exec(text);
+        if (!match) break;
+        found.push({ value: Number(match[2]), label: (match[1] || match[3] || match[4])?.toUpperCase() });
+    }
+
+    const expected = `Expected ${system.crs.name} coordinates like "${projectedExample(system)}"`;
+    if (found.length !== 2 || pattern.lastIndex !== text.length) throw new Error(expected);
+
+    let [first, second] = found;
+    if (first.label === second.label && first.label !== undefined) throw new Error(expected);
+    if (first.label === 'N' || second.label === 'E') [first, second] = [second, first];
+
+    const [lng, lat] = system.converter.inverse([first.value, second.value]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !inBounds(system.crs.bounds, lat, lng)) {
+        throw new Error(`Coordinates are outside the area covered by ${system.crs.name}`);
+    }
+
+    return [lat, wrapLongitude(lng)];
 }
 
 function parseDegrees(text: string): [number, number] {

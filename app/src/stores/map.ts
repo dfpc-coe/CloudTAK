@@ -30,6 +30,7 @@ import RoutingControl from '../lib/routing/main.ts';
 import type { NavigationState, NavigationDirection, NavigationMode } from '../lib/routing/main.ts';
 import { syncPushToken } from '../base/push.ts';
 import { normalizePointType } from '../utils/point-type.ts';
+import { loadCoordinateSystems } from '../utils/coordinateSystems.ts';
 import { WorkerMessageType, LocationState } from '../utils/events.ts';
 import type { WorkerMessage, SyncTriggerReason, MissionRenderFeatureBody, ContactOnlineChangeBody } from '../utils/events.ts';
 import Overlay from '../base/overlay-class.ts';
@@ -1657,6 +1658,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.callsign = (await ProfileConfig.get('tak_callsign'))?.value || 'Unknown';
             this.zoom = (await ProfileConfig.get('display_zoom'))?.value || 'conditional';
+            // Formatting updates by itself once the systems arrive
+            void loadCoordinateSystems();
             this.coordFormat = (await ProfileConfig.get('display_coordinate'))?.value || 'dd';
             this.defaultPointType = normalizePointType((await ProfileConfig.get('tak_type'))?.value);
 
