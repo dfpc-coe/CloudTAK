@@ -24,6 +24,8 @@
 
 ### Pending Release
 
+### v14.1.0 - 2026-11-24
+
 - :tada: Chatrooms are now stored by CloudTAK and shared by their members instead of mirrored per user from GeoChat - users of the same server message each other directly, everyone else is reached through GeoChat on the TAK Server - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1147
 - :tada: Create Groups, manage their members, mute Chatrooms, reply to, edit, delete, react to & search messages and page through history
 - :rocket: Chat is sent over `POST /api/chatroom/:chatroom/message` and received as `chatroom:message` & `chatroom:message:update` WebSocket events - the `/api/chatroom` routes replace `/api/profile/chatroom`
