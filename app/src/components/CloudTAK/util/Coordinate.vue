@@ -22,7 +22,7 @@
             />
             <UnitSwitcher
                 v-if='availableModes.length > 1'
-                :model-value='config.mode'
+                :model-value='mode'
                 :options='availableModes'
                 @update:model-value='config.mode = $event as CoordMode'
             />
@@ -34,8 +34,11 @@
 import CopyField from './CopyField.vue';
 import UnitSwitcher from './UnitSwitcher.vue';
 import PropertyFactRow from './PropertyFactRow.vue';
-import { COORD_MODES, formatCoordPair, parseCoordPair, validateCoordPair, type CoordMode } from '../../../utils/coordinateFormat.ts';
-import { ref, computed, watch, type PropType } from 'vue';
+import { COORD_MODES, coordModesAt, formatCoordPair, parseCoordPair, validateCoordPair, type CoordMode } from '../../../utils/coordinateFormat.ts';
+import { useMapStore } from '../../../stores/map.ts';
+import { ref, computed, type PropType } from 'vue';
+
+const mapStore = useMapStore();
 
 const props = defineProps({
     label: {
@@ -84,25 +87,29 @@ const emit = defineEmits([
 ]);
 
 const config = ref({
-    mode: (props.modes[0] || 'dd') as CoordMode
+    mode: (props.modes.includes(mapStore.coordFormat) ? mapStore.coordFormat : props.modes[0] || 'dd') as CoordMode
 });
 
 const availableModes = computed(() => {
-    return COORD_MODES.filter((mode) => props.modes.includes(mode.value));
+    const lng = Number(props.modelValue[0]);
+    const lat = Number(props.modelValue[1]);
+
+    const located = Number.isFinite(lat) && Number.isFinite(lng) ? coordModesAt(lat, lng) : COORD_MODES;
+
+    return located.filter((mode) => props.modes.includes(mode.value));
 });
 
-watch(() => props.modes, (nextModes) => {
-    if (nextModes.length && !nextModes.includes(config.value.mode)) {
-        config.value.mode = nextModes[0] as CoordMode;
+const mode = computed<CoordMode>(() => {
+    if (availableModes.value.some((available) => available.value === config.value.mode)) {
+        return config.value.mode;
     }
-}, {
-    immediate: true,
-    deep: true
+
+    return availableModes.value[0]?.value || 'dd';
 });
 
 const validateInput = computed(() => {
     return (text: string): string => {
-        return validateCoordPair(text, config.value.mode);
+        return validateCoordPair(text, mode.value);
     }
 });
 
@@ -110,7 +117,7 @@ const inMode = computed(() => {
     return formatCoordPair(
         props.modelValue[1] as number,
         props.modelValue[0] as number,
-        config.value.mode,
+        mode.value,
         props.truncate
     );
 });
@@ -119,7 +126,7 @@ function coordinateEntry(text: string | number) {
     if (typeof text !== 'string') return;
 
     try {
-        const [lat, lng] = parseCoordPair(text, config.value.mode);
+        const [lat, lng] = parseCoordPair(text, mode.value);
         emit('update:modelValue', [lng, lat]);
     } catch {
         // Validation handles the user-visible error state.

@@ -138,13 +138,24 @@ export enum ProfilePaging_Type {
     PUSH = 'push',
 }
 
-// Delivery status of an outgoing chat message (profile_chats.status); only moves forward. Client-only pre-server `sending` state is intentionally absent.
-export enum ProfileChatStatus {
+// Delivery status of an outgoing chat message; only moves forward. Client-only pre-server `sending` state is intentionally absent.
+export enum ChatMessageStatus {
     SENT = 'sent',
     PENDING = 'pending',
     FAILED = 'failed',
     DELIVERED = 'delivered',
     READ = 'read',
+}
+
+export enum ChatroomType {
+    DIRECT = 'direct',
+    GROUP = 'group',
+    BROADCAST = 'broadcast',
+}
+
+export enum ChatMemberRole {
+    OWNER = 'owner',
+    MEMBER = 'member',
 }
 
 export enum Profile_Zoom {
@@ -176,6 +187,7 @@ export enum Profile_Coordinate {
     DMS = 'dms',
     MGRS = 'mgrs',
     UTM = 'utm',
+    BNG = 'bng',
 }
 
 export enum Basemap_Format {

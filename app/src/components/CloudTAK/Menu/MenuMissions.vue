@@ -5,7 +5,7 @@
         <template #buttons>
             <TablerIconButton
                 title='Create Sync'
-                @click='create = true'
+                @click='router.push("/menu/missions/new")'
             >
                 <IconPlus
                     :size='32'
@@ -297,29 +297,10 @@
             </div>
         </template>
     </MenuTemplate>
-
-    <TablerModal
-        v-if='create'
-        size='xl'
-        @keyup.esc='create = false'
-    >
-        <div class='modal-status bg-red' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='create = false'
-        />
-        <MissionCreate
-            @mission='router.push(`/menu/missions/${$event.guid}`)'
-            @close='create = false'
-        />
-    </TablerModal>
 </template>
 
 <script setup lang='ts'>
 import { ref, computed, onMounted, watch } from 'vue';
-import MissionCreate from './Mission/MissionCreate.vue';
 import PendingInvites from './Mission/PendingInvites.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
@@ -331,7 +312,6 @@ import {
     TablerRefreshButton,
     TablerNone,
     TablerAlert,
-    TablerModal,
     TablerLoading,
     TablerPillGroup,
     TablerInput,
@@ -360,7 +340,6 @@ const mapStore = useMapStore();
 
 const error = ref<Error | undefined>();
 const subscribedError = ref<Error | undefined>();
-const create = ref(false)
 const loading = ref(true)
 const subscribedLoading = ref(false)
 const missionPasswords = ref<Record<string, string>>({});

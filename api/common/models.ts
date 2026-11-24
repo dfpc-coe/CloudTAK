@@ -11,7 +11,6 @@ import Basemap from './models/Basemap.js';
 import MissionTemplate from './models/MissionTemplate.js';
 import MissionTemplateLog from './models/MissionTemplateLog.js';
 import Setting from './models/Setting.js';
-import ProfileChat from './models/ProfileChat.js';
 import ProfileConfig from './models/ProfileConfig.js';
 import ProfilePasskey from './models/ProfilePasskey.js';
 import ProfileFile from './models/ProfileFile.js';
@@ -52,9 +51,17 @@ export default class Models {
     MissionTemplate: MissionTemplate;
     MissionTemplateLog: MissionTemplateLog;
 
+    Plugin: Modeler<typeof pgtypes.Plugin>;
+
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileConfig: ProfileConfig;
-    ProfileChat: ProfileChat;
+    Chatroom: Modeler<typeof pgtypes.Chatroom>;
+    ChatroomExternal: Modeler<typeof pgtypes.ChatroomExternal>;
+    ChatroomMember: Modeler<typeof pgtypes.ChatroomMember>;
+    ChatMessage: Modeler<typeof pgtypes.ChatMessage>;
+    ChatMessageExternal: Modeler<typeof pgtypes.ChatMessageExternal>;
+    ChatMessageReceipt: Modeler<typeof pgtypes.ChatMessageReceipt>;
+    ChatReaction: Modeler<typeof pgtypes.ChatReaction>;
     ProfileToken: Modeler<typeof pgtypes.ProfileToken>;
     ProfileInterest: Modeler<typeof pgtypes.ProfileInterest>;
     ProfileFeature: Modeler<typeof pgtypes.ProfileFeature>;
@@ -94,7 +101,13 @@ export default class Models {
         this.CoreFormColumn = new Modeler(pg, pgtypes.CoreFormColumn);
         this.CoreFormResponse = new CoreFormResponse(pg);
         this.CoreEventResponse = new Modeler(pg, pgtypes.CoreEventResponse);
-        this.ProfileChat = new ProfileChat(pg);
+        this.Chatroom = new Modeler(pg, pgtypes.Chatroom);
+        this.ChatroomExternal = new Modeler(pg, pgtypes.ChatroomExternal);
+        this.ChatroomMember = new Modeler(pg, pgtypes.ChatroomMember);
+        this.ChatMessage = new Modeler(pg, pgtypes.ChatMessage);
+        this.ChatMessageExternal = new Modeler(pg, pgtypes.ChatMessageExternal);
+        this.ChatMessageReceipt = new Modeler(pg, pgtypes.ChatMessageReceipt);
+        this.ChatReaction = new Modeler(pg, pgtypes.ChatReaction);
         this.Icon = new Icon(pg);
 
         this.Errors = new Modeler(pg, pgtypes.Errors);
@@ -106,6 +119,8 @@ export default class Models {
 
         this.MissionTemplate = new MissionTemplate(pg);
         this.MissionTemplateLog = new MissionTemplateLog(pg);
+
+        this.Plugin = new Modeler(pg, pgtypes.Plugin);
 
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileConfig = new ProfileConfig(pg);

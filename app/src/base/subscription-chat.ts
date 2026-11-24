@@ -3,6 +3,7 @@ import type { DBSubscriptionChat } from '../database.ts';
 import type { Observable } from 'dexie';
 import type Atlas from '../workers/atlas.ts';
 import type { Remote } from 'comlink';
+import { SEND_TIMEOUT_MS, expireSending, failIfSending } from './chatroom-chats.ts';
 
 /**
  * High Level Wrapper around Mission Chat messages stored in the local Dexie DB.
@@ -40,7 +41,7 @@ export default class SubscriptionChat {
             return new Date(a.created).getTime() - new Date(b.created).getTime();
         });
 
-        return chats;
+        return expireSending(chats);
     }
 
     async read(): Promise<void> {
@@ -55,39 +56,74 @@ export default class SubscriptionChat {
         sender: { uid: string; callsign: string },
         worker: Remote<Atlas>
     ): Promise<void> {
-        const id = crypto.randomUUID();
-        const created = new Date().toISOString();
-
-        await db.subscription_chat.put({
-            id: id,
+        const chat: DBSubscriptionChat = {
+            id: crypto.randomUUID(),
             mission: this.guid,
             chatroom: this.name,
             sender: sender.callsign,
             sender_uid: sender.uid,
             message: message,
-            created: created,
+            created: new Date().toISOString(),
             unread: false,
             status: ChatStatus.Sending,
-        });
+        };
 
-        const location = (await worker.profile?.location)?.coordinates || [0, 0];
+        await db.subscription_chat.put(chat);
 
-        await worker.conn.sendCOT({
-            chatroom: this.name,
-            parent: 'DataSyncMissionsList',
-            from: {
-                uid: sender.uid,
-                callsign: sender.callsign
-            },
-            to: {
-                uid: this.name,
-                callsign: this.name
-            },
-            mission: this.name,
-            message: message,
-            messageId: id,
-            time: created,
-            location
-        }, 'chat');
+        await this.dispatch(chat, sender, worker);
+    }
+
+    async retry(
+        id: string,
+        sender: { uid: string; callsign: string },
+        worker: Remote<Atlas>
+    ): Promise<void> {
+        const chat = await db.subscription_chat.get(id);
+        if (!chat) return;
+
+        chat.status = ChatStatus.Sending;
+        chat.created = new Date().toISOString();
+
+        await db.subscription_chat.put(chat);
+
+        await this.dispatch(chat, sender, worker);
+    }
+
+    private async dispatch(
+        chat: DBSubscriptionChat,
+        sender: { uid: string; callsign: string },
+        worker: Remote<Atlas>
+    ): Promise<void> {
+        try {
+            const location = (await worker.profile?.location)?.coordinates || [0, 0];
+
+            const sent = await worker.conn.sendCOT({
+                chatroom: this.name,
+                parent: 'DataSyncMissionsList',
+                from: {
+                    uid: sender.uid,
+                    callsign: sender.callsign
+                },
+                to: {
+                    uid: this.name,
+                    callsign: this.name
+                },
+                mission: this.name,
+                message: chat.message,
+                messageId: chat.id,
+                time: chat.created,
+                location
+            }, 'chat');
+
+            if (!sent) throw new Error('Not connected to the CloudTAK Server');
+        } catch (err) {
+            console.error('Failed to send Mission Chat', err);
+            await db.subscription_chat.where('id').equals(chat.id).modify(failIfSending);
+            return;
+        }
+
+        setTimeout(() => {
+            void db.subscription_chat.where('id').equals(chat.id).modify(failIfSending);
+        }, SEND_TIMEOUT_MS);
     }
 }

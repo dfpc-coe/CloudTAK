@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { reactive } from 'vue';
+import { h, reactive } from 'vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 
 const appStore = reactive({ isMobileDetected: false });
@@ -11,7 +11,7 @@ vi.mock('../../../stores/app.ts', () => ({
 
 const draw = reactive({
     mode: DrawToolMode.POINT,
-    point: { type: 'u-d-p' },
+    point: { type: 'u-d-p', icon: '', drop: 'single' },
     canFinish: false,
     snappingLayer: '',
     snappingOptions: [],
@@ -33,6 +33,14 @@ vi.mock('../../../utils/milsymbol.ts', () => ({
     symbolDataURL: () => 'data:image/svg+xml,'
 }));
 
+vi.mock('./IconSelectOffline.vue', () => ({
+    default: {
+        render(this: { $slots: { default?: () => unknown } }) {
+            return h('div', { class: 'icon-select-stub' }, this.$slots.default?.() as never);
+        }
+    }
+}));
+
 import DrawOverlay from './DrawOverlay.vue';
 
 describe('DrawOverlay point mode', () => {
@@ -44,16 +52,23 @@ describe('DrawOverlay point mode', () => {
     it.each([
         ['desktop', false],
         ['mobile', true],
-    ])('stacks a thin label above every marker type on %s', (_label, mobile) => {
+    ])('puts the title and finish/cancel in a header row above the options on %s', (_label, mobile) => {
         appStore.isMobileDetected = mobile;
         const wrapper = mount(DrawOverlay);
 
-        expect(wrapper.find('.card-header .flex-column .point-label').text()).toBe('Draw Point');
-        expect(wrapper.findAll('.card-header input[name="point-type"]')).toHaveLength(5);
-        expect(wrapper.find('.card-body').exists()).toBe(false);
+        const header = wrapper.find('.card-header');
+        const options = wrapper.find('.card-body');
+
+        expect(header.text()).toBe('Draw Point');
+        expect(header.find('[title="Finish Drawing"]').exists()).toBe(true);
+        expect(header.find('[title="Cancel Editing"]').exists()).toBe(true);
+        expect(header.find('input[name="point-type"]').exists()).toBe(false);
+        expect(header.find('.icon-select-stub').exists()).toBe(false);
+
+        expect(options.findAll('input[name="point-type"]')).toHaveLength(5);
+        expect(options.find('.icon-select-stub').exists()).toBe(true);
+        expect(options.find('[title="Drop Multiple Points"]').exists()).toBe(true);
         expect(wrapper.find('[title="Open Settings"]').exists()).toBe(false);
-        expect(wrapper.find('[title="Finish Drawing"]').exists()).toBe(true);
-        expect(wrapper.find('[title="Cancel Editing"]').exists()).toBe(true);
     });
 
     it('keeps the More toggle for line editing on mobile', () => {

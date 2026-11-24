@@ -20,7 +20,7 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
     t.after(() => {
         Sinon.restore();
         setGlobalDispatcher(originalDispatcher);
-        mockAgent.close();
+        void mockAgent.close();
     });
 
     const mockPool = mockAgent.get('http://localhost:5001');
@@ -99,7 +99,7 @@ test(`Worker Basemap Import: USGS.xml`, async (t) => {
             resolve(true);
         });
 
-        worker.process();
+        void worker.process();
     });
 });
 
@@ -204,6 +204,6 @@ test(`Worker Basemap Import: Basemap.xml.zip`, async (t) => {
             resolve(true);
         });
 
-        worker.process();
+        void worker.process();
     });
 });

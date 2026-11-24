@@ -23,7 +23,7 @@ function parseSlopeLayers(raw: string | string[] | undefined): SlopeClass[] {
 }
 
 export default async function router(schema: Schema) {
-    schema.get('/tiles/slope/:basemapid', {
+    await schema.get('/tiles/slope/:basemapid', {
         name: 'Get Slope TileJSON',
         group: 'SlopeTiles',
         description: 'TileJSON for slope angle shading rendered from a raster-dem basemap. Requested slope classes are carried onto the tile URLs',
@@ -59,7 +59,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/slope/:basemapid/tiles/:z/:x/:y', {
+    await schema.get('/tiles/slope/:basemapid/tiles/:z/:x/:y', {
         name: 'Get Slope Tile',
         group: 'SlopeTiles',
         description: 'Slope angle shading tile rendered from a raster-dem basemap',

@@ -2,6 +2,7 @@ import type { Observable } from 'dexie';
 import { db, type DBProfileFile, liveQuery } from '../database.ts';
 import BaseInterface from './interface.ts';
 import type { BaseInterface_ListOptions } from './interface.ts';
+import type { ProfileFile } from '../types.ts';
 
 export type ProfileFile_ListOptions = BaseInterface_ListOptions & {
     filter?: string;
@@ -56,9 +57,12 @@ export default class ProfileFileManager extends BaseInterface {
         return file;
     }
 
-    static async bulkPut(files: DBProfileFile[]): Promise<void> {
+    /**
+     * Refresh server metadata of files already stored, keeping their offline state
+     */
+    static async refresh(files: ProfileFile[]): Promise<void> {
         if (!files.length) return;
-        await db.profile_file.bulkPut(files);
+        await db.profile_file.bulkUpdate(files.map((file) => ({ key: file.id, changes: file })));
     }
 
     static async update(id: string, file: Partial<DBProfileFile>): Promise<void> {

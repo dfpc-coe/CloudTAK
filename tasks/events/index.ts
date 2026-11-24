@@ -80,7 +80,7 @@ export default class WorkerPool extends EventEmitter {
                             console.error(`Import ${job.id} - failed to handle Job Finalization`, err);
                         }
 
-                        worker.terminate();
+                        void worker.terminate();
 
                         this.workers.delete(locked);
                     });
@@ -195,7 +195,7 @@ export default class WorkerPool extends EventEmitter {
                 .map(({ worker }) => {
                     return new Promise<void>((resolve) => {
                         worker.on('exit', () => resolve());
-                        worker.terminate();
+                        void worker.terminate();
                     });
                 }),
         );

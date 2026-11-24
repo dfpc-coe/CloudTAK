@@ -129,13 +129,13 @@ function stubAPI(api: string): { restore: () => void } {
 
     // Profile Asset creation - echo the generated id back
     pool.intercept({ path: /^\/api\/profile\/asset$/, method: 'POST' }).reply((opts) => {
-        const body = JSON.parse(String(opts.body));
+        const body = JSON.parse(opts.body as string);
         return json(200, { id: body.id, name: body.name, artifacts: [] });
     }).persist();
 
     // Profile Asset updates (iconset + artifacts) - echo artifacts back
     pool.intercept({ path: /^\/api\/profile\/asset\/[^/?]+/, method: 'PATCH' }).reply((opts) => {
-        const body = JSON.parse(String(opts.body));
+        const body = JSON.parse(opts.body as string);
         const id = String(opts.path).split('?')[0].split('/').pop();
         return json(200, { id, name: body.name || 'asset', artifacts: body.artifacts || [] });
     }).persist();
@@ -152,7 +152,7 @@ function stubAPI(api: string): { restore: () => void } {
 
     // Iconset creation
     pool.intercept({ path: /^\/api\/iconset$/, method: 'POST' }).reply((opts) => {
-        const body = JSON.parse(String(opts.body));
+        const body = JSON.parse(opts.body as string);
         return json(200, { uid: body.uid || randomUUID(), name: body.name });
     }).persist();
 
@@ -168,7 +168,7 @@ function stubAPI(api: string): { restore: () => void } {
 
     // Basemap creation
     pool.intercept({ path: /^\/api\/basemap$/, method: 'POST' }).reply((opts) => {
-        const body = JSON.parse(String(opts.body));
+        const body = JSON.parse(opts.body as string);
         return json(200, { id: 1, name: body.name });
     }).persist();
 
@@ -180,7 +180,7 @@ function stubAPI(api: string): { restore: () => void } {
     return {
         restore: () => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         },
     };
 }

@@ -197,25 +197,29 @@ export class EsriBase {
         };
 
         try {
-            const url = new URL(this.base);
-            try {
-                return await fetchCurrentVersion(url);
-            } catch (err) {
-                // Some ArcGIS Server deployments expose version metadata at /rest/services
-                // even when /rest itself cannot be used for version detection.
-                if (this.type === EsriType.SERVER && url.pathname.endsWith('/rest')) {
-                    const fallback = new URL(url);
-                    fallback.pathname = `${fallback.pathname}/services`;
+            const candidates: URL[] = [];
 
-                    try {
-                        return await fetchCurrentVersion(fallback);
-                    } catch {
-                        throw err;
-                    }
+            // ArcGIS Server reports its version at /rest/info & /rest/services, rarely at /rest
+            if (this.type === EsriType.SERVER && this.base.pathname.endsWith('/rest')) {
+                for (const postfix of ['info', 'services']) {
+                    const url = new URL(this.base);
+                    url.pathname = `${url.pathname}/${postfix}`;
+                    candidates.push(url);
                 }
-
-                throw err;
             }
+
+            candidates.push(new URL(this.base));
+
+            let first: unknown;
+            for (const url of candidates) {
+                try {
+                    return await fetchCurrentVersion(url);
+                } catch (err) {
+                    first ??= err;
+                }
+            }
+
+            throw first;
         } catch (err) {
             if (err instanceof Error && err.name === 'PublicError') throw err;
             if (err instanceof Error) {

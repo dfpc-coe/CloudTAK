@@ -11,7 +11,7 @@ let package = Package(
             targets: ["CapApp-SPM"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.6.0"),
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", exact: "8.6.2"),
         .package(name: "CapgoCapacitorUpdater", path: "../../../node_modules/@capgo/capacitor-updater"),
         .package(name: "CapacitorCommunityKeepAwake", path: "../../../node_modules/@capacitor-community/keep-awake"),
         .package(name: "CapacitorFirebaseMessaging", path: "../../../node_modules/@capacitor-firebase/messaging"),
@@ -27,7 +27,9 @@ let package = Package(
         .package(name: "CapacitorPreferences", path: "../../../node_modules/@capacitor/preferences"),
         .package(name: "CapacitorStatusBar", path: "../../../node_modules/@capacitor/status-bar"),
         .package(name: "CapgoBackgroundGeolocation", path: "../../../node_modules/@capgo/background-geolocation"),
-        .package(name: "CapgoCapacitorCompass", path: "../../../node_modules/@capgo/capacitor-compass")
+        .package(name: "CapgoCapacitorCompass", path: "../../../node_modules/@capgo/capacitor-compass"),
+        .package(name: "CapgoCapacitorDownloader", path: "../../../node_modules/@capgo/capacitor-downloader"),
+        .package(name: "CapacitorFilesystem", path: "../../../node_modules/@capacitor/filesystem")
     ],
     targets: [
         .target(
@@ -50,7 +52,9 @@ let package = Package(
                 .product(name: "CapacitorPreferences", package: "CapacitorPreferences"),
                 .product(name: "CapacitorStatusBar", package: "CapacitorStatusBar"),
                 .product(name: "CapgoBackgroundGeolocation", package: "CapgoBackgroundGeolocation"),
-                .product(name: "CapgoCapacitorCompass", package: "CapgoCapacitorCompass")
+                .product(name: "CapgoCapacitorCompass", package: "CapgoCapacitorCompass"),
+                .product(name: "CapgoCapacitorDownloader", package: "CapgoCapacitorDownloader"),
+                .product(name: "CapacitorFilesystem", package: "CapacitorFilesystem")
             ]
         )
     ]

@@ -198,22 +198,10 @@ export const CoreEntityExternalIds = Type.Record(Type.String(), Type.String(), {
     description: 'IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" }',
 });
 
-/** Request form of an external ID - a bare string is the ID under the default system, deprecated and removed in v14 */
-export const CoreEntityExternalIdInput = Type.Union([
-    CoreEntityExternalId,
-    Type.String({ description: 'Deprecated - ID of the record under the default system, send { system, value } instead' }),
-]);
-
-/** Deprecated response field - the ID under the default system */
-export const CoreEntityExternalIdLegacy = Type.String({
-    description: 'Deprecated - ID of the record under the default system, use external_ids - removed in v14',
-});
-
 export const CoreEventResponse = Type.Composite([
     Type.Required(Type.Omit(withoutHints(CoreEventSchema), ['ended', 'external_id'])),
     Type.Object({
         id: Type.String(),
-        external_id: CoreEntityExternalIdLegacy,
         external_ids: CoreEntityExternalIds,
         missions: Type.Array(CoreEventMission, { description: 'TAK Server Missions associated with the Event' }),
         created: Type.String(),
@@ -304,7 +292,6 @@ export const CoreDeviceResponse = Type.Composite([
     Type.Required(Type.Omit(withoutHints(CoreDeviceSchema), ['battery', 'external_id'])),
     Type.Object({
         id: Type.String(),
-        external_id: CoreEntityExternalIdLegacy,
         external_ids: CoreEntityExternalIds,
         created: Type.String(),
         updated: Type.String(),
@@ -409,13 +396,11 @@ export const CoreSchemaResponse = Type.Object({
     description: 'JSON Schema of a Server supported record type',
 });
 
-/** A single named Output schema of a Task - tasks exposing a single unnamed schema are mapped to the `default` id */
+/** A single named Output schema of a Task */
 export const NamedSchema = Type.Object({
     id: Type.String(),
     schema: Type.Record(Type.String(), Type.Unknown()),
 });
-
-export const DEFAULT_SCHEMA_ID = 'default';
 
 const TaskCapabilitiesSchema = Type.Object({
     input: Type.Unknown(),
@@ -637,6 +622,14 @@ export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
     source_type: Type.Enum(VideoLease_SourceType),
 });
 
+export const PluginResponse = createSelectSchema(schemas.Plugin, {
+    api_version: Type.Integer(),
+    version: Type.Union([Type.Null(), Type.String()]),
+    sha256: Type.Union([Type.Null(), Type.String()]),
+    size: Type.Union([Type.Null(), Type.Integer()]),
+    username: Type.Union([Type.Null(), Type.String()]),
+});
+
 /** Query params appended to tile and TileJSON requests, e.g. slope classes as repeatable `layer` values */
 export const BasemapArgs = Type.Record(
     Type.String({ minLength: 1 }),
@@ -678,6 +671,25 @@ export const ProfileVideoPosition = Type.Object({
     w: Type.Integer({ minimum: 1, maximum: 12, description: 'Width in grid columns' }),
     h: Type.Integer({ minimum: 1, description: 'Height in grid rows' }),
 });
+
+export const ChatMember = Type.Object({
+    uid: Type.String(),
+    callsign: Type.String(),
+});
+
+export type ChatMember = Static<typeof ChatMember>;
+
+/** State a Chatroom carries for the system it is bridged to - for TAK the GeoChat group tree */
+export type ChatroomExternalMetadata = {
+    parent?: string;
+    hierarchy?: Feature.ChatHierarchyNode;
+};
+
+export const ChatMessageMetadata = Type.Object({
+    location: Type.Optional(Type.Array(Type.Number(), { minItems: 2, maxItems: 3 })),
+});
+
+export type ChatMessageMetadata = Static<typeof ChatMessageMetadata>;
 
 export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
     lease: Type.Integer(),

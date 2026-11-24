@@ -129,3 +129,18 @@ describe('Icon.hydrate', () => {
         expect(iconFetch).not.toHaveBeenCalled();
     });
 });
+
+describe('Icon.key', () => {
+    it('normalises path and key references to the cache key', () => {
+        expect(Icon.key('alpha/Incident/Fire.png')).toBe('alpha:Incident/Fire');
+        expect(Icon.key('alpha:Incident/Fire.svg')).toBe('alpha:Incident/Fire');
+        expect(Icon.key('alpha:Incident/Fire')).toBe('alpha:Incident/Fire');
+        expect(Icon.key('a-f-G')).toBe('a-f-G');
+    });
+
+    it('splits a reference into iconset and path', () => {
+        expect(Icon.parse('alpha/Incident/Fire.png')).toEqual({ iconset: 'alpha', path: 'Incident/Fire' });
+        expect(Icon.parse('a-f-G')).toBeUndefined();
+        expect(Icon.parse('alpha:')).toBeUndefined();
+    });
+});

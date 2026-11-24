@@ -191,23 +191,6 @@ function entry(map: unknown, field: MapField): { value: unknown; update: unknown
     return { value: raw, update: true };
 }
 
-/**
- * Maps saved before external IDs carried a system hold the value template at
- * `external_id` itself - as a bare string or a `{ value, update }` entry - it
- * becomes the `external_id.value` field
- */
-function normalize(map: Record<string, unknown>): Record<string, unknown> {
-    const external = map.external_id;
-
-    if (typeof external === 'string') return { ...map, external_id: { value: external } };
-
-    if (external !== null && typeof external === 'object' && !Array.isArray(external) && 'update' in external && !('system' in external)) {
-        return { ...map, external_id: { value: external } };
-    }
-
-    return map;
-}
-
 function label(field: MapField): string {
     const parts = field.key.split('.');
     const name = parts[parts.length - 1]
@@ -424,9 +407,7 @@ export default class Mapping {
     /**
      * Validate a Map object against the fields of its destination
      */
-    static validate(destination: LayerMapping_Destination, raw: Record<string, unknown>): true {
-        const map = normalize(raw);
-
+    static validate(destination: LayerMapping_Destination, map: Record<string, unknown>): true {
         for (const field of MAP_FIELDS[destination]) {
             const { value, update } = entry(map, field);
             if (typeof update !== 'boolean') throw invalid(null, `Invalid ${label(field)}: update must be a boolean`);
@@ -463,7 +444,7 @@ export default class Mapping {
      * created but left alone when the record already exists
      */
     static createOnly(row: MappingRow): Set<string> {
-        const map = normalize(row.mapping);
+        const map = row.mapping;
 
         return new Set(MAP_FIELDS[row.destination]
             .filter(field => entry(map, field).update === false)
@@ -485,7 +466,7 @@ export default class Mapping {
             ? feature as unknown as Record<string, unknown>
             : {};
 
-        const map = normalize(row.mapping);
+        const map = row.mapping;
 
         try {
             for (const field of MAP_FIELDS[row.destination]) {

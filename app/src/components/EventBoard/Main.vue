@@ -34,14 +34,17 @@
                             />
                             <span class='mx-2'>New Board</span>
                         </div>
-                        <TablerDelete
+                        <div
                             v-if='boards.length > 1'
-                            class='cloudtak-hover event-board-menu-delete'
-                            displaytype='menu'
-                            label='Delete Board'
-                            title='Delete Board'
-                            @delete='deleteBoard(selectedBoard)'
-                        />
+                            class='cursor-pointer col-12 cloudtak-hover d-flex align-items-center px-2 py-2'
+                            @click='confirmDeleteBoard = true'
+                        >
+                            <IconTrash
+                                :size='20'
+                                stroke='1'
+                            />
+                            <span class='mx-2'>Delete Board</span>
+                        </div>
                     </template>
                 </TablerDropdown>
 
@@ -199,6 +202,13 @@
             @close='editBoard = undefined; addBoard = false'
         />
 
+        <TablerDelete
+            v-model:open='confirmDeleteBoard'
+            displaytype='none'
+            label='Delete Board'
+            @delete='deleteBoard(selectedBoard)'
+        />
+
         <TablerModal
             v-if='viewEvent'
             size='xl'
@@ -249,6 +259,7 @@ import {
     IconPlus,
     IconList,
     IconPencil,
+    IconTrash,
     IconStackPush,
     IconDotsVertical,
     IconLayoutKanban,
@@ -324,6 +335,7 @@ const formWizard = ref<{
     event: CoreEntity;
 } | undefined>();
 const addBoard = ref(false);
+const confirmDeleteBoard = ref(false);
 const editBoard = ref<CoreEntityBoard | undefined>();
 const viewEvent = ref<string | undefined>();
 
@@ -539,9 +551,9 @@ async function saveBoard(update: { name: string; description: string }): Promise
 }
 
 async function deleteBoard(existing?: CoreEntityBoard): Promise<void> {
-    if (!existing) return;
-
     try {
+        if (!existing) return;
+
         const res = await server.DELETE('/api/board/{:board}', {
             params: { path: { ':board': existing.id } }
         });
@@ -555,6 +567,8 @@ async function deleteBoard(existing?: CoreEntityBoard): Promise<void> {
         await refresh();
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        confirmDeleteBoard.value = false;
     }
 }
 
@@ -647,7 +661,7 @@ const poll = ref<ReturnType<typeof setInterval> | undefined>();
 
 /** Modals and in-flight interactions hold state a silent refresh would discard */
 const modalOpen = computed<boolean>(() => {
-    return !!(nominate.value || createEvent.value || formWizard.value || addBoard.value || editBoard.value || viewEvent.value);
+    return !!(nominate.value || createEvent.value || formWizard.value || addBoard.value || editBoard.value || confirmDeleteBoard.value || viewEvent.value);
 });
 
 async function pollColumns(): Promise<void> {
@@ -681,13 +695,5 @@ onUnmounted(() => {
 .event-board-event-modal {
     height: calc(100dvh - 4rem);
     max-height: 800px;
-}
-
-/* The board options dropdown teleports to body so these can't nest under
-   .event-board - direct-child selectors keep the confirm modal's icon full
-   size while the menu row icon matches the Edit row's 20px */
-.event-board-menu-delete > .col-12 > svg {
-    width: 20px;
-    height: 20px;
 }
 </style>

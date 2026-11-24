@@ -4,6 +4,7 @@ import { isEqual } from '@ver0/deep-equal';
 import Filter from './filter.ts';
 import COT, { renderedIcon } from './cot.ts';
 import Subscription from './subscription.ts';
+import { isUnsent } from './chatroom-chats.ts';
 import type Atlas from '../workers/atlas.ts';
 import { server } from '../std.ts';
 import { bbox } from '@turf/bbox';
@@ -182,10 +183,18 @@ export default class SubscriptionFeature {
                         .primaryKeys()
                 );
 
+                const unsentChats = (await db.subscription_chat
+                    .where('mission')
+                    .equals(this.parent.guid)
+                    .toArray()
+                ).filter(isUnsent);
+
                 await db.subscription_chat
                     .where('mission')
                     .equals(this.parent.guid)
                     .delete();
+
+                await db.subscription_chat.bulkPut(unsentChats);
 
                 for (const feature of chatFeatures) {
                     const chat = feature.properties.chat as {

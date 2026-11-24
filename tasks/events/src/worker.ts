@@ -255,7 +255,7 @@ export default class Worker extends EventEmitter {
         if (local.ext.toLowerCase() === '.xml') {
             try {
                 const xml = fs.readFileSync(local.raw, 'utf-8');
-                await Basemap.parse(xml);
+                Basemap.parse(xml);
 
                 return await this.processBasemap(xml);
             } catch (err) {
@@ -338,7 +338,7 @@ export default class Worker extends EventEmitter {
         pkg: DataPackage,
     ): Promise<void> {
         try {
-            const iconset = await Iconset.parse(xml);
+            const iconset = Iconset.parse(xml);
 
             const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, this.msg.api), {
                 safeUrlAllow: [this.msg.api],
@@ -424,7 +424,7 @@ export default class Worker extends EventEmitter {
         xml: string,
     ): Promise<void> {
         try {
-            const basemap = await Basemap.parse(xml);
+            const basemap = Basemap.parse(xml);
             const json = basemap.to_json();
             const format = this.normalizeBasemapFormat(json.tileType);
 

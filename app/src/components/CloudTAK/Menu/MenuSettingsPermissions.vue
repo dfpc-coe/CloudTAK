@@ -92,7 +92,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import type { Component } from 'vue';
 import {
     IconBell,
@@ -110,7 +110,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
 import LocationDisclosure from '../util/LocationDisclosure.vue';
 import type { LocationDisclosureStage } from '../util/LocationDisclosure.vue';
-import { isNativePlatform } from '../../../utils/capacitor.ts';
+import { addAppLifecycleListeners, isNativePlatform } from '../../../utils/capacitor.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useDeviceStore } from '../../../stores/device.ts';
 import type { BrowserPermissionState } from '../../../stores/device.ts';
@@ -129,6 +129,11 @@ const loading = ref(true);
 const error = ref('');
 const working = ref<PermissionKey | undefined>();
 const disclosure = ref<LocationDisclosureStage | undefined>();
+
+const nativeOnly: PermissionKey[] = ['backgroundLocation'];
+const webOnly: PermissionKey[] = ['storage', 'fileSystem'];
+let removeLifecycleListeners: (() => void) | undefined;
+let unmounted = false;
 
 const permissionDescriptors: PermissionDescriptor[] = [{
     key: 'notification',
@@ -168,7 +173,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
     granted: {
         location: 'CloudTAK can access your live position.',
         backgroundLocation: 'CloudTAK can keep sharing your location while the app is in the background.',
-        notification: 'CloudTAK can deliver browser notifications.',
+        notification: 'CloudTAK can deliver notifications.',
         orientation: 'CloudTAK can access your device orientation for compass-based map rotation.',
         storage: 'CloudTAK can persist local data storage for more reliable offline access.',
         camera: 'CloudTAK can access your camera when needed.',
@@ -219,7 +224,7 @@ const permissionDescriptions: Record<'granted' | 'denied' | 'prompt' | 'unsuppor
 
 const permissionItems = computed(() => {
     return permissionDescriptors
-        .filter((permission) => permission.key !== 'backgroundLocation' || isNativePlatform())
+        .filter((permission) => !(isNativePlatform() ? webOnly : nativeOnly).includes(permission.key))
         .map((permission) => {
             const status = deviceStore.permissions[permission.key];
 
@@ -234,16 +239,28 @@ const permissionItems = computed(() => {
 onMounted(async () => {
     await refreshStatuses();
     loading.value = false;
+
+    // Pick up changes made in system settings
+    const remove = await addAppLifecycleListeners({
+        resume: () => { void refreshStatuses(); }
+    });
+    if (unmounted) remove();
+    else removeLifecycleListeners = remove;
+});
+
+onBeforeUnmount(() => {
+    unmounted = true;
+    removeLifecycleListeners?.();
 });
 
 function badgeLabel(status: BrowserPermissionState): string {
     switch (status) {
         case 'granted': return 'Allowed';
         case 'when_in_use': return 'While Using';
-        case 'denied': return 'Re-request';
-        case 'prompt': return 'Request';
+        case 'denied': return 'Denied';
+        case 'prompt': return 'Not asked yet';
         case 'unsupported': return 'Unsupported';
-        default: return 'Request';
+        default: return 'Unknown';
     }
 }
 
@@ -292,11 +309,13 @@ function descriptionFor(type: PermissionKey, status: BrowserPermissionState): st
     }
 }
 
-// Native prompts are only ever shown for location, and only from behind the
-// disclosure; a denied permission is re-granted from system settings.
+// Native location prompts are only shown from behind the disclosure; a
+// denied permission is re-granted from system settings.
 function offersNativeRequest(type: PermissionKey, status: BrowserPermissionState): boolean {
     if (!isNativePlatform()) return false;
-    if (type === 'location') return status === 'prompt' || status === 'denied';
+    if (type === 'location' || type === 'camera' || type === 'notification') {
+        return status === 'prompt' || status === 'denied';
+    }
     if (type === 'backgroundLocation') {
         return deviceStore.permissions.location === 'granted'
             && ['prompt', 'when_in_use', 'denied'].includes(status);
@@ -353,7 +372,7 @@ async function requestPermission(type: PermissionKey): Promise<void> {
         return;
     }
 
-    if (isNativePlatform()) return;
+    if (isNativePlatform() && !offersNativeRequest(type, deviceStore.permissions[type])) return;
 
     await runRequest(type);
 }
@@ -369,21 +388,18 @@ async function runRequest(type: PermissionKey): Promise<void> {
     working.value = type;
 
     try {
+        if (isNativePlatform() && deviceStore.permissions[type] === 'denied') {
+            await deviceStore.geolocation.openNativeSettings();
+            return;
+        }
+
         switch (type) {
             case 'location':
-                if (isNativePlatform() && deviceStore.permissions.location === 'denied') {
-                    await deviceStore.geolocation.openNativeSettings();
-                    break;
-                }
                 await deviceStore.geolocation.request(() => {
                     void mapStore.startLocationWatch();
                 });
                 break;
             case 'backgroundLocation':
-                if (deviceStore.permissions.backgroundLocation === 'denied') {
-                    await deviceStore.geolocation.openNativeSettings();
-                    break;
-                }
                 await deviceStore.geolocation.requestBackground();
                 break;
             case 'camera':

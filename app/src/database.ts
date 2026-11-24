@@ -17,6 +17,8 @@ import type {
 export interface DBIcon {
     /** Maplibre image id, e.g. "<iconsetUid>:<icon-path-without-extension>" */
     name: string;
+    /** Server row id, absent on rows cached before it was mirrored */
+    id?: number;
     iconset: string;
     path: string;
     type2525b: string | null;
@@ -73,13 +75,27 @@ export interface DBFeatureHistory {
     geometry: Feature["geometry"];
 }
 
+export interface DBChatroomMember {
+    uid: string;
+    callsign: string;
+    role: 'owner' | 'member';
+    // The Member is a user of this CloudTAK Server
+    local: boolean;
+}
+
 export interface DBChatroom {
     id: string;
+    type: 'direct' | 'group' | 'broadcast';
     name: string;
+    role: 'owner' | 'member';
+    muted: boolean;
+    members: Array<DBChatroomMember>;
     created: string;
     updated: string;
     unread?: number;
     last_read: string | null;
+    // `updated` of the newest Message already stored locally
+    synced?: string;
 }
 
 /**
@@ -115,8 +131,12 @@ export interface DBChatroomChat {
     sender_uid: string;
     message: string;
     created: string;
-    unread?: boolean;
+    updated?: string;
     status?: ChatStatus;
+    reply_to?: string | null;
+    edited?: string | null;
+    deleted?: string | null;
+    reactions?: Array<{ emoji: string; uids: Array<string> }>;
 }
 
 export interface DBIconset {
@@ -140,8 +160,18 @@ export interface DBIconset {
 
 export type DBOverlay = ProfileOverlayList["items"][number];
 
+export type DBProfileFileOffline = {
+    backend: 'opfs' | 'native';
+    state: 'pending' | 'complete';
+    /** Bytes on disk once complete */
+    size: number;
+    started: number;
+};
+
 /** Profile asset metadata retained for files downloaded for offline use */
-export type DBProfileFile = ProfileFile;
+export type DBProfileFile = ProfileFile & {
+    offline?: DBProfileFileOffline;
+};
 
 export interface DBFilter {
     id: string;
@@ -398,6 +428,38 @@ db.version(5).stores({
 
 db.version(6).stores({
     feature_history: 'id, uid, time, [uid+time]',
+});
+
+db.version(7).upgrade(async (tx) => {
+    const kv = tx.table<DBKV, string>('kv');
+    const files = tx.table<DBProfileFile, string>('profile_file');
+
+    for (const file of await files.toArray()) {
+        const size = Number((await kv.get(`pmtiles::size::${file.id}`))?.value);
+
+        if (!size) {
+            await files.delete(file.id);
+            continue;
+        }
+
+        const native = !!await kv.get(`pmtiles::native::${file.id}`);
+
+        await files.put({
+            ...file,
+            offline: { backend: native ? 'native' : 'opfs', state: 'complete', size, started: 0 }
+        });
+    }
+
+    await kv.where('key').startsWith('pmtiles::').delete();
+});
+
+// Chatrooms are keyed by a server assigned ID - everything cached under a peer UID is refetched
+db.version(8).stores({
+    chatroom: 'id',
+    chatroom_chats: 'id, chatroom',
+}).upgrade(async (tx) => {
+    await tx.table('chatroom').clear();
+    await tx.table('chatroom_chats').clear();
 });
 
 let reopenPromise: Promise<void> | null = null;

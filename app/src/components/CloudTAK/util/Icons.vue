@@ -1,215 +1,265 @@
 <template>
-    <div>
-        <div class='card-body'>
-            <div class='col-12 px-2 pt-2'>
-                <TablerInput
-                    v-model='paging.filter'
-                    placeholder='Filter'
-                />
-            </div>
+    <div class='d-flex flex-column gap-3 py-3 px-1'>
+        <TablerInput
+            v-model='filter'
+            icon='search'
+            placeholder='Filter iconsets and icons'
+        />
 
-            <TablerLoading
-                v-if='loading'
-                desc='Loading Icons'
-            />
-            <TablerAlert
-                v-else-if='error'
-                :err='error'
-            />
-            <TablerNone
-                v-else-if='!list.items.length'
-                label='No Icons'
-                :create='false'
-            />
-            <template v-else>
-                <div class='row g-1 pt-2'>
-                    <div
-                        v-for='icon in list.items'
-                        :key='icon.key'
-                        class='col-sm-2'
-                        @click='openIcon(icon)'
+        <TablerLoading
+            v-if='loading'
+            desc='Loading Iconsets'
+        />
+        <TablerAlert
+            v-else-if='error'
+            :err='error'
+        />
+        <TablerNone
+            v-else-if='!groups.length'
+            :label='filter ? "No matches" : "No Iconsets"'
+            :create='false'
+        />
+        <div
+            v-else
+            class='d-flex flex-column gap-1'
+        >
+            <section
+                v-for='group in groups'
+                :key='group.uid'
+                class='d-flex flex-column gap-2'
+            >
+                <div class='d-flex align-items-center'>
+                    <button
+                        type='button'
+                        class='icons-group-toggle flex-grow-1 d-flex align-items-center gap-2'
+                        :aria-expanded='isOpen(group)'
+                        @click='toggle(group)'
                     >
-                        <div class='card card-sm cloudtak-hover cursor-pointer'>
-                            <div class='col-12'>
-                                <div
-                                    class='d-flex justify-content-center mt-3'
-                                    :class='{
-                                        "mt-3": labels,
-                                        "my-3": !labels
-                                    }'
-                                >
-                                    <img
-                                        :src='icon.data'
-                                        class='img-thumbnail'
-                                        style='background-color: rgb(30, 41, 59);'
-                                        height='32'
-                                        width='32'
-                                    >
-                                </div>
-                            </div>
-                            <div
-                                v-if='labels'
-                                class='card-body'
-                            >
-                                <div class='row'>
-                                    <div
-                                        class='d-inline-block text-truncate'
-                                        v-text='icon.path'
-                                    />
-                                    <div
-                                        class='d-inline-block text-truncate text-muted'
-                                        v-text='icon.type2525b || "None"'
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class='col-lg-12 d-flex my-4'>
-                        <div class='ms-auto'>
-                            <TablerPager
-                                v-if='list.total > paging.limit'
-                                :page='paging.page'
-                                :total='list.total'
-                                :limit='paging.limit'
-                                @page='paging.page = $event'
-                            />
-                        </div>
-                    </div>
+                        <component
+                            :is='isOpen(group) ? IconChevronDown : IconChevronRight'
+                            :size='14'
+                            stroke='2.5'
+                            class='icons-muted flex-shrink-0'
+                        />
+                        <IconAlbum
+                            :size='18'
+                            stroke='1.5'
+                            class='icons-muted flex-shrink-0'
+                        />
+                        <span
+                            class='fw-semibold text-truncate'
+                            v-text='group.name'
+                        />
+                        <span
+                            class='icons-muted'
+                            v-text='group.icons.length'
+                        />
+                    </button>
+                    <TablerIconButton
+                        title='Open Iconset'
+                        @click='router.push(`/menu/iconset/${group.uid}`)'
+                    >
+                        <IconArrowRight
+                            :size='20'
+                            stroke='1.5'
+                        />
+                    </TablerIconButton>
                 </div>
-            </template>
+
+                <div
+                    v-if='isOpen(group) && !group.icons.length'
+                    class='icons-muted small pb-2'
+                >
+                    No icons yet.
+                </div>
+                <template v-else-if='isOpen(group)'>
+                    <div class='icons-grid pb-2'>
+                        <IconTile
+                            v-for='icon in visible(group)'
+                            :key='icon.name'
+                            :icon='icon'
+                            :src='iconUrl(icon)'
+                            @click='openIcon(icon)'
+                        />
+                    </div>
+                    <button
+                        v-if='group.icons.length > visible(group).length'
+                        type='button'
+                        class='btn mb-2'
+                        @click='expanded = new Set(expanded).add(group.uid)'
+                    >
+                        Show all {{ group.icons.length }} icons
+                    </button>
+                </template>
+            </section>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { Subscription } from 'dexie';
 import { useRouter } from 'vue-router';
 import IconCache from '../../../base/icon.ts';
+import IconsetCache from '../../../base/iconset.ts';
+import IconTile from './IconTile.vue';
 import {
     TablerNone,
-    TablerPager,
     TablerInput,
     TablerAlert,
-    TablerLoading
+    TablerLoading,
+    TablerIconButton,
 } from '@tak-ps/vue-tabler';
+import {
+    IconAlbum,
+    IconArrowRight,
+    IconChevronDown,
+    IconChevronRight,
+} from '@tabler/icons-vue';
+import type { DBIcon, DBIconset } from '../../../database.ts';
 
-interface DisplayIcon {
-    key: string;
-    iconset: string;
-    path: string;
-    type2525b: string | null;
-    data: string;
+interface Group {
+    uid: string;
+    name: string;
+    icons: DBIcon[];
 }
 
-const props = defineProps({
-    iconset: {
-        type: String,
-        default: undefined
-    },
-    labels: {
-        type: Boolean,
-        default: true
-    },
-    refreshKey: {
-        type: Number,
-        default: 0
-    }
-});
+const PAGE = 96;
 
 const router = useRouter();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
-const urls = ref<string[]>([]);
 
-const paging = ref({
-    filter: '',
-    limit: 100 - 4, // keeps the icon in an even grid
-    page: 0
+const filter = ref('');
+const icons = ref<DBIcon[]>([]);
+const iconsets = ref<DBIconset[]>([]);
+const open = ref<Set<string> | null>(null);
+const expanded = ref(new Set<string>());
+
+const urls = new Map<string, string>();
+let subscription: Subscription | undefined;
+
+const groups = computed<Group[]>(() => {
+    const needle = filter.value.trim().toLowerCase();
+    const grouped = new Map<string, DBIcon[]>();
+
+    for (const icon of icons.value) {
+        const list = grouped.get(icon.iconset);
+        if (list) list.push(icon);
+        else grouped.set(icon.iconset, [icon]);
+    }
+
+    const res: Group[] = [];
+    for (const iconset of iconsets.value) {
+        const all = grouped.get(iconset.uid) ?? [];
+
+        if (!needle || iconset.name.toLowerCase().includes(needle)) {
+            res.push({ uid: iconset.uid, name: iconset.name, icons: all });
+            continue;
+        }
+
+        const matched = all.filter((icon) => {
+            return icon.path.toLowerCase().includes(needle)
+                || (icon.type2525b || '').toLowerCase().includes(needle);
+        });
+
+        if (matched.length) res.push({ uid: iconset.uid, name: iconset.name, icons: matched });
+    }
+
+    return res;
 });
 
-const list = ref<{ total: number; items: DisplayIcon[] }>({
-    total: 0,
-    items: []
-});
-
-watch(paging.value, async () => {
-    await fetchList();
-});
-
-watch(() => props.iconset, async () => {
-    paging.value.page = 0;
-    await fetchList();
-});
-
-watch(() => props.refreshKey, async () => {
-    await fetchList();
-});
-
-onMounted(async () => {
-    await fetchList();
+onMounted(() => {
+    subscription = IconsetCache.liveList().subscribe({
+        next: (list) => {
+            void load(list);
+        },
+        error: (err: unknown) => {
+            error.value = err instanceof Error ? err : new Error(String(err));
+            loading.value = false;
+        }
+    });
 });
 
 onUnmounted(() => {
+    subscription?.unsubscribe();
     revokeUrls();
 });
 
-function revokeUrls(): void {
-    for (const url of urls.value) {
-        URL.revokeObjectURL(url);
-    }
-
-    urls.value = [];
-}
-
-function openIcon(icon: DisplayIcon): void {
-    router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.path)}`);
-}
-
-async function fetchList() {
-    loading.value = true;
-    error.value = undefined;
-    revokeUrls();
-
+async function load(list: DBIconset[]): Promise<void> {
     try {
-        const all = props.iconset
-            ? await IconCache.list(props.iconset)
-            : await IconCache.all();
+        const all = await IconCache.all();
 
-        const filter = paging.value.filter.trim().toLowerCase();
-        const filtered = filter
-            ? all.filter((icon) => {
-                return icon.path.toLowerCase().includes(filter)
-                    || icon.iconset.toLowerCase().includes(filter)
-                    || (icon.type2525b || '').toLowerCase().includes(filter);
-            })
-            : all;
+        revokeUrls();
+        error.value = undefined;
+        iconsets.value = list;
+        icons.value = all.sort((a, b) => a.path.localeCompare(b.path));
 
-        const offset = paging.value.page * paging.value.limit;
-        const page = filtered.slice(offset, offset + paging.value.limit);
-
-        list.value = {
-            total: filtered.length,
-            items: page.map((icon) => {
-                const url = URL.createObjectURL(icon.data);
-                urls.value.push(url);
-
-                return {
-                    key: icon.name,
-                    iconset: icon.iconset,
-                    path: icon.path,
-                    type2525b: icon.type2525b,
-                    data: url
-                };
-            })
-        };
+        open.value ??= new Set(all.length <= PAGE ? list.map((iconset) => iconset.uid) : []);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
-        list.value = {
-            total: 0,
-            items: []
-        };
     } finally {
         loading.value = false;
     }
 }
+
+function revokeUrls(): void {
+    for (const url of urls.values()) URL.revokeObjectURL(url);
+    urls.clear();
+}
+
+function iconUrl(icon: DBIcon): string {
+    let url = urls.get(icon.name);
+    if (!url) {
+        url = URL.createObjectURL(icon.data);
+        urls.set(icon.name, url);
+    }
+    return url;
+}
+
+function isOpen(group: Group): boolean {
+    return !!filter.value.trim() || !!open.value?.has(group.uid);
+}
+
+function toggle(group: Group): void {
+    const next = new Set(open.value);
+    if (!next.delete(group.uid)) next.add(group.uid);
+    open.value = next;
+}
+
+function visible(group: Group): DBIcon[] {
+    return expanded.value.has(group.uid) ? group.icons : group.icons.slice(0, PAGE);
+}
+
+function openIcon(icon: DBIcon): void {
+    router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.path)}`);
+}
 </script>
+
+<style scoped>
+.icons-muted {
+    color: var(--tblr-secondary-color);
+}
+
+.icons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 0.5rem;
+}
+
+.icons-group-toggle {
+    min-width: 0;
+    min-height: 44px;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: 6px;
+}
+
+.icons-group-toggle:focus-visible {
+    outline: 2px solid var(--tblr-primary);
+}
+</style>

@@ -19,7 +19,9 @@
             "@capacitor/preferences",
             "@capacitor/status-bar",
             "@capgo/background-geolocation",
-            "@capgo/capacitor-compass"
+            "@capgo/capacitor-compass",
+            "@capgo/capacitor-downloader",
+            "@capacitor/filesystem"
         ]
     },
     "android": {
@@ -39,7 +41,7 @@
         },
         "CapacitorUpdater": {
             "appId": "io.cloudtak.app",
-            "version": "13.124.0",
+            "version": "14.1.0",
             "autoUpdate": "atBackground"
         }
     }

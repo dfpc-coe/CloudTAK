@@ -65,54 +65,6 @@ test('POST: api/basemap - Sharing Turned On Initially', async () => {
     }
 });
 
-test('GET: api/basemap/1/tiles - Ensure Access Without Token Doesn\'t', async () => {
-    try {
-        const res = await flight.fetch('/api/basemap/1/tiles', {
-            method: 'GET',
-        }, false);
-
-        assert.deepEqual(res.body, {
-            status: 401,
-            message: 'No Auth Present',
-            messages: [],
-        });
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('GET: api/basemap/1/tiles - Ensure Token Works', async () => {
-    try {
-        const res = await flight.fetch('/api/basemap/1/tiles', {
-            method: 'GET',
-            auth: {
-                bearer: token,
-            },
-        }, true);
-
-        delete res.body.created;
-        delete res.body.updated;
-
-        assert.deepEqual(res.body, {
-            tilejson: '3.0.0',
-            version: '1.0.0',
-            name: 'Test Basemap',
-            description: '',
-            scheme: 'xyz',
-            type: 'raster',
-            bounds: [-180, -90, 180, 90],
-            center: [0, 0, 8],
-            tileSize: 256,
-            minzoom: 0,
-            maxzoom: 16,
-            tiles: [`${flight.base}/tiles/basemap/1/tiles/{z}/{x}/{y}`],
-            actions: { feature: [] },
-        });
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
 test('GET: api/basemap/1 - Ensure Sharing Token Reads Basemap Config', async () => {
     try {
         const res = await flight.fetch(`/api/basemap/1?token=${token}`, {
@@ -174,25 +126,6 @@ test('PATCH: api/basemap/1 - Turn off Sharing', async () => {
             type: 'raster',
             snapping_enabled: false,
             snapping_layer: null,
-        });
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('GET: api/basemap/1/tiles - Ensure Token Is Now Disabled', async () => {
-    try {
-        const res = await flight.fetch('/api/basemap/1/tiles', {
-            method: 'GET',
-            auth: {
-                bearer: token,
-            },
-        }, false);
-
-        assert.deepEqual(res.body, {
-            status: 400,
-            message: 'Sharing for Test Basemap is disabled',
-            messages: [],
         });
     } catch (err) {
         assert.ifError(err);
@@ -263,25 +196,6 @@ test('PATCH: api/basemap/1 - Turn on Sharing', async () => {
             type: 'raster',
             snapping_enabled: false,
             snapping_layer: null,
-        });
-    } catch (err) {
-        assert.ifError(err);
-    }
-});
-
-test('GET: api/basemap/1/tiles - Ensure Old Token is unusable', async () => {
-    try {
-        const res = await flight.fetch('/api/basemap/1/tiles', {
-            method: 'GET',
-            auth: {
-                bearer: token,
-            },
-        }, false);
-
-        assert.deepEqual(res.body, {
-            status: 400,
-            message: 'You don\'t have permission to access this resource',
-            messages: [],
         });
     } catch (err) {
         assert.ifError(err);

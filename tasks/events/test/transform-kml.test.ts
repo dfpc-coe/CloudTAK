@@ -72,7 +72,7 @@ test('KML Transform — NetworkLink', async (t) => {
 
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         mockAgent
@@ -116,7 +116,7 @@ test('KML Transform — NetworkLink', async (t) => {
 
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         let fetchCount = 0;
@@ -156,7 +156,7 @@ test('KML Transform — NetworkLink', async (t) => {
 
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         const pool = mockAgent.get('http://example.com');
@@ -190,7 +190,7 @@ test('KML Transform — NetworkLink', async (t) => {
         setGlobalDispatcher(mockAgent);
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         const ssrfKml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -216,7 +216,7 @@ test('KML Transform — NetworkLink', async (t) => {
         setGlobalDispatcher(mockAgent);
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         const ssrfKml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -241,7 +241,7 @@ test('KML Transform — NetworkLink', async (t) => {
         setGlobalDispatcher(mockAgent);
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         const ssrfKml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -300,7 +300,7 @@ test('KML Transform — NetworkLink', async (t) => {
 
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         const pool = mockAgent.get('http://example.com');
@@ -357,7 +357,7 @@ test('KML Transform — NetworkLink', async (t) => {
 
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         mockAgent.get('http://example.com')
@@ -434,7 +434,7 @@ test('KML Transform — NetworkLink', async (t) => {
         setGlobalDispatcher(mockAgent);
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         const rootKml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -480,7 +480,7 @@ test('KML Transform — NetworkLink', async (t) => {
         setGlobalDispatcher(mockAgent);
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         const traversalKml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -520,7 +520,7 @@ test('KML Transform — NetworkLink', async (t) => {
 
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         mockAgent
@@ -552,7 +552,7 @@ test('KML Transform — NetworkLink', async (t) => {
         setGlobalDispatcher(mockAgent);
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         // A real-world BOM (U+FEFF) prefixed before the <?xml declaration would
@@ -584,7 +584,7 @@ test('KML Transform — NetworkLink', async (t) => {
         setGlobalDispatcher(mockAgent);
         st.after(() => {
             setGlobalDispatcher(originalDispatcher);
-            mockAgent.close();
+            void mockAgent.close();
         });
 
         // Remote endpoints (e.g. airnowtech.org) commonly serve KML with a BOM.

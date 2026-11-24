@@ -72,7 +72,7 @@ test('nginx.conf: https subdomain produces full CSP with wildcard parent domain'
         `add_header 'Content-Security-Policy' "`
         + `default-src 'self' map.example.com:* *.example.com:*; `
         + `img-src 'self' data: blob: map.example.com:* *.example.com:*; `
-        + `media-src 'self' blob: map.example.com:* *.example.com:*; `
+        + `media-src 'self' data: blob: map.example.com:* *.example.com:*; `
         + `font-src 'self' data:; `
         + `worker-src 'self' blob:; `
         + `style-src-elem 'self' 'unsafe-inline'; `
@@ -117,7 +117,7 @@ test('nginx.conf: IPv4 host is used verbatim without a wildcard source', async (
 
     assert.ok(csp[0].includes(`default-src 'self' 192.168.1.10:*;`));
     assert.ok(csp[0].includes(`img-src 'self' data: blob: 192.168.1.10:*;`));
-    assert.ok(csp[0].includes(`media-src 'self' blob: 192.168.1.10:*;`));
+    assert.ok(csp[0].includes(`media-src 'self' data: blob: 192.168.1.10:*;`));
     assert.ok(csp[0].includes(`connect-src 'self' 192.168.1.10:*;`));
     assert.ok(!csp[0].includes('*.168.1.10'));
 });
@@ -214,7 +214,7 @@ test('nginx.conf: NGINX_CSP_* appends sources to a single directive', async () =
     assert.ok(csp[0].includes(`img-src 'self' data: blob: https://tiles.example.com map.example.com:* *.example.com:*;`));
 
     // Other directives are untouched
-    assert.ok(csp[0].includes(`media-src 'self' blob: map.example.com:* *.example.com:*;`));
+    assert.ok(csp[0].includes(`media-src 'self' data: blob: map.example.com:* *.example.com:*;`));
     assert.ok(csp[0].includes(`connect-src 'self' map.example.com:* *.example.com:*;`));
 });
 
@@ -246,7 +246,7 @@ test('nginx.conf: NGINX_CSP_* augments multiple directives at once', async () =>
     const csp = stdout.match(CSP_REGEX);
     assert.ok(csp, 'Config should contain a Content-Security-Policy header');
 
-    assert.ok(csp[0].includes(`media-src 'self' blob: https://video.example.com map.example.com:* *.example.com:*;`));
+    assert.ok(csp[0].includes(`media-src 'self' data: blob: https://video.example.com map.example.com:* *.example.com:*;`));
     assert.ok(csp[0].includes(`style-src-elem 'self' 'unsafe-inline' 'unsafe-eval';`));
 });
 

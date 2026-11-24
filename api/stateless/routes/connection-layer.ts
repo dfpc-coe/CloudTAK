@@ -433,7 +433,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'Layer',
         description: 'Update an incoming layer configuration',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -452,16 +452,26 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid },
-                ],
-            }, req.params.connectionid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+                layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not an admin layer');
+                }
+            } else {
+                const auth = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: req.params.layerid },
+                    ],
+                }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
-            const layer = await layerControl.from(connection, req.params.layerid);
-
-            if (layer.connection !== connection.id) {
+            if (connection && layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             } else if (!layer.incoming) {
                 throw new Err(400, null, 'Layer does not have incoming config');
@@ -684,7 +694,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         group: 'Layer',
         description: 'Update an outgoing layer configuration',
         params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 }),
+            connectionid: Type.Integer({ minimum: 0 }),
             layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
@@ -695,14 +705,24 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         security: Auth.security({ resources: [AuthResourceAccess.CONNECTION, AuthResourceAccess.LAYER] }),
     }, async (req, res) => {
         try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid },
-                ],
-            }, req.params.connectionid);
-
-            const layer = await layerControl.from(connection, req.params.layerid);
+            let connection = null;
+            let layer;
+            if (req.params.connectionid === 0) {
+                await Auth.as_user(config, req, { admin: true });
+                layer = await layerControl.from(null, req.params.layerid);
+                if (layer.connection !== null) {
+                    throw new Err(400, null, 'Layer is not an admin layer');
+                }
+            } else {
+                const auth = await Auth.is_connection(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                        { access: AuthResourceAccess.LAYER, id: req.params.layerid },
+                    ],
+                }, req.params.connectionid);
+                connection = auth.connection;
+                layer = await layerControl.from(connection, req.params.layerid);
+            }
 
             if (!layer.outgoing) {
                 throw new Err(400, null, 'Layer does not have outgoing config');

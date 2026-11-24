@@ -1,26 +1,21 @@
 <template>
-    <SlideDownHeader
-        v-model='isOpen'
-        label='Display Defaults'
-    >
-        <template #icon>
-            <IconEye
-                :size='18'
-                stroke='1'
-                color='#6b7990'
-                class='ms-2 me-1'
-            />
-        </template>
-        <template #right>
+    <div>
+        <Teleport
+            defer
+            to='#admin-config-actions'
+        >
             <TablerIconButton
-                v-if='!edit && isOpen'
+                v-if='!edit'
                 title='Edit'
                 @click.stop='edit = true'
             >
-                <IconPencil stroke='1' />
+                <IconPencil
+                    :size='32'
+                    stroke='1'
+                />
             </TablerIconButton>
             <div
-                v-else-if='edit && isOpen'
+                v-else
                 class='d-flex gap-1'
             >
                 <TablerIconButton
@@ -29,6 +24,7 @@
                     @click.stop='save'
                 >
                     <IconDeviceFloppy
+                        :size='32'
                         color='rgb(var(--tblr-primary-rgb))'
                         stroke='1'
                     />
@@ -37,10 +33,13 @@
                     title='Cancel'
                     @click.stop='edit = false; fetch()'
                 >
-                    <IconX stroke='1' />
+                    <IconX
+                        :size='32'
+                        stroke='1'
+                    />
                 </TablerIconButton>
             </div>
-        </template>
+        </Teleport>
         <div class='col-lg-12 py-2 px-2'>
             <TablerLoading v-if='loading' />
             <template v-else>
@@ -69,12 +68,11 @@
                 </div>
             </template>
         </div>
-    </SlideDownHeader>
+    </div>
 </template>
 
 <script setup lang="ts">
-import SlideDownHeader from '../../CloudTAK/util/SlideDownHeader.vue';
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { server } from '../../../std.ts';
 import type { paths } from '@cloudtak/api-types';
 import {
@@ -88,7 +86,6 @@ import {
     IconPencil,
     IconDeviceFloppy,
     IconX,
-    IconEye
 } from '@tabler/icons-vue';
 
 type DisplayKey = 'stale' | 'distance' | 'elevation' | 'area' | 'speed' | 'projection' | 'zoom' | 'style' | 'coordinate' | 'text' | 'icon_rotation' | 'radiation_dose';
@@ -161,7 +158,6 @@ function labelForKey(key: DisplayConfigKey): string {
         .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
-const isOpen = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const edit = ref<boolean>(false);
 const err = ref<Error | null>(null);
@@ -170,11 +166,7 @@ const config = ref<DisplayConfig>(createDisplayConfig());
 const displayOptions = ref<DisplayOptions>(createDisplayOptions());
 
 onMounted(() => {
-     if (isOpen.value) void fetch();
-});
-
-watch(isOpen, (newState) => {
-    if (newState && !edit.value) void fetch();
+     void fetch();
 });
 
 async function fetch(): Promise<void> {

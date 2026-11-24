@@ -135,6 +135,7 @@ import {
     TablerEnum,
 } from '@tak-ps/vue-tabler';
 import IconSelect from '../util/IconSelectOffline.vue';
+import Icon from '../../../base/icon.ts';
 
 type StyleProperties = Record<string, unknown>;
 
@@ -163,12 +164,7 @@ function updateProperty(key: string, event: any) {
 }
 
 function updatePropertyIcon(event: string | null) {
-    if (event) {
-        event = event.replace(/\.png$/g, '');
-        if (!event.includes(':') && event.includes('/')) {
-            event = event.replace('/', ':');
-        }
-    }
+    if (event) event = Icon.key(event);
 
     const properties = { ...props.modelValue };
 

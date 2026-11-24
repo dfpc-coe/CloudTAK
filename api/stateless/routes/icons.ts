@@ -26,6 +26,11 @@ export enum IconsetFormatEnum {
     ZIP = 'zip',
 }
 
+export enum IconsetExportEnum {
+    TAK = 'tak',
+    CLOUDTAK = 'cloudtak',
+}
+
 export default async function router(schema: Schema, config: ConfigStateless) {
     const overlayControl = new ProfileOverlayControl(config);
     const DefaultSprite = {
@@ -187,8 +192,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }),
         query: Type.Object({
             format: Type.Optional(Type.Enum(IconsetFormatEnum)),
+            variant: Type.Optional(Type.Enum(IconsetExportEnum, {
+                description: 'Zip contents: `tak` (default) converts every icon to PNG for TAK clients, `cloudtak` keeps the original files including SVGs',
+            })),
             download: Type.Optional(Type.Boolean()),
-            resize: Type.Optional(Type.Boolean({ description: 'Resize Images to 32x32px' })),
+            resize: Type.Optional(Type.Boolean({ description: 'Resize Images to 32x32px - ignored by the `cloudtak` variant' })),
             token: Type.Optional(Type.String()),
         }),
         res: IconsetResponse,
@@ -238,18 +246,20 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                     },
                 };
 
+                const original = req.query.variant === IconsetExportEnum.CLOUDTAK;
+
                 for (const icon of (await config.models.Icon.list({
-                    limit: 1000,
+                    limit: Infinity,
                     where: sql`iconset = ${String(req.params.iconset)}`,
                 })).items) {
                     let buffer = Buffer.from(icon.data.split(',')[1], 'base64');
                     let ext = icon.format;
 
-                    if (req.query.resize) {
-                        buffer = Buffer.from(await sharp(buffer).resize(32).png().toBuffer());
-                        ext = '.png';
-                    } else if (ext !== '.png') {
-                        buffer = Buffer.from(await sharp(buffer).png().toBuffer());
+                    if (!original && (req.query.resize || ext !== '.png')) {
+                        const image = sharp(buffer);
+                        if (req.query.resize) image.resize(32);
+
+                        buffer = Buffer.from(await image.png().toBuffer());
                         ext = '.png';
                     }
 
@@ -549,20 +559,31 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 AND id = ${req.params.icon}
             `);
 
+            let rename: { name: string; format: string; path: string } | undefined;
+            if (req.body.name) {
+                const parsed = path.posix.parse(req.body.name);
+                const ext = parsed.ext.toLowerCase();
+                const hasExt = Sprites.supportedExt(ext);
+                const format = hasExt ? ext : icon.format;
+                const leaf = hasExt ? parsed.name : parsed.base;
+                const name = parsed.dir ? `${parsed.dir}/${leaf}` : leaf;
+
+                rename = { name, format, path: `${icon.iconset}/${name}` };
+            }
+
             await Sprites.validate({
-                name: req.body.name,
+                name: rename ? `${rename.name}${rename.format}` : undefined,
                 data: req.body.data,
             });
-
-            if (req.body.name) {
-                await config.models.Icon.commit(icon.id, { path: `${icon.iconset}/${req.body.name}` });
-            }
 
             if (req.body.type2525b === '') {
                 req.body.type2525b = null;
             }
 
-            icon = await config.models.Icon.commit(icon.id, req.body);
+            icon = await config.models.Icon.commit(icon.id, {
+                ...req.body,
+                ...rename,
+            });
 
             await config.models.Iconset.commit(iconset.uid, {
                 updated: sql`Now()`,

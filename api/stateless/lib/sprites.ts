@@ -26,6 +26,10 @@ const SUPPORTED_MIME = [
 ];
 
 export default class SpriteBuilder {
+    static supportedExt(ext: string): boolean {
+        return SUPPORTED_EXT.includes(ext.toLowerCase());
+    }
+
     static validateName(name: string): void {
         const segments = name.split('/');
 

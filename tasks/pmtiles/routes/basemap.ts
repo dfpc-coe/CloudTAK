@@ -10,7 +10,7 @@ import {
 } from '../lib/elevation.js';
 
 export default async function router(schema: Schema) {
-    schema.get('/tiles/basemap/:basemapid/tiles', {
+    await schema.get('/tiles/basemap/:basemapid/tiles', {
         name: 'Get Basemap TileJSON',
         group: 'BasemapTiles',
         description: 'Get a basemap tilejson',
@@ -47,7 +47,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.get('/tiles/basemap/:basemapid/tiles/:z/:x/:y', {
+    await schema.get('/tiles/basemap/:basemapid/tiles/:z/:x/:y', {
         name: 'Get Basemap Tile',
         group: 'BasemapTiles',
         description: 'Get a basemap tile',
@@ -91,7 +91,7 @@ export default async function router(schema: Schema) {
         }
     });
 
-    schema.post('/tiles/basemap/:basemapid/elevation', {
+    await schema.post('/tiles/basemap/:basemapid/elevation', {
         name: 'Get Elevation Profile',
         group: 'BasemapTiles',
         description: 'Return sampled elevation values for a CloudTAK raster-dem basemap',

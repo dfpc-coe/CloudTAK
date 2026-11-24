@@ -10,6 +10,7 @@ import { TEAM_COLORS, strokeColorFor } from '../utils/team-colors.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import { applyEllipseMutation } from './cot/ellipse.ts';
 import FeatureOutbox from './feature-outbox.ts';
+import Icon from './icon.ts';
 import FeatureWriter from './feature-writer.ts';
 import { derivedFeatures, type DerivedFeature } from './cot/derived.ts';
 import type { COTMutation, COTUpdate } from './cot/types.ts';
@@ -844,14 +845,7 @@ export default class COT {
                 properties['marker-color'] = markerColor;
                 properties['marker-stroke-color'] = strokeColorFor(markerColor);
             } else if (properties.icon) {
-                // Format of icon needs to change for spritesheet
-                if (!properties.icon.includes(':')) {
-                    properties.icon = properties.icon.replace('/', ':')
-                }
-
-                if (properties.icon.endsWith('.png')) {
-                    properties.icon = properties.icon.replace(/.png$/, '');
-                }
+                properties.icon = Icon.key(properties.icon);
             } else if (!milsymSIDC(properties)) {
                 // A MIL-STD symbol needs no icon - renderedIcon derives its key
                 // from the milicon/type at render time

@@ -1549,276 +1549,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/basemap/{:basemapid}/tiles": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tilejson */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":basemapid": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @constant */
-                            tilejson: "3.0.0";
-                            version: string;
-                            /** @constant */
-                            scheme: "xyz";
-                            name: string;
-                            description: string;
-                            attribution?: string;
-                            tileSize?: number;
-                            minzoom: number;
-                            maxzoom: number;
-                            tiles: string[];
-                            bounds: [
-                                number,
-                                number,
-                                number,
-                                number
-                            ];
-                            /** @enum {string} */
-                            encoding?: "mapbox" | "terrarium";
-                            center: number[];
-                            type: string;
-                            format?: string;
-                            vector_layers?: {
-                                id: string;
-                                fields: {
-                                    [key: string]: string;
-                                };
-                                minzoom?: number;
-                                maxzoom?: number;
-                                description?: string;
-                            }[];
-                            /** @description Raster legend entries - a CloudTAK extension to TileJSON */
-                            legend?: {
-                                label: string;
-                                /** @description CSS color of the legend swatch */
-                                color: string;
-                            }[];
-                            actions: {
-                                feature: ("query" | "fetch" | "create" | "update" | "delete")[];
-                            };
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get a basemap tile */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description No Description */
-                    token?: string;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":basemapid": number;
-                    /** @description No Description */
-                    ":z": number;
-                    /** @description No Description */
-                    ":x": number;
-                    /** @description No Description */
-                    ":y": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/basemap/{:basemapid}/feature": {
         parameters: {
             query?: never;
@@ -2153,6 +1883,1394 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chatroom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Chatrooms the user is a Member of */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                type: "direct" | "group" | "broadcast";
+                                name: string;
+                                created: string;
+                                updated: string;
+                                role: "owner" | "member";
+                                muted: boolean;
+                                unread: number;
+                                last_read: null | string;
+                                members: {
+                                    uid: string;
+                                    callsign: string;
+                                    role: "owner" | "member";
+                                    /** @description The Member is a user of this CloudTAK Server */
+                                    local: boolean;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Open the Direct Chatroom with another Member, or create a Group the user owns */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        type: "direct" | "group";
+                        member?: {
+                            uid: string;
+                            callsign: string;
+                        };
+                        /** @description Name of a Group */
+                        name?: string;
+                        /** @description Other Members of a Group */
+                        members?: {
+                            uid: string;
+                            callsign: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            type: "direct" | "group" | "broadcast";
+                            name: string;
+                            created: string;
+                            updated: string;
+                            role: "owner" | "member";
+                            muted: boolean;
+                            unread: number;
+                            last_read: null | string;
+                            members: {
+                                uid: string;
+                                callsign: string;
+                                role: "owner" | "member";
+                                /** @description The Member is a user of this CloudTAK Server */
+                                local: boolean;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chatroom/{:chatroom}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a Chatroom the user is a Member of */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            type: "direct" | "group" | "broadcast";
+                            name: string;
+                            created: string;
+                            updated: string;
+                            role: "owner" | "member";
+                            muted: boolean;
+                            unread: number;
+                            last_read: null | string;
+                            members: {
+                                uid: string;
+                                callsign: string;
+                                role: "owner" | "member";
+                                /** @description The Member is a user of this CloudTAK Server */
+                                local: boolean;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Leave a Chatroom - the owner of a Group deletes it for every Member, a Direct Chatroom is cleared for the user only */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a Chatroom - advancing last_read marks earlier Messages as read and tells their senders */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Only the owner of a Group can rename it */
+                        name?: string;
+                        muted?: boolean;
+                        /**
+                         * Format: uuid
+                         * @description ID of the newest Message the user has seen
+                         */
+                        last_read?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            type: "direct" | "group" | "broadcast";
+                            name: string;
+                            created: string;
+                            updated: string;
+                            role: "owner" | "member";
+                            muted: boolean;
+                            unread: number;
+                            last_read: null | string;
+                            members: {
+                                uid: string;
+                                callsign: string;
+                                role: "owner" | "member";
+                                /** @description The Member is a user of this CloudTAK Server */
+                                local: boolean;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/chatroom/{:chatroom}/member": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace the Members of a Group the user owns */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        members: {
+                            uid: string;
+                            callsign: string;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            type: "direct" | "group" | "broadcast";
+                            name: string;
+                            created: string;
+                            updated: string;
+                            role: "owner" | "member";
+                            muted: boolean;
+                            unread: number;
+                            last_read: null | string;
+                            members: {
+                                uid: string;
+                                callsign: string;
+                                role: "owner" | "member";
+                                /** @description The Member is a user of this CloudTAK Server */
+                                local: boolean;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chatroom/{:chatroom}/message": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the Messages of a Chatroom, newest first */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    limit: number;
+                    /** @description Only Messages older than this Message */
+                    before?: string;
+                    /** @description Only Messages created or changed after this ISO 8601 time */
+                    since?: string;
+                    /** @description Only Messages containing this text */
+                    filter?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                chatroom: string;
+                                created: string;
+                                updated: string;
+                                sender_uid: string;
+                                sender_callsign: string;
+                                body: string;
+                                reply_to: null | string;
+                                metadata: {
+                                    location?: number[];
+                                };
+                                edited: null | string;
+                                deleted: null | string;
+                                status: null | ("sent" | "pending" | "failed" | "delivered" | "read");
+                                reactions: {
+                                    emoji: string;
+                                    uids: string[];
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Send a Message to every Member of a Chatroom - repeating a request with the same ID never sends twice */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * Format: uuid
+                         * @description Client generated ID
+                         */
+                        id?: string;
+                        body: string;
+                        /** Format: uuid */
+                        reply_to?: string;
+                        metadata?: {
+                            location?: number[];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            chatroom: string;
+                            created: string;
+                            updated: string;
+                            sender_uid: string;
+                            sender_callsign: string;
+                            body: string;
+                            reply_to: null | string;
+                            metadata: {
+                                location?: number[];
+                            };
+                            edited: null | string;
+                            deleted: null | string;
+                            status: null | ("sent" | "pending" | "failed" | "delivered" | "read");
+                            reactions: {
+                                emoji: string;
+                                uids: string[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/chatroom/{:chatroom}/message/{:message}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a Message the user sent for every Member - TAK clients keep their copy */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                    /** @description No Description */
+                    ":message": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            chatroom: string;
+                            created: string;
+                            updated: string;
+                            sender_uid: string;
+                            sender_callsign: string;
+                            body: string;
+                            reply_to: null | string;
+                            metadata: {
+                                location?: number[];
+                            };
+                            edited: null | string;
+                            deleted: null | string;
+                            status: null | ("sent" | "pending" | "failed" | "delivered" | "read");
+                            reactions: {
+                                emoji: string;
+                                uids: string[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Edit a Message the user sent - the change is not sent to TAK clients */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                    /** @description No Description */
+                    ":message": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        body: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            chatroom: string;
+                            created: string;
+                            updated: string;
+                            sender_uid: string;
+                            sender_callsign: string;
+                            body: string;
+                            reply_to: null | string;
+                            metadata: {
+                                location?: number[];
+                            };
+                            edited: null | string;
+                            deleted: null | string;
+                            status: null | ("sent" | "pending" | "failed" | "delivered" | "read");
+                            reactions: {
+                                emoji: string;
+                                uids: string[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/chatroom/{:chatroom}/message/{:message}/reaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Add or remove the user's reaction to a Message */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":chatroom": string;
+                    /** @description No Description */
+                    ":message": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        emoji: string;
+                        /** @default true */
+                        active: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            chatroom: string;
+                            created: string;
+                            updated: string;
+                            sender_uid: string;
+                            sender_callsign: string;
+                            body: string;
+                            reply_to: null | string;
+                            metadata: {
+                                location?: number[];
+                            };
+                            edited: null | string;
+                            deleted: null | string;
+                            status: null | ("sent" | "pending" | "failed" | "delivered" | "read");
+                            reactions: {
+                                emoji: string;
+                                uids: string[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/config": {
         parameters: {
             query?: never;
@@ -2297,7 +3415,7 @@ export interface paths {
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
                             "display::style"?: "System Default" | "Light" | "Dark";
-                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "display::radiation_dose"?: "sieverts" | "rems";
@@ -2591,7 +3709,7 @@ export interface paths {
                         "display::projection"?: "mercator" | "globe";
                         "display::zoom"?: "always" | "conditional" | "never";
                         "display::style"?: "System Default" | "Light" | "Dark";
-                        "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                        "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                         "display::text"?: "Small" | "Medium" | "Large";
                         "display::icon_rotation"?: boolean;
                         "display::radiation_dose"?: "sieverts" | "rems";
@@ -2810,7 +3928,7 @@ export interface paths {
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
                             "display::style"?: "System Default" | "Light" | "Dark";
-                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "display::radiation_dose"?: "sieverts" | "rems";
@@ -3049,7 +4167,7 @@ export interface paths {
                             };
                             coordinate: {
                                 /** @default dd */
-                                value: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                                value: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                                 options: string[];
                             };
                             text: {
@@ -5271,7 +6389,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -5564,7 +6691,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -5578,7 +6705,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -5907,7 +7034,16 @@ export interface paths {
                                 chatroom: string;
                                 id?: string;
                                 senderCallsign: string;
+                                /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                deleteChild?: string;
                                 chatgrp: unknown;
+                                /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                hierarchy?: {
+                                    uid: string;
+                                    name: string;
+                                    type: "group" | "contact";
+                                    children?: unknown[];
+                                };
                             };
                             track?: {
                                 speed?: string;
@@ -6200,7 +7336,7 @@ export interface paths {
                             };
                             spatial?: {
                                 version?: number;
-                                attitude: {
+                                attitude?: {
                                     /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                     roll: number;
                                     /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -6214,7 +7350,7 @@ export interface paths {
                                     /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                     eYaw?: number;
                                 };
-                                spin: {
+                                spin?: {
                                     /** @description Degrees per second with positive indicating to the pilots right */
                                     roll: number;
                                     /** @description Degrees per second with positive indicating nose up. */
@@ -6464,7 +7600,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -6757,7 +7902,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -6771,7 +7916,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -7222,7 +8367,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -7515,7 +8669,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -7529,7 +8683,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -7983,7 +9137,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -8276,7 +9439,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -8290,7 +9453,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -8546,7 +9709,16 @@ export interface paths {
                                             chatroom: string;
                                             id?: string;
                                             senderCallsign: string;
+                                            /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                            deleteChild?: string;
                                             chatgrp: unknown;
+                                            /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                            hierarchy?: {
+                                                uid: string;
+                                                name: string;
+                                                type: "group" | "contact";
+                                                children?: unknown[];
+                                            };
                                         };
                                         track?: {
                                             speed?: string;
@@ -8839,7 +10011,7 @@ export interface paths {
                                         };
                                         spatial?: {
                                             version?: number;
-                                            attitude: {
+                                            attitude?: {
                                                 /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                                 roll: number;
                                                 /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -8853,7 +10025,7 @@ export interface paths {
                                                 /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                                 eYaw?: number;
                                             };
-                                            spin: {
+                                            spin?: {
                                                 /** @description Degrees per second with positive indicating to the pilots right */
                                                 roll: number;
                                                 /** @description Degrees per second with positive indicating nose up. */
@@ -9206,7 +10378,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -9499,7 +10680,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -9513,7 +10694,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -9875,7 +11056,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -10168,7 +11358,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -10182,7 +11372,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -16225,7 +17415,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -16518,7 +17717,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -16532,7 +17731,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -16795,7 +17994,16 @@ export interface paths {
                                             chatroom: string;
                                             id?: string;
                                             senderCallsign: string;
+                                            /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                            deleteChild?: string;
                                             chatgrp: unknown;
+                                            /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                            hierarchy?: {
+                                                uid: string;
+                                                name: string;
+                                                type: "group" | "contact";
+                                                children?: unknown[];
+                                            };
                                         };
                                         track?: {
                                             speed?: string;
@@ -17088,7 +18296,7 @@ export interface paths {
                                         };
                                         spatial?: {
                                             version?: number;
-                                            attitude: {
+                                            attitude?: {
                                                 /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                                 roll: number;
                                                 /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -17102,7 +18310,7 @@ export interface paths {
                                                 /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                                 eYaw?: number;
                                             };
-                                            spin: {
+                                            spin?: {
                                                 /** @description Degrees per second with positive indicating to the pilots right */
                                                 roll: number;
                                                 /** @description Degrees per second with positive indicating nose up. */
@@ -17347,7 +18555,16 @@ export interface paths {
                                             chatroom: string;
                                             id?: string;
                                             senderCallsign: string;
+                                            /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                            deleteChild?: string;
                                             chatgrp: unknown;
+                                            /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                            hierarchy?: {
+                                                uid: string;
+                                                name: string;
+                                                type: "group" | "contact";
+                                                children?: unknown[];
+                                            };
                                         };
                                         track?: {
                                             speed?: string;
@@ -17640,7 +18857,7 @@ export interface paths {
                                         };
                                         spatial?: {
                                             version?: number;
-                                            attitude: {
+                                            attitude?: {
                                                 /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                                 roll: number;
                                                 /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -17654,7 +18871,7 @@ export interface paths {
                                                 /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                                 eYaw?: number;
                                             };
-                                            spin: {
+                                            spin?: {
                                                 /** @description Degrees per second with positive indicating to the pilots right */
                                                 roll: number;
                                                 /** @description Degrees per second with positive indicating nose up. */
@@ -20493,7 +21710,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry" | "stale";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Devices shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -20566,8 +21783,6 @@ export interface paths {
                                  */
                                 channels: number[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -20766,7 +21981,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         /** @default  */
                         remarks: string;
                         /**
@@ -20878,8 +22093,6 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -21098,8 +22311,6 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -21374,7 +22585,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         remarks?: string;
                         /** @description User defined key/value Device metadata - replaces the existing metadata object */
                         metadata?: {
@@ -21476,8 +22687,6 @@ export interface paths {
                              */
                             channels: number[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -23875,8 +25084,6 @@ export interface paths {
                                         url: string;
                                     }[];
                                     id: string;
-                                    /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                    external_id: string;
                                     /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                     external_ids: {
                                         [key: string]: string;
@@ -24140,8 +25347,6 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -24513,8 +25718,6 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -25630,7 +26833,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry";
+                    sort: "id" | "created" | "updated" | "username" | "connection" | "type" | "name" | "editable" | "remarks" | "metadata" | "links" | "style" | "geometry" | "stale";
                     /** @description Filter results by a human readable name field */
                     filter: string;
                     /** @description Only return Events shared with the given TAK Channel bitpos - can be provided multiple times to match any of the given Channels */
@@ -25736,8 +26939,6 @@ export interface paths {
                                     url: string;
                                 }[];
                                 id: string;
-                                /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                                external_id: string;
                                 /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                                 external_ids: {
                                     [key: string]: string;
@@ -25909,7 +27110,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         /**
                          * @description Can users other than the creator edit the Event
                          * @default true
@@ -26070,8 +27271,6 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -26316,8 +27515,6 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -26595,7 +27792,7 @@ export interface paths {
                             system: string;
                             /** @description ID of the record in the external system - an empty value removes the system from the record */
                             value: string;
-                        } | string;
+                        };
                         editable?: boolean;
                         /** @description User defined key/value Event metadata - replaces the existing metadata object */
                         metadata?: {
@@ -26730,8 +27927,6 @@ export interface paths {
                                 url: string;
                             }[];
                             id: string;
-                            /** @description Deprecated - ID of the record under the default system, use external_ids - removed in v14 */
-                            external_id: string;
                             /** @description IDs of the record in external systems keyed by system - ie: { "active911": "1234", "caltopo": "B42325" } */
                             external_ids: {
                                 [key: string]: string;
@@ -30397,117 +31592,6 @@ export interface paths {
                 };
             };
         };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/fonts/{:fontstack}/{:start-{:end}.pbf}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Return MapLibre Font Glyphs */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Font Stack */
-                    ":fontstack": string;
-                    /** @description Starting Glyph */
-                    ":start": number;
-                    /** @description Ending Glyph */
-                    ":end": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -35755,7 +36839,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -36048,7 +37141,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -36062,7 +37155,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -36412,7 +37505,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -36705,7 +37807,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -36719,7 +37821,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -37079,7 +38181,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -37372,7 +38483,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -37386,7 +38497,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -37752,20 +38863,83 @@ export interface paths {
                                     /** @description The UID of the COT */
                                     data: string;
                                     timestamp: string;
-                                    creatorUid: string;
+                                    creatorUid?: string;
                                     keywords?: string[];
                                     details?: {
                                         type: string;
-                                        callsign: string;
+                                        callsign?: string;
+                                        title?: string;
+                                        iconsetPath?: string;
                                         color?: string;
-                                        location: {
+                                        attachments?: string[];
+                                        name?: string;
+                                        category?: string;
+                                        location?: {
                                             lat: number;
                                             lon: number;
                                         };
                                     };
                                 }[];
-                                contents?: unknown[];
-                                maplayers?: unknown[];
+                                contents?: {
+                                    data: {
+                                        filename?: string;
+                                        keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
+                                        name?: string;
+                                        submissionTime?: string;
+                                        submitter?: string;
+                                        uid?: string;
+                                        hash: string;
+                                        size?: number;
+                                        creatorUid?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
+                                        expiration?: number;
+                                        groups?: string[];
+                                    };
+                                    timestamp: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
+                                maplayers?: {
+                                    data: {
+                                        uid: string;
+                                        name: string;
+                                        type: string;
+                                        url: string;
+                                        description?: string;
+                                        creatorUid?: string;
+                                        createTime?: string;
+                                        modifiedTime?: string;
+                                        enabled: boolean;
+                                        defaultLayer: boolean;
+                                        ignoreErrors: boolean;
+                                        invertYCoordinate: boolean;
+                                        minZoom?: number;
+                                        maxZoom?: number;
+                                        tileType?: string;
+                                        serverParts?: string;
+                                        backgroundColor?: string;
+                                        tileUpdate?: string;
+                                        north?: number;
+                                        south?: number;
+                                        east?: number;
+                                        west?: number;
+                                        additionalParameters?: string;
+                                        coordinateSystem?: string;
+                                        layers?: string;
+                                        version?: string;
+                                        opacity?: number;
+                                        path?: string;
+                                        after?: string;
+                                    };
+                                    timestamp?: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
                             }[];
                             messages?: string[];
                             nodeId?: string;
@@ -37888,20 +39062,83 @@ export interface paths {
                                     /** @description The UID of the COT */
                                     data: string;
                                     timestamp: string;
-                                    creatorUid: string;
+                                    creatorUid?: string;
                                     keywords?: string[];
                                     details?: {
                                         type: string;
-                                        callsign: string;
+                                        callsign?: string;
+                                        title?: string;
+                                        iconsetPath?: string;
                                         color?: string;
-                                        location: {
+                                        attachments?: string[];
+                                        name?: string;
+                                        category?: string;
+                                        location?: {
                                             lat: number;
                                             lon: number;
                                         };
                                     };
                                 }[];
-                                contents?: unknown[];
-                                maplayers?: unknown[];
+                                contents?: {
+                                    data: {
+                                        filename?: string;
+                                        keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
+                                        name?: string;
+                                        submissionTime?: string;
+                                        submitter?: string;
+                                        uid?: string;
+                                        hash: string;
+                                        size?: number;
+                                        creatorUid?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
+                                        expiration?: number;
+                                        groups?: string[];
+                                    };
+                                    timestamp: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
+                                maplayers?: {
+                                    data: {
+                                        uid: string;
+                                        name: string;
+                                        type: string;
+                                        url: string;
+                                        description?: string;
+                                        creatorUid?: string;
+                                        createTime?: string;
+                                        modifiedTime?: string;
+                                        enabled: boolean;
+                                        defaultLayer: boolean;
+                                        ignoreErrors: boolean;
+                                        invertYCoordinate: boolean;
+                                        minZoom?: number;
+                                        maxZoom?: number;
+                                        tileType?: string;
+                                        serverParts?: string;
+                                        backgroundColor?: string;
+                                        tileUpdate?: string;
+                                        north?: number;
+                                        south?: number;
+                                        east?: number;
+                                        west?: number;
+                                        additionalParameters?: string;
+                                        coordinateSystem?: string;
+                                        layers?: string;
+                                        version?: string;
+                                        opacity?: number;
+                                        path?: string;
+                                        after?: string;
+                                    };
+                                    timestamp?: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
                             };
                             messages?: string[];
                             nodeId?: string;
@@ -38027,20 +39264,83 @@ export interface paths {
                                     /** @description The UID of the COT */
                                     data: string;
                                     timestamp: string;
-                                    creatorUid: string;
+                                    creatorUid?: string;
                                     keywords?: string[];
                                     details?: {
                                         type: string;
-                                        callsign: string;
+                                        callsign?: string;
+                                        title?: string;
+                                        iconsetPath?: string;
                                         color?: string;
-                                        location: {
+                                        attachments?: string[];
+                                        name?: string;
+                                        category?: string;
+                                        location?: {
                                             lat: number;
                                             lon: number;
                                         };
                                     };
                                 }[];
-                                contents?: unknown[];
-                                maplayers?: unknown[];
+                                contents?: {
+                                    data: {
+                                        filename?: string;
+                                        keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
+                                        name?: string;
+                                        submissionTime?: string;
+                                        submitter?: string;
+                                        uid?: string;
+                                        hash: string;
+                                        size?: number;
+                                        creatorUid?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
+                                        expiration?: number;
+                                        groups?: string[];
+                                    };
+                                    timestamp: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
+                                maplayers?: {
+                                    data: {
+                                        uid: string;
+                                        name: string;
+                                        type: string;
+                                        url: string;
+                                        description?: string;
+                                        creatorUid?: string;
+                                        createTime?: string;
+                                        modifiedTime?: string;
+                                        enabled: boolean;
+                                        defaultLayer: boolean;
+                                        ignoreErrors: boolean;
+                                        invertYCoordinate: boolean;
+                                        minZoom?: number;
+                                        maxZoom?: number;
+                                        tileType?: string;
+                                        serverParts?: string;
+                                        backgroundColor?: string;
+                                        tileUpdate?: string;
+                                        north?: number;
+                                        south?: number;
+                                        east?: number;
+                                        west?: number;
+                                        additionalParameters?: string;
+                                        coordinateSystem?: string;
+                                        layers?: string;
+                                        version?: string;
+                                        opacity?: number;
+                                        path?: string;
+                                        after?: string;
+                                    };
+                                    timestamp?: string;
+                                    creatorUid?: string;
+                                    keywords?: string[];
+                                }[];
                             };
                             messages?: string[];
                             nodeId?: string;
@@ -39711,16 +41011,23 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -39755,16 +41062,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                         };
@@ -40023,16 +41337,23 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -40067,16 +41388,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                         };
@@ -40394,7 +41722,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -40687,7 +42024,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -40701,7 +42038,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -41041,7 +42378,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -41334,7 +42680,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -41348,7 +42694,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -41761,16 +43107,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             messages?: string[];
@@ -41951,16 +43304,23 @@ export interface paths {
                                     timestamp: string;
                                     creatorUid?: string;
                                     data: {
+                                        filename?: string;
                                         keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
                                         name?: string;
-                                        hash: string;
                                         submissionTime?: string;
+                                        submitter?: string;
                                         uid?: string;
+                                        hash: string;
                                         size?: number;
                                         creatorUid?: string;
-                                        mimeType?: string;
-                                        submitter?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
                                         expiration?: number;
+                                        groups?: string[];
                                     };
                                 }[];
                                 passwordProtected: boolean;
@@ -41995,16 +43355,23 @@ export interface paths {
                                         };
                                     };
                                     contentResource?: {
+                                        filename?: string;
                                         keywords?: string[];
+                                        mimeType?: string;
+                                        contentType?: string;
                                         name?: string;
-                                        hash: string;
                                         submissionTime?: string;
+                                        submitter?: string;
                                         uid?: string;
+                                        hash: string;
                                         size?: number;
                                         creatorUid?: string;
-                                        mimeType?: string;
-                                        submitter?: string;
+                                        tool?: string;
+                                        latitude?: number;
+                                        longitude?: number;
+                                        altitude?: number;
                                         expiration?: number;
+                                        groups?: string[];
                                     };
                                 }[];
                             }[];
@@ -42180,16 +43547,23 @@ export interface paths {
                                 timestamp: string;
                                 creatorUid?: string;
                                 data: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                             passwordProtected: boolean;
@@ -42224,16 +43598,23 @@ export interface paths {
                                     };
                                 };
                                 contentResource?: {
+                                    filename?: string;
                                     keywords?: string[];
+                                    mimeType?: string;
+                                    contentType?: string;
                                     name?: string;
-                                    hash: string;
                                     submissionTime?: string;
+                                    submitter?: string;
                                     uid?: string;
+                                    hash: string;
                                     size?: number;
                                     creatorUid?: string;
-                                    mimeType?: string;
-                                    submitter?: string;
+                                    tool?: string;
+                                    latitude?: number;
+                                    longitude?: number;
+                                    altitude?: number;
                                     expiration?: number;
+                                    groups?: string[];
                                 };
                             }[];
                         };
@@ -47943,6 +49324,818 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/plugin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Plugins. Only System Administrators are shown disabled Plugins */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "name" | "description" | "enabled" | "api_version" | "version" | "sha256" | "size" | "username" | "enableRLS";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description Filter by enabled state */
+                    enabled?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                /** Format: uuid */
+                                id: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                description: string;
+                                enabled: boolean;
+                                api_version: number;
+                                version: null | string;
+                                sha256: null | string;
+                                size: null | number;
+                                username: null | string;
+                            }[];
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a Plugin. It stays disabled until a bundle is uploaded and it is enabled */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description Version of the CloudTAK Plugin API the bundle was built against */
+                        api_version?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plugin/{:plugin}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a Plugin */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a Plugin and its bundles */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a Plugin */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        /** @description Version of the CloudTAK Plugin API the bundle was built against */
+                        api_version?: number;
+                        enabled?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/plugin/{:plugin}/bundle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the ES module bundle of a Plugin. Passing the current sha256 makes the response immutably cacheable */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    sha256?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Upload a new version of the Plugin bundle as a single ES module */
+        post: {
+            parameters: {
+                query: {
+                    /** @description Version of the Plugin bundle */
+                    version: string;
+                };
+                header?: never;
+                path: {
+                    /** @description No Description */
+                    ":plugin": string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": unknown;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** Format: uuid */
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            api_version: number;
+                            version: null | string;
+                            sha256: null | string;
+                            size: null | number;
+                            username: null | string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+                /** @description Error Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                            /** @description Extended error details (ie: TAK Server exception trace) */
+                            details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/profile/asset": {
         parameters: {
             query?: never;
@@ -48666,7 +50859,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get User's Profile Chats */
+        /**
+         * Deprecated: use GET /chatroom
+         * @deprecated
+         */
         get: {
             parameters: {
                 query?: never;
@@ -48766,7 +50962,10 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** Delete User's Chats */
+        /**
+         * Deprecated: use DELETE /chatroom/:chatroom
+         * @deprecated
+         */
         delete: {
             parameters: {
                 query: {
@@ -48880,7 +51079,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete User's Chats */
+        /**
+         * Deprecated: use DELETE /chatroom/:chatroom
+         * @deprecated
+         */
         delete: {
             parameters: {
                 query?: never;
@@ -48991,7 +51193,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get User's Chats */
+        /**
+         * Deprecated: use GET /chatroom/:chatroom/message
+         * @deprecated
+         */
         get: {
             parameters: {
                 query: {
@@ -49002,7 +51207,7 @@ export interface paths {
                     /** @description Order in which results are returned based on the "sort" query param */
                     order: "asc" | "desc";
                     /** @description No Description */
-                    sort: "id" | "username" | "created" | "updated" | "read" | "chatroom" | "sender_callsign" | "sender_uid" | "message_id" | "message" | "status" | "enableRLS";
+                    sort?: string;
                 };
                 header?: never;
                 path: {
@@ -49099,7 +51304,10 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** Delete User's Chats */
+        /**
+         * Deprecated: use DELETE /chatroom/:chatroom/message/:message
+         * @deprecated
+         */
         delete: {
             parameters: {
                 query: {
@@ -49460,7 +51668,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -49753,7 +51970,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -49767,7 +51984,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -50106,7 +52323,16 @@ export interface paths {
                                 chatroom: string;
                                 id?: string;
                                 senderCallsign: string;
+                                /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                deleteChild?: string;
                                 chatgrp: unknown;
+                                /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                hierarchy?: {
+                                    uid: string;
+                                    name: string;
+                                    type: "group" | "contact";
+                                    children?: unknown[];
+                                };
                             };
                             track?: {
                                 speed?: string;
@@ -50399,7 +52625,7 @@ export interface paths {
                             };
                             spatial?: {
                                 version?: number;
-                                attitude: {
+                                attitude?: {
                                     /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                     roll: number;
                                     /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -50413,7 +52639,7 @@ export interface paths {
                                     /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                     eYaw?: number;
                                 };
-                                spin: {
+                                spin?: {
                                     /** @description Degrees per second with positive indicating to the pilots right */
                                     roll: number;
                                     /** @description Degrees per second with positive indicating nose up. */
@@ -50663,7 +52889,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -50956,7 +53191,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -50970,7 +53205,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -51418,7 +53653,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -51711,7 +53955,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -51725,7 +53969,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -55565,7 +57809,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -55699,7 +57943,7 @@ export interface paths {
                         display_projection?: "mercator" | "globe";
                         display_zoom?: "always" | "conditional" | "never";
                         display_style?: "System Default" | "Light" | "Dark";
-                        display_coordinate?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                        display_coordinate?: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                         display_icon_rotation?: boolean;
                         display_stale?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         display_text?: "Small" | "Medium" | "Large";
@@ -55764,7 +58008,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -59727,7 +61971,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -60015,7 +62259,7 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm" | "bng";
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -62724,214 +64968,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/search/reverse/{:longitude}/{:latitude}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get information about a given point */
-        get: {
-            parameters: {
-                query: {
-                    /** @description No Description */
-                    provider?: string;
-                    /** @description No Description */
-                    altitude: number;
-                    /** @description No Description */
-                    elevation?: number;
-                };
-                header?: never;
-                path: {
-                    /** @description No Description */
-                    ":latitude": number;
-                    /** @description No Description */
-                    ":longitude": number;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Successful Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            sun: {
-                                /** @description sunrise (top edge of the sun appears on the horizon) */
-                                sunrise: string | null;
-                                /** @description sunrise ends (bottom edge of the sun touches the horizon) */
-                                sunriseEnd: string | null;
-                                /** @description morning golden hour (soft light, best time for photography) ends */
-                                goldenHourEnd: string | null;
-                                /** @description solar noon (sun is in the highest position) */
-                                solarNoon: string | null;
-                                /** @description evening golden hour starts */
-                                goldenHour: string | null;
-                                /** @description sunset starts (bottom edge of the sun touches the horizon) */
-                                sunsetStart: string | null;
-                                /** @description sunset (sun disappears below the horizon, evening civil twilight starts) */
-                                sunset: string | null;
-                                /** @description dusk (evening nautical twilight starts) */
-                                dusk: string | null;
-                                /** @description nautical dusk (evening astronomical twilight starts) */
-                                nauticalDusk: string | null;
-                                /** @description night starts (dark enough for astronomical observations) */
-                                night: string | null;
-                                /** @description nadir (darkest moment of the night, sun is in the lowest position) */
-                                nadir: string | null;
-                                /** @description night ends (morning astronomical twilight starts) */
-                                nightEnd: string | null;
-                                /** @description nautical dawn (morning nautical twilight starts) */
-                                nauticalDawn: string | null;
-                                /** @description dawn (morning nautical twilight ends, morning civil twilight starts) */
-                                dawn: string | null;
-                                /** @description IANA timezone identifier at the queried coordinate. The times above are UTC instants; render them in this zone, not the viewer's. Null if it could not be resolved, in which case present them as UTC. */
-                                timezone: string | null;
-                            };
-                            magnetic: {
-                                declination: number;
-                                inclination: number;
-                            };
-                            weather: null | {
-                                type: string;
-                                properties: {
-                                    units: string;
-                                    forecastGenerator: string;
-                                    generatedAt: string;
-                                    updateTime: string;
-                                    validTimes: string;
-                                    elevation: {
-                                        unitCode: string;
-                                        value: number;
-                                    };
-                                    periods: {
-                                        number: number;
-                                        name: string;
-                                        startTime: string;
-                                        endTime: string;
-                                        isDaytime: boolean;
-                                        temperature: number;
-                                        temperatureUnit: string;
-                                        temperatureTrend: unknown;
-                                        probabilityOfPrecipitation: {
-                                            unitCode: string;
-                                            value: number;
-                                        };
-                                        dewpoint: {
-                                            unitCode: string;
-                                            value: number;
-                                        };
-                                        relativeHumidity: {
-                                            unitCode: string;
-                                            value: number;
-                                        };
-                                        windSpeed: string;
-                                        windDirection: string;
-                                        icon: string;
-                                        shortForecast: string;
-                                        detailedForecast: string;
-                                    }[];
-                                };
-                                geometry: {
-                                    type: string;
-                                    coordinates: number[][][];
-                                };
-                            };
-                            reverse: null | {
-                                /** @description Normalized category of the result */
-                                type?: "address" | "street" | "poi" | "trailhead" | "parking" | "hospital" | "police" | "park" | "peak" | "locality" | "region" | "postal";
-                                LongLabel: string;
-                                ShortLabel: string;
-                                Addr_type: string;
-                            };
-                            elevation: null | string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                403: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-                /** @description Error Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/search/reverse/{:longitude}/{:latitude}/sun": {
         parameters: {
             query?: never;
@@ -63837,7 +65873,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -64130,7 +66175,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -64144,7 +66189,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -64806,9 +66851,11 @@ export interface paths {
                 query?: {
                     /** @description No Description */
                     format?: "json" | "zip";
+                    /** @description Zip contents: `tak` (default) converts every icon to PNG for TAK clients, `cloudtak` keeps the original files including SVGs */
+                    variant?: "tak" | "cloudtak";
                     /** @description No Description */
                     download?: boolean;
-                    /** @description Resize Images to 32x32px */
+                    /** @description Resize Images to 32x32px - ignored by the `cloudtak` variant */
                     resize?: boolean;
                     /** @description No Description */
                     token?: string;

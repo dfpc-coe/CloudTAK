@@ -5,22 +5,15 @@
             class='card cloudtak-panel user-select-none'
         >
             <div class='card-header point-header'>
-                <div class='d-flex flex-column'>
-                    <div class='point-label d-flex align-items-center'>
-                        <IconPoint
-                            :size='16'
-                            stroke='1'
-                        /><span class='ms-2'>Draw Point</span>
-                    </div>
-                    <CoordinateType
-                        v-model='mapStore.draw.point.type'
-                    />
-                </div>
+                <IconPoint
+                    :size='24'
+                    stroke='1'
+                /><span class='mx-2'>Draw Point</span>
 
                 <div class='ms-auto btn-list'>
                     <TablerIconButton
-                        title='Finish Drawing'
-                        :disabled='!mapStore.draw.canFinish'
+                        :title='mapStore.draw.point.drop === "multiple" ? "Done Dropping Points" : "Finish Drawing"'
+                        :disabled='mapStore.draw.point.drop !== "multiple" && !mapStore.draw.canFinish'
                         @click='mapStore.draw.finish()'
                     >
                         <IconCheck
@@ -38,6 +31,26 @@
                         />
                     </TablerIconButton>
                 </div>
+            </div>
+            <div class='card-body point-options d-flex align-items-stretch gap-2'>
+                <CoordinateType
+                    v-model='mapStore.draw.point.type'
+                />
+                <IconSelect
+                    v-model='mapStore.draw.point.icon'
+                    :compact='true'
+                />
+                <TablerIconButton
+                    :title='mapStore.draw.point.drop === "multiple" ? "Dropping Multiple Points" : "Drop Multiple Points"'
+                    :bordered='true'
+                    :active='mapStore.draw.point.drop === "multiple"'
+                    @click='mapStore.draw.point.drop = mapStore.draw.point.drop === "multiple" ? "single" : "multiple"'
+                >
+                    <IconMapPins
+                        :size='24'
+                        stroke='1'
+                    />
+                </TablerIconButton>
             </div>
         </div>
         <div
@@ -352,6 +365,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import GenericBottomPane from '../GenericBottomPane.vue';
 import CoordinateType from '../util/CoordinateType.vue';
+import IconSelect from '../util/IconSelectOffline.vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useAppStore } from '../../../stores/app.ts';
@@ -373,6 +387,7 @@ import {
     IconVector,
     IconPolygon,
     IconCheck,
+    IconMapPins,
 } from '@tabler/icons-vue';
 
 const mapStore = useMapStore();
@@ -398,32 +413,27 @@ watch(() => mapStore.draw.mode, async () => {
 </script>
 
 <style scoped>
-.point-header {
+.point-header,
+.point-options {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
 }
 
-.point-header :deep(.btn-group .btn) {
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
-}
-
-.point-label {
-    font-size: 0.75rem;
-    line-height: 1;
-    color: var(--tblr-secondary);
-    margin-bottom: 0.25rem;
+.point-options :deep(.btn-group) {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 @media (max-width: 600px) {
-    .point-header {
+    .point-header,
+    .point-options {
         padding-left: 0.5rem;
         padding-right: 0.5rem;
     }
 
-    .point-header :deep(.btn-group .btn) {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
+    .point-options :deep(.btn-group .btn) {
+        padding-left: 0.375rem;
+        padding-right: 0.375rem;
     }
 }
 </style>
