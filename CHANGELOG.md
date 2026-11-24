@@ -24,7 +24,8 @@
 
 ### Pending Release
 
-- :bug:  Ensure styles array is reset on any basemap change - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2066
+- :bug: Add `key` to LayerTaskUpdateModal to ensure mass updates succeed - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2068
+- :bug: Ensure styles array is reset on any basemap change - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2066
 
 ### v14.1.0 - 2026-11-24
 
