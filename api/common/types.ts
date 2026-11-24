@@ -2,7 +2,7 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type, Static } from '@sinclair/typebox';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from '@tak-ps/node-tak/lib/api/types';
-import { Profile_Coordinate, Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Area, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
+import { Profile_Projection, Profile_Menu_Visibility, Profile_Zoom, Profile_Style, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Area, Profile_Speed, Profile_Text, Profile_Radiation_Dose, Profile_Wake_Lock } from './enums.js';
 import { VideoLease_SourceType, CoreEventBoardColumn_Type, CoreEventEffect_Status, CoreEntityTimeline_Type, LayerMapping_Destination } from './enums.js';
 import { Capabilities, InvocationType } from '@tak-ps/etl';
 import { CoreEventSchema, CoreDeviceSchema, CoreEntityLinkSchema, CoreEntityStyleSchema, withoutHints } from './core-schema.js';
@@ -579,7 +579,9 @@ export const Profile = Type.Object({
     display_projection: Type.Enum(Profile_Projection),
     display_zoom: Type.Enum(Profile_Zoom),
     display_style: Type.Enum(Profile_Style),
-    display_coordinate: Type.Enum(Profile_Coordinate),
+    display_coordinate: Type.String({
+        description: 'Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system',
+    }),
     display_icon_rotation: Type.Boolean(),
     display_stale: Type.Enum(Profile_Stale),
     display_text: Type.Enum(Profile_Text),
@@ -941,7 +943,9 @@ export const FullConfig = Type.Object({
     'display::projection': Type.Enum(Profile_Projection),
     'display::zoom': Type.Enum(Profile_Zoom),
     'display::style': Type.Enum(Profile_Style),
-    'display::coordinate': Type.Enum(Profile_Coordinate),
+    'display::coordinate': Type.String({
+        description: 'Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system',
+    }),
     'display::text': Type.Enum(Profile_Text),
     'display::icon_rotation': Type.Boolean(),
     'display::radiation_dose': Type.Enum(Profile_Radiation_Dose),

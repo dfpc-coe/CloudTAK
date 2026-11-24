@@ -1,0 +1,15 @@
+{
+    "crs": [
+        {
+            "name": "NZTM",
+            "title": "New Zealand Transverse Mercator",
+            "epsg": 2193,
+            "bounds": {
+                "minLongitude": 160.6,
+                "minLatitude": -55.95,
+                "maxLongitude": -171.2,
+                "maxLatitude": -25.88
+            }
+        }
+    ]
+}

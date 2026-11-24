@@ -6,6 +6,7 @@ import { ProfileResponse, ProfilePatchBody } from '../../common/types.js';
 import type ConfigStateless from '../config.js';
 import { sql } from 'drizzle-orm';
 import ProfileControl from '../lib/control/profile.js';
+import { isCoordinateMode } from '../../common/coordinate-systems.js';
 
 type ProfilePatchBodyType = Static<typeof ProfilePatchBody>;
 type ProfilePatchValue = ProfilePatchBodyType[keyof ProfilePatchBodyType];
@@ -45,6 +46,9 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             // response below echoes the authoritative values, so a stale client
             // self-corrects instead of erroring. The UI disables these inputs, so
             // reaching here means either an out-of-date client or a direct API call.
+            if (profileBody.display_coordinate !== undefined && !isCoordinateMode(profileBody.display_coordinate)) {
+                throw new Err(400, null, `Unknown coordinate format: ${profileBody.display_coordinate}`);
+            }
             const locked = await profileControl.lockedFields(user.email);
 
             const profile_config: Record<string, ProfilePatchValue> = {};

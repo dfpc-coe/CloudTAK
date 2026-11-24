@@ -51,7 +51,7 @@
                                 <CoordinateFormatSelect
                                     v-if='item.key === "display_coordinate"'
                                     v-model='(profile as any)[item.key]'
-                                    :options='item.options || []'
+                                    :options='coordFormatOptions'
                                 />
                                 <TablerEnum
                                     v-else-if='item.type === "enum"'
@@ -143,7 +143,8 @@ const loading = ref(false);
 const profile = ref<DisplayProfile | undefined>();
 const search = ref('');
 const savedKey = ref<string | undefined>();
-const coordFormatOptions = COORD_MODES.map((mode) => mode.value);
+// Includes the coordinate systems the server offers, which can arrive after this page opens
+const coordFormatOptions = computed(() => COORD_MODES.map((mode) => mode.value));
 const styleOptions: DisplayStyleMode[] = ['System Default', 'Light', 'Dark'];
 
 const settings: SettingItem[] = [
@@ -215,7 +216,6 @@ const settings: SettingItem[] = [
         label: 'Coordinate Format',
         icon: IconCrosshair,
         type: 'enum',
-        options: coordFormatOptions,
     },
     {
         key: 'display_zoom',

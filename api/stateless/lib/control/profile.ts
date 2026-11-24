@@ -7,6 +7,7 @@ import {
     toEnum, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Area, Profile_Distance, Profile_Text, Profile_Projection, Profile_Zoom, Profile_Style, Profile_Coordinate, Profile_Radiation_Dose, Profile_Wake_Lock,
 } from '../../../common/enums.js';
 import { ProfileResponse } from '../../../common/types.js';
+import { coordinateModes, isCoordinateMode } from '../../../common/coordinate-systems.js';
 import ProfileOverlayControl from '../../../common/control/profile-overlay.js';
 
 /**
@@ -118,7 +119,7 @@ export const DefaultUnits = Type.Object({
         options: Type.Array(Type.String()),
     }),
     coordinate: Type.Object({
-        value: Type.Enum(Profile_Coordinate, {
+        value: Type.String({
             default: ProfileConfigDefaults['display::coordinate'],
         }),
         options: Type.Array(Type.String()),
@@ -316,8 +317,8 @@ export default class ProfileControl {
                 options: Object.values(Profile_Style),
             },
             coordinate: {
-                value: toEnum.fromString(Type.Enum(Profile_Coordinate), final.coordinate || Profile_Coordinate.DD),
-                options: Object.values(Profile_Coordinate),
+                value: final.coordinate && isCoordinateMode(final.coordinate) ? final.coordinate : Profile_Coordinate.DD,
+                options: coordinateModes(),
             },
             text: {
                 value: toEnum.fromString(Type.Enum(Profile_Text), final.text || Profile_Text.Medium),

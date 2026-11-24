@@ -2751,7 +2751,8 @@ export interface paths {
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
                             "display::style"?: "System Default" | "Light" | "Dark";
-                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                            "display::coordinate"?: string;
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "display::radiation_dose"?: "sieverts" | "rems";
@@ -3027,7 +3028,8 @@ export interface paths {
                         "display::projection"?: "mercator" | "globe";
                         "display::zoom"?: "always" | "conditional" | "never";
                         "display::style"?: "System Default" | "Light" | "Dark";
-                        "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                        /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                        "display::coordinate"?: string;
                         "display::text"?: "Small" | "Medium" | "Large";
                         "display::icon_rotation"?: boolean;
                         "display::radiation_dose"?: "sieverts" | "rems";
@@ -3228,7 +3230,8 @@ export interface paths {
                             "display::projection"?: "mercator" | "globe";
                             "display::zoom"?: "always" | "conditional" | "never";
                             "display::style"?: "System Default" | "Light" | "Dark";
-                            "display::coordinate"?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                            "display::coordinate"?: string;
                             "display::text"?: "Small" | "Medium" | "Large";
                             "display::icon_rotation"?: boolean;
                             "display::radiation_dose"?: "sieverts" | "rems";
@@ -3449,7 +3452,7 @@ export interface paths {
                             };
                             coordinate: {
                                 /** @default dd */
-                                value: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                                value: string;
                                 options: string[];
                             };
                             text: {
@@ -3537,6 +3540,57 @@ export interface paths {
                             message: string;
                             /** @description Extended error details (ie: TAK Server exception trace) */
                             details?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/config/coordinate-systems": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Additional coordinate reference systems offered next to the built-in coordinate formats */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            crs: {
+                                name: string;
+                                title: string;
+                                epsg?: number;
+                                /** @description proj4 definition of the projected system */
+                                proj4: string;
+                                /** @description Area of use. A maxLongitude lower than minLongitude means the area crosses the antimeridian */
+                                bounds: {
+                                    minLongitude: number;
+                                    minLatitude: number;
+                                    maxLongitude: number;
+                                    maxLatitude: number;
+                                };
+                            }[];
                         };
                     };
                 };
@@ -56743,7 +56797,8 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                            display_coordinate: string;
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -56877,7 +56932,8 @@ export interface paths {
                         display_projection?: "mercator" | "globe";
                         display_zoom?: "always" | "conditional" | "never";
                         display_style?: "System Default" | "Light" | "Dark";
-                        display_coordinate?: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                        /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                        display_coordinate?: string;
                         display_icon_rotation?: boolean;
                         display_stale?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                         display_text?: "Small" | "Medium" | "Large";
@@ -56948,7 +57004,8 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                            display_coordinate: string;
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -61405,7 +61462,8 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                            display_coordinate: string;
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
@@ -61699,7 +61757,8 @@ export interface paths {
                             display_projection: "mercator" | "globe";
                             display_zoom: "always" | "conditional" | "never";
                             display_style: "System Default" | "Light" | "Dark";
-                            display_coordinate: "dd" | "dm" | "dms" | "mgrs" | "utm";
+                            /** @description Coordinate format: a built-in mode (dd, dm, dms, mgrs, utm) or the name of a configured coordinate system */
+                            display_coordinate: string;
                             display_icon_rotation: boolean;
                             display_stale: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
                             display_text: "Small" | "Medium" | "Large";
