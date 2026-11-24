@@ -111,7 +111,7 @@ test('Streaming: Chat Receipts update Message Status', async () => {
 
 test('GET: api/profile/chatroom/:chatroom/chat (Receipts must not overwrite the Message)', async () => {
     try {
-        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/chat', {
+        const res = await flight.fetch('/api/profile/chatroom/ANDROID-user-device/chat', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,

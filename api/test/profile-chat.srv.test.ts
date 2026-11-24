@@ -86,14 +86,21 @@ test('GET: api/profile/chatroom', async () => {
             },
         }, true);
 
+        assert.ok(res.body.items[0].created);
         assert.ok(res.body.items[0].updated);
+        delete res.body.items[0].created;
         delete res.body.items[0].updated;
 
         assert.deepEqual(res.body, {
             total: 1,
             items: [{
-                id: 'user@example.com',
-                chatroom: 'user@example.com',
+                id: 'ANDROID-CloudTAK-user@example.com',
+                name: 'user@example.com',
+                type: 'direct',
+                parent: null,
+                members: [],
+                unread: 1,
+                last_read: null,
             }],
         });
     } catch (err) {
@@ -105,7 +112,7 @@ let lastMessageId: string | undefined;
 
 test('GET: api/profile/chatroom/:chatroom/chat (Get Message)', async () => {
     try {
-        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/chat', {
+        const res = await flight.fetch('/api/profile/chatroom/ANDROID-CloudTAK-user%40example.com/chat', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -124,7 +131,7 @@ test('GET: api/profile/chatroom/:chatroom/chat (Get Message)', async () => {
 
 test('DELETE: api/profile/chatroom/:chatroom/chat (Delete Message)', async () => {
     try {
-        const res = await flight.fetch(`/api/profile/chatroom/user%40example.com/chat?chat=${lastMessageId}`, {
+        const res = await flight.fetch(`/api/profile/chatroom/ANDROID-CloudTAK-user%40example.com/chat?chat=${lastMessageId}`, {
             method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
@@ -142,7 +149,7 @@ test('DELETE: api/profile/chatroom/:chatroom/chat (Delete Message)', async () =>
 
 test('GET: api/profile/chatroom/:chatroom/chat (Verify Delete)', async () => {
     try {
-        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/chat', {
+        const res = await flight.fetch('/api/profile/chatroom/ANDROID-CloudTAK-user%40example.com/chat', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,

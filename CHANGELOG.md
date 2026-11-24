@@ -20,6 +20,9 @@
 
 ### Pending Release
 
+- :tada: Send GeoChat messages to Group Chatrooms & `All Chat Rooms` - Group membership is learned from incoming messages and a Group deleted by its owner is removed - Ref: https://github.com/dfpc-coe/CloudTAK/issues/1147
+- :arrow_up: Update `@tak-ps/node-cot` to `14.61.0`
+
 ### v14.0.1 - 2026-11-23
 
 - :bug: Fix issue where Data Sync add content would race the content itself, resulting in data sync content potentially being added to the personal feature store - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1813 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1882

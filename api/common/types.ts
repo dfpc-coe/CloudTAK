@@ -672,6 +672,13 @@ export const ProfileVideoPosition = Type.Object({
     h: Type.Integer({ minimum: 1, description: 'Height in grid rows' }),
 });
 
+export const ChatroomMember = Type.Object({
+    uid: Type.String(),
+    callsign: Type.String(),
+});
+
+export type ChatroomMember = Static<typeof ChatroomMember>;
+
 export const ProfileVideoResponse = createSelectSchema(schemas.ProfileVideo, {
     lease: Type.Integer(),
     position: ProfileVideoPosition,

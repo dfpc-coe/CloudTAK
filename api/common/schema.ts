@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
-import { primaryKey } from 'drizzle-orm/pg-core';
+import { primaryKey, foreignKey } from 'drizzle-orm/pg-core';
 import { Static } from '@sinclair/typebox';
-import type { ProfileVideoPosition } from './types.js';
+import type { ProfileVideoPosition, ChatroomMember } from './types.js';
 import type { StyleContainer } from './style.js';
 import { CoreEntityLink, CoreEntityStyle, CoreEventMission } from './types.js';
 import type { FilterContainer } from './filter.js';
@@ -17,7 +17,7 @@ import {
     BasemapTerrain_Encoding,
     ProfilePaging_Type,
     Basemap_Type, Basemap_Format, Basemap_Scheme, VideoLease_SourceType, BasicGeometryType, Basemap_Protocol,
-    ProfileChatStatus, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status,
+    ProfileChatStatus, ProfileChatroomType, CoreEvent_Priority, CoreEventBoardColumn_Type, CoreEventEffect_Status,
     CoreEntityTimeline_Type, LayerMapping_Destination,
 } from './enums.js';
 import { bigint, boolean, uuid, numeric, integer, doublePrecision, timestamp, pgTable, serial, varchar, text, unique, index, uniqueIndex } from 'drizzle-orm/pg-core';
@@ -365,14 +365,22 @@ export const ProfileFileChannel = pgTable('profile_file_channel', {
 }));
 
 export const ProfileChatroom = pgTable('profile_chatroom', {
-    id: text().primaryKey(),
-
-    name: text().notNull(),
-    icon: text().notNull(),
-
     username: text().notNull().references(() => Profile.username),
+    // Direct: UID of the other party, Group: GeoChat group id
+    id: text().notNull(),
     created: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp({ withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+
+    type: text().$type<ProfileChatroomType>().notNull().default(ProfileChatroomType.DIRECT),
+    name: text().notNull(),
+    parent: text(),
+    members: jsonb().$type<Array<ChatroomMember>>().notNull().default([]),
+    hierarchy: jsonb().$type<Feature.ChatHierarchyNode>(),
+    last_read: timestamp({ withTimezone: true, mode: 'string' }),
+}, (table) => {
+    return {
+        pk: primaryKey({ columns: [table.username, table.id] }),
+    };
 });
 
 export const ProfileChat = pgTable('profile_chats', {
@@ -393,6 +401,12 @@ export const ProfileChat = pgTable('profile_chats', {
 }, (table) => {
     return {
         username_message_idx: uniqueIndex('profile_chats_username_message_id_idx').on(table.username, table.message_id),
+        chatroom_idx: index('profile_chats_username_chatroom_idx').on(table.username, table.chatroom),
+        chatroom_fk: foreignKey({
+            name: 'profile_chats_chatroom_fk',
+            columns: [table.username, table.chatroom],
+            foreignColumns: [ProfileChatroom.username, ProfileChatroom.id],
+        }).onDelete('cascade').onUpdate('cascade'),
     };
 });
 

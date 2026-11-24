@@ -40,6 +40,7 @@ const chat = {
     connection: 'me@example.com',
     data: {
         chatroom: 'ME',
+        room: { id: 'ANDROID-alpha', name: 'ALPHA', type: 'direct' },
         messageId: 'message-1',
         from: { uid: 'ANDROID-alpha', callsign: 'ALPHA' },
         message: 'hello',
@@ -78,14 +79,49 @@ describe('AtlasConnection chat', () => {
         await vi.waitFor(async () => expect(await db.chatroom_chats.count()).toBe(1));
         await vi.waitFor(() => expect(notify).toHaveBeenCalledTimes(1));
 
-        await db.chatroom.update('ALPHA', { unread: 0 });
+        await db.chatroom.update('ANDROID-alpha', { unread: 0 });
 
         sock.emit('message', { data: JSON.stringify(chat) });
         await new Promise((resolve) => setTimeout(resolve, 50));
 
         expect(await db.chatroom_chats.count()).toBe(1);
-        expect((await db.chatroom.get('ALPHA'))?.unread).toBe(0);
+        expect((await db.chatroom.get('ANDROID-alpha'))?.unread).toBe(0);
         expect(notify).toHaveBeenCalledTimes(1);
+
+        conn.destroy();
+    });
+
+    it('stores the members of a Group Chatroom and drops a Group its owner deleted', async () => {
+        const atlas = {
+            token: 'token',
+            profile: { profile_callsign: { value: 'ME' }, username: 'me@example.com' },
+            sync: { started: false, fullSync: vi.fn(async () => undefined) },
+            postMessage: vi.fn(async () => undefined),
+        } as unknown as Atlas;
+
+        const conn = new AtlasConnection(atlas);
+        conn.connect('me@example.com');
+        const sock = FakeSocket.instances[0];
+        sock.open();
+
+        const members = [{ uid: 'ANDROID-alpha', callsign: 'ALPHA' }];
+
+        sock.emit('message', {
+            data: JSON.stringify({
+                ...chat,
+                data: { ...chat.data, room: { id: 'group-1', name: 'Search Team', type: 'group', members } },
+            }),
+        });
+
+        await vi.waitFor(async () => expect((await db.chatroom.get('group-1'))?.members).toEqual(members));
+        expect(await db.chatroom_chats.count()).toBe(1);
+
+        sock.emit('message', {
+            data: JSON.stringify({ type: 'chatroom:delete', connection: 'me@example.com', data: { id: 'group-1' } }),
+        });
+
+        await vi.waitFor(async () => expect(await db.chatroom.get('group-1')).toBeUndefined());
+        expect(await db.chatroom_chats.count()).toBe(0);
 
         conn.destroy();
     });

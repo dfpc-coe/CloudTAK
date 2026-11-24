@@ -78,6 +78,8 @@ export interface DBFeatureHistory {
 export interface DBChatroom {
     id: string;
     name: string;
+    type?: 'direct' | 'group';
+    members?: Array<{ uid: string; callsign: string }>;
     created: string;
     updated: string;
     unread?: number;

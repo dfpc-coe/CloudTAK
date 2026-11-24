@@ -1,13 +1,40 @@
 import { Static } from '@sinclair/typebox';
 import { randomUUID } from 'node:crypto';
-import { DirectChat, MissionChat, CoTParser } from '@tak-ps/node-cot';
+import { DirectChat, GroupChat, GroupChatParent, MissionChat, CoTParser, chatHierarchyGroup } from '@tak-ps/node-cot';
 import type { Feature } from '@tak-ps/node-cot';
 import WebSocket from 'ws';
-import { ConnectionClient } from './connection-pool.js';
-import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
+import { ConnectionClient, BroadcastChatroom } from './connection-pool.js';
+import type { Chatroom } from '../../common/models/ProfileChatroom.js';
+import { ProfileChatStatus, ProfileChatroomType, WebSocket_Event } from '../../common/enums.js';
 import { ProfileConnConfig } from '../../common/connection-config.js';
 import { profileCallsign } from '../../common/control/takserver.js';
 import { rawDataToString } from '../../common/stringify.js';
+
+/**
+ * GeoChat to every known member of a Group Chatroom, or to everyone for the broadcast Chatroom
+ */
+export function groupChat(
+    room: Chatroom,
+    from: { uid: string; callsign: string },
+    message: string,
+    messageId?: string,
+): GroupChat {
+    const broadcast = room.id === BroadcastChatroom;
+
+    if (!broadcast && !room.members.length) throw new Error('Group Chatroom has no known members');
+
+    const nested = !broadcast && room.hierarchy && chatHierarchyGroup(room.hierarchy, room.id);
+
+    return new GroupChat({
+        from,
+        group: { id: room.id, name: room.name },
+        members: broadcast ? undefined : room.members,
+        hierarchy: nested && room.hierarchy ? room.hierarchy : undefined,
+        parent: room.parent || undefined,
+        message,
+        messageId,
+    });
+}
 
 export class ConnectionWebSocket {
     ws: WebSocket;
@@ -37,7 +64,8 @@ export class ConnectionWebSocket {
                     if (msg.type === 'ping') {
                         this.ws.send(JSON.stringify({ type: 'pong' }));
                     } else if (msg.type === 'chat') {
-                        let chat: DirectChat | MissionChat;
+                        let chat: DirectChat | GroupChat | MissionChat;
+                        let group: Chatroom | undefined;
 
                         const profile = client.config instanceof ProfileConnConfig ? client.config : undefined;
 
@@ -69,6 +97,21 @@ export class ConnectionWebSocket {
                                 parent: msg.data.parent,
                                 groupOwner: msg.data.groupOwner,
                             });
+                        } else if (profile && msg.data.group) {
+                            const rooms = client.config.config.models.ProfileChatroom;
+
+                            group = String(msg.data.group) === BroadcastChatroom
+                                ? await rooms.ensure(profile.id, {
+                                    id: BroadcastChatroom,
+                                    name: BroadcastChatroom,
+                                    type: ProfileChatroomType.GROUP,
+                                    parent: GroupChatParent.root,
+                                })
+                                : await rooms.room(profile.id, String(msg.data.group));
+
+                            if (group.type !== ProfileChatroomType.GROUP) throw new Error('Chatroom is not a Group');
+
+                            chat = groupChat(group, from, String(msg.data.message), msg.data.messageId);
                         } else {
                             chat = new DirectChat({ ...msg.data, from });
                         }
@@ -92,12 +135,21 @@ export class ConnectionWebSocket {
                         }
 
                         let created = new Date().toISOString();
+                        let chatroom = String(msg.data.chatroom);
 
                         // Mission chat is stored by the Mission, not the profile
                         if (profile && !msg.data.mission) {
+                            const room = group ?? await client.config.config.models.ProfileChatroom.ensure(profile.id, {
+                                id: String(msg.data.to.uid),
+                                name: String(msg.data.to.callsign),
+                                type: ProfileChatroomType.DIRECT,
+                            });
+
+                            chatroom = room.id;
+
                             const stored = await client.config.config.models.ProfileChat.ingest({
                                 username: profile.id,
-                                chatroom: msg.data.chatroom,
+                                chatroom: room.id,
                                 sender_callsign: from.callsign,
                                 sender_uid: from.uid,
                                 message_id: messageId,
@@ -122,7 +174,7 @@ export class ConnectionWebSocket {
                                     data: {
                                         messageId,
                                         status,
-                                        chatroom: msg.data.chatroom,
+                                        chatroom,
                                         created,
                                     },
                                 }));

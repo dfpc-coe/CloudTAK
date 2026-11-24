@@ -1439,12 +1439,12 @@
         "query": true,
         "res": true
     },
-    "DELETE /profile/chatroom/:chatroom": {
-        "body": false,
+    "PATCH /profile/chatroom/:chatroom": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "POST /profile/chatroom/:chatroom/read": {
+    "DELETE /profile/chatroom/:chatroom": {
         "body": false,
         "query": false,
         "res": true

@@ -168,6 +168,12 @@ export type PaletteFeatureList = {
 
 export type Chat = {
     chatroom: string;
+    room?: {
+        id: string;
+        name: string;
+        type: 'direct' | 'group';
+        members?: Array<{ uid: string; callsign: string }>;
+    };
     messageId: string;
     from: {
         callsign: string;

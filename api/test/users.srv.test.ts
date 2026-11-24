@@ -8,6 +8,7 @@ import {
     DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
 import Flight from './flight.js';
+import { ProfileChatroomType } from '../common/enums.js';
 
 const flight = new Flight();
 
@@ -312,6 +313,7 @@ test('DELETE: api/user/:username', async () => {
     await models.Profile.generate({ username, name: 'Erase Me', auth: null, last_login: null });
     await models.ProfileConfig.commit(username, { 'tak::callsign': 'Erase Me' });
     await models.ProfileToken.generate({ username, name: 'Token', token: 'etl.erase' });
+    await models.ProfileChatroom.ensure(username, { id: 'Room', name: 'Room', type: ProfileChatroomType.DIRECT });
     await models.ProfileChat.generate({
         username,
         chatroom: 'Room',
@@ -376,7 +378,7 @@ test('DELETE: api/user/:username', async () => {
 
         await assert.rejects(models.Profile.from(username), 'the user no longer exists');
 
-        for (const model of [models.ProfileToken, models.ProfileChat, models.ProfileFile]) {
+        for (const model of [models.ProfileToken, models.ProfileChat, models.ProfileChatroom, models.ProfileFile]) {
             assert.equal(await model.count({
                 where: sql`username = ${username}`,
             }), 0);

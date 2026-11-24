@@ -362,31 +362,25 @@ export default class AtlasConnection {
             } else if (body.type === 'chat') {
                 const chat = body.data as Chat;
 
-                let chatroom = chat.chatroom;
-
-                try {
-                    const callsign = this.atlas.profile.profile_callsign?.value;
-                    const username = this.atlas.profile.username;
-
-                    if (callsign && username && (chatroom === callsign || chatroom === `ANDROID-CloudTAK-${username}`)) {
-                        chatroom = chat.from.callsign;
-                    }
-                } catch (err) {
-                    console.error('Error getting profile for chat routing', err);
-                }
+                const room: NonNullable<Chat['room']> = chat.room ?? { id: chat.from.uid, name: chat.from.callsign, type: 'direct' };
 
                 // A message already stored is a redelivery - not a new message
                 if (!await db.chatroom_chats.get(chat.messageId)) {
-                    await Chatroom.load(chatroom, { reload: false });
+                    if (room.type === 'direct' && !await db.chatroom.get(room.id)) {
+                        await Chatroom.rekey(room.name, room.id, room.name);
+                    }
 
-                    await db.chatroom.where('id').equals(chatroom).modify(room => {
-                        room.updated = chat.time;
-                        room.unread = (room.unread || 0) + 1;
+                    await Chatroom.load(room.id, { name: room.name, type: room.type });
+
+                    await db.chatroom.where('id').equals(room.id).modify(local => {
+                        if (room.members) local.members = room.members;
+                        local.updated = chat.time;
+                        local.unread = (local.unread || 0) + 1;
                     });
 
                     await db.chatroom_chats.put({
                         id: chat.messageId,
-                        chatroom: chatroom,
+                        chatroom: room.id,
                         sender: chat.from.callsign,
                         sender_uid: chat.from.uid,
                         message: chat.message,
@@ -396,11 +390,18 @@ export default class AtlasConnection {
                     await TAKNotification.create(
                         NotificationType.Chat,
                         'New Chat Message',
-                        `${chat.from.callsign} to ${chat.chatroom} says: ${chat.message}`,
+                        room.type === 'group'
+                            ? `${chat.from.callsign} in ${room.name} says: ${chat.message}`
+                            : `${chat.from.callsign} says: ${chat.message}`,
                         `/menu/chats`,
                         true
                     );
                 }
+            } else if (body.type === 'chatroom:delete') {
+                const { id } = body.data as { id: string };
+
+                await db.chatroom_chats.where('chatroom').equals(id).delete();
+                await db.chatroom.delete(id);
             } else if (body.type === 'chat:receipt') {
                 const receipt = body.data as {
                     messageId: string;

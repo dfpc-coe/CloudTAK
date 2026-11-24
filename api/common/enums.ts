@@ -147,6 +147,11 @@ export enum ProfileChatStatus {
     READ = 'read',
 }
 
+export enum ProfileChatroomType {
+    DIRECT = 'direct',
+    GROUP = 'group',
+}
+
 export enum Profile_Zoom {
     ALWAYS = 'always',
     CONDITIONAL = 'conditional',

@@ -12,6 +12,7 @@ import MissionTemplate from './models/MissionTemplate.js';
 import MissionTemplateLog from './models/MissionTemplateLog.js';
 import Setting from './models/Setting.js';
 import ProfileChat from './models/ProfileChat.js';
+import ProfileChatroom from './models/ProfileChatroom.js';
 import ProfileConfig from './models/ProfileConfig.js';
 import ProfilePasskey from './models/ProfilePasskey.js';
 import ProfileFile from './models/ProfileFile.js';
@@ -57,6 +58,7 @@ export default class Models {
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileConfig: ProfileConfig;
     ProfileChat: ProfileChat;
+    ProfileChatroom: ProfileChatroom;
     ProfileToken: Modeler<typeof pgtypes.ProfileToken>;
     ProfileInterest: Modeler<typeof pgtypes.ProfileInterest>;
     ProfileFeature: Modeler<typeof pgtypes.ProfileFeature>;
@@ -97,6 +99,7 @@ export default class Models {
         this.CoreFormResponse = new CoreFormResponse(pg);
         this.CoreEventResponse = new Modeler(pg, pgtypes.CoreEventResponse);
         this.ProfileChat = new ProfileChat(pg);
+        this.ProfileChatroom = new ProfileChatroom(pg);
         this.Icon = new Icon(pg);
 
         this.Errors = new Modeler(pg, pgtypes.Errors);

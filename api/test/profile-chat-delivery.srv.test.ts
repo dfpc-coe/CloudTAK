@@ -6,6 +6,8 @@ import ws from 'ws';
 import Flight from './flight.js';
 import { DirectChat, MissionChat } from '@tak-ps/node-cot';
 import { rawDataToString } from '../common/stringify.js';
+import { sql } from 'drizzle-orm';
+import { ProfileChatroomType } from '../common/enums.js';
 
 const flight = new Flight();
 
@@ -26,6 +28,9 @@ const device = {
 const first = randomUUID();
 const last = randomUUID();
 const sent = randomUUID();
+const grouped = randomUUID();
+
+const group = { uid: 'f2a8c4d0-group', callsign: 'Search Team' };
 
 // Everything CloudTAK writes to the TAK Server streaming port
 let written = '';
@@ -77,6 +82,14 @@ test('Streaming: Redelivered & Mission Chats', async () => {
                         message: 'Mission Message',
                     }));
 
+                    flight.tak.write(new DirectChat({
+                        to: group,
+                        from: device,
+                        parent: 'UserGroups',
+                        message: 'Group Message',
+                        messageId: grouped,
+                    }));
+
                     flight.tak.write(incoming(last, 'Last'));
                     return;
                 }
@@ -90,8 +103,14 @@ test('Streaming: Redelivered & Mission Chats', async () => {
                 if (res.type === 'chat') {
                     chats.push(res.data.messageId);
 
-                    if (res.data.messageId === last) {
-                        assert.deepEqual(chats, [first, last]);
+                    if (res.data.messageId === grouped) {
+                        assert.deepEqual(res.data.room, { id: group.uid, name: group.callsign, type: 'group', members: [device] });
+                    } else {
+                        assert.deepEqual(res.data.room, { id: device.uid, name: device.callsign, type: 'direct', members: [] });
+                    }
+
+                    if (chats.length === 3) {
+                        assert.deepEqual([...chats].sort(), [first, grouped, last].sort());
 
                         conn.send(JSON.stringify({
                             type: 'chat',
@@ -111,6 +130,7 @@ test('Streaming: Redelivered & Mission Chats', async () => {
                 assert.equal(res.type, 'chat:receipt');
                 assert.equal(res.data.messageId, sent);
                 assert.equal(res.data.status, 'sent');
+                assert.equal(res.data.chatroom, device.uid);
 
                 conn.close();
                 resolve();
@@ -121,7 +141,7 @@ test('Streaming: Redelivered & Mission Chats', async () => {
     });
 });
 
-test('GET: api/profile/chatroom (Mission Chat is not a Chatroom)', async () => {
+test('GET: api/profile/chatroom (Direct & Group, Mission Chat is not a Chatroom)', async () => {
     try {
         const res = await flight.fetch('/api/profile/chatroom', {
             method: 'GET',
@@ -130,8 +150,20 @@ test('GET: api/profile/chatroom (Mission Chat is not a Chatroom)', async () => {
             },
         }, true);
 
-        assert.equal(res.body.total, 1);
-        assert.equal(res.body.items[0].chatroom, device.callsign);
+        assert.equal(res.body.total, 2);
+
+        const rooms = new Map<string, { name: string; type: string; parent: string | null; unread: number }>(
+            res.body.items.map((item: { id: string }) => [item.id, item]),
+        );
+
+        assert.equal(rooms.get(device.uid)?.name, device.callsign);
+        assert.equal(rooms.get(device.uid)?.type, 'direct');
+        assert.equal(rooms.get(device.uid)?.unread, 2);
+
+        assert.equal(rooms.get(group.uid)?.name, group.callsign);
+        assert.equal(rooms.get(group.uid)?.type, 'group');
+        assert.equal(rooms.get(group.uid)?.parent, 'UserGroups');
+        assert.equal(rooms.get(group.uid)?.unread, 1);
     } catch (err) {
         assert.ifError(err);
     }
@@ -139,7 +171,7 @@ test('GET: api/profile/chatroom (Mission Chat is not a Chatroom)', async () => {
 
 test('GET: api/profile/chatroom/:chatroom/chat (Stored once, sender stamped)', async () => {
     try {
-        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/chat', {
+        const res = await flight.fetch('/api/profile/chatroom/ANDROID-user-device/chat', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin,
@@ -175,19 +207,52 @@ test('Streaming: Delivered Receipts are sent once per Direct Chat', async () => 
     assert.ok(!written.includes('ANDROID-someone-else'));
 });
 
-test('POST: api/profile/chatroom/:chatroom/read', async () => {
+test('PATCH: api/profile/chatroom/:chatroom (Unknown Chat)', async () => {
+    const res = await flight.fetch('/api/profile/chatroom/ANDROID-user-device', {
+        method: 'PATCH',
+        auth: {
+            bearer: flight.token.admin,
+        },
+        body: { last_read: grouped },
+    }, false);
+
+    assert.equal(res.status, 404);
+});
+
+test('PATCH: api/profile/chatroom/:chatroom (Read up to the first Chat)', async () => {
     try {
-        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/read', {
-            method: 'POST',
+        const res = await flight.fetch('/api/profile/chatroom/ANDROID-user-device', {
+            method: 'PATCH',
             auth: {
                 bearer: flight.token.admin,
             },
+            body: { last_read: first },
         }, true);
 
-        assert.deepEqual(res.body, {
-            status: 200,
-            message: 'Read 2 Chats',
-        });
+        assert.equal(res.body.id, device.uid);
+        assert.equal(res.body.unread, 1);
+        assert.ok(res.body.last_read);
+
+        await delay(100);
+
+        assert.equal(receipts('b-t-f-r', first), 1);
+        assert.equal(receipts('b-t-f-r', last), 0);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/profile/chatroom/:chatroom (Read the rest)', async () => {
+    try {
+        const res = await flight.fetch('/api/profile/chatroom/ANDROID-user-device', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: { last_read: last },
+        }, true);
+
+        assert.equal(res.body.unread, 0);
 
         await delay(100);
 
@@ -198,23 +263,78 @@ test('POST: api/profile/chatroom/:chatroom/read', async () => {
     }
 });
 
-test('POST: api/profile/chatroom/:chatroom/read (Already Read)', async () => {
+test('PATCH: api/profile/chatroom/:chatroom (Group Chats send no Read Receipts)', async () => {
     try {
-        const res = await flight.fetch('/api/profile/chatroom/user%40example.com/read', {
-            method: 'POST',
+        const res = await flight.fetch(`/api/profile/chatroom/${group.uid}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: { last_read: grouped },
+        }, true);
+
+        assert.equal(res.body.unread, 0);
+
+        await delay(100);
+
+        assert.equal(receipts('b-t-f-r', grouped), 0);
+        assert.equal(receipts('b-t-f-d', grouped), 0);
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('Chatroom keyed by callsign is adopted by the UID behind it', async () => {
+    const models = flight.config!.models;
+    const username = 'admin@example.com';
+
+    await models.ProfileChatroom.ensure(username, { id: 'Legacy', name: 'Legacy', type: ProfileChatroomType.DIRECT });
+    await models.ProfileChat.generate({
+        username,
+        chatroom: 'Legacy',
+        sender_callsign: admin.callsign,
+        sender_uid: admin.uid,
+        message_id: randomUUID(),
+        message: 'Outgoing only',
+    });
+
+    const room = await models.ProfileChatroom.ensure(username, { id: 'ANDROID-legacy', name: 'Legacy', type: ProfileChatroomType.DIRECT });
+    assert.equal(room.id, 'ANDROID-legacy');
+
+    await assert.rejects(models.ProfileChatroom.room(username, 'Legacy'));
+
+    const chats = await models.ProfileChat.list({
+        where: sql`username = ${username} AND chatroom = 'ANDROID-legacy'`,
+    });
+    assert.equal(chats.total, 1);
+});
+
+test('DELETE: api/profile/chatroom/:chatroom', async () => {
+    try {
+        await flight.fetch('/api/profile/chatroom/ANDROID-user-device', {
+            method: 'DELETE',
             auth: {
                 bearer: flight.token.admin,
             },
         }, true);
 
-        assert.deepEqual(res.body, {
-            status: 200,
-            message: 'Read 0 Chats',
-        });
+        const rooms = await flight.fetch('/api/profile/chatroom', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
 
-        await delay(100);
+        assert.deepEqual(rooms.body.items.map((item: { id: string }) => item.id).sort(), ['ANDROID-legacy', group.uid]);
 
-        assert.equal(receipts('b-t-f-r', first), 1);
+        const chats = await flight.fetch('/api/profile/chatroom/ANDROID-user-device/chat', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin,
+            },
+        }, true);
+
+        assert.equal(chats.body.total, 0);
     } catch (err) {
         assert.ifError(err);
     }

@@ -5001,7 +5001,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -5294,7 +5303,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -5308,7 +5317,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -5637,7 +5646,16 @@ export interface paths {
                                 chatroom: string;
                                 id?: string;
                                 senderCallsign: string;
+                                /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                deleteChild?: string;
                                 chatgrp: unknown;
+                                /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                hierarchy?: {
+                                    uid: string;
+                                    name: string;
+                                    type: "group" | "contact";
+                                    children?: unknown[];
+                                };
                             };
                             track?: {
                                 speed?: string;
@@ -5930,7 +5948,7 @@ export interface paths {
                             };
                             spatial?: {
                                 version?: number;
-                                attitude: {
+                                attitude?: {
                                     /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                     roll: number;
                                     /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -5944,7 +5962,7 @@ export interface paths {
                                     /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                     eYaw?: number;
                                 };
-                                spin: {
+                                spin?: {
                                     /** @description Degrees per second with positive indicating to the pilots right */
                                     roll: number;
                                     /** @description Degrees per second with positive indicating nose up. */
@@ -6194,7 +6212,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -6487,7 +6514,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -6501,7 +6528,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -6952,7 +6979,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -7245,7 +7281,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -7259,7 +7295,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -7713,7 +7749,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -8006,7 +8051,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -8020,7 +8065,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -8276,7 +8321,16 @@ export interface paths {
                                             chatroom: string;
                                             id?: string;
                                             senderCallsign: string;
+                                            /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                            deleteChild?: string;
                                             chatgrp: unknown;
+                                            /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                            hierarchy?: {
+                                                uid: string;
+                                                name: string;
+                                                type: "group" | "contact";
+                                                children?: unknown[];
+                                            };
                                         };
                                         track?: {
                                             speed?: string;
@@ -8569,7 +8623,7 @@ export interface paths {
                                         };
                                         spatial?: {
                                             version?: number;
-                                            attitude: {
+                                            attitude?: {
                                                 /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                                 roll: number;
                                                 /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -8583,7 +8637,7 @@ export interface paths {
                                                 /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                                 eYaw?: number;
                                             };
-                                            spin: {
+                                            spin?: {
                                                 /** @description Degrees per second with positive indicating to the pilots right */
                                                 roll: number;
                                                 /** @description Degrees per second with positive indicating nose up. */
@@ -8936,7 +8990,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -9229,7 +9292,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -9243,7 +9306,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -9605,7 +9668,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -9898,7 +9970,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -9912,7 +9984,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -15955,7 +16027,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -16248,7 +16329,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -16262,7 +16343,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -16525,7 +16606,16 @@ export interface paths {
                                             chatroom: string;
                                             id?: string;
                                             senderCallsign: string;
+                                            /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                            deleteChild?: string;
                                             chatgrp: unknown;
+                                            /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                            hierarchy?: {
+                                                uid: string;
+                                                name: string;
+                                                type: "group" | "contact";
+                                                children?: unknown[];
+                                            };
                                         };
                                         track?: {
                                             speed?: string;
@@ -16818,7 +16908,7 @@ export interface paths {
                                         };
                                         spatial?: {
                                             version?: number;
-                                            attitude: {
+                                            attitude?: {
                                                 /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                                 roll: number;
                                                 /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -16832,7 +16922,7 @@ export interface paths {
                                                 /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                                 eYaw?: number;
                                             };
-                                            spin: {
+                                            spin?: {
                                                 /** @description Degrees per second with positive indicating to the pilots right */
                                                 roll: number;
                                                 /** @description Degrees per second with positive indicating nose up. */
@@ -17077,7 +17167,16 @@ export interface paths {
                                             chatroom: string;
                                             id?: string;
                                             senderCallsign: string;
+                                            /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                            deleteChild?: string;
                                             chatgrp: unknown;
+                                            /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                            hierarchy?: {
+                                                uid: string;
+                                                name: string;
+                                                type: "group" | "contact";
+                                                children?: unknown[];
+                                            };
                                         };
                                         track?: {
                                             speed?: string;
@@ -17370,7 +17469,7 @@ export interface paths {
                                         };
                                         spatial?: {
                                             version?: number;
-                                            attitude: {
+                                            attitude?: {
                                                 /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                                 roll: number;
                                                 /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -17384,7 +17483,7 @@ export interface paths {
                                                 /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                                 eYaw?: number;
                                             };
-                                            spin: {
+                                            spin?: {
                                                 /** @description Degrees per second with positive indicating to the pilots right */
                                                 roll: number;
                                                 /** @description Degrees per second with positive indicating nose up. */
@@ -35352,7 +35451,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -35645,7 +35753,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -35659,7 +35767,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -36009,7 +36117,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -36302,7 +36419,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -36316,7 +36433,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -36676,7 +36793,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -36969,7 +37095,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -36983,7 +37109,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -40208,7 +40334,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -40501,7 +40636,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -40515,7 +40650,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -40855,7 +40990,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -41148,7 +41292,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -41162,7 +41306,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -49327,7 +49471,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get User's Profile Chats */
+        /** Get User's Chatrooms */
         get: {
             parameters: {
                 query?: never;
@@ -49347,7 +49491,16 @@ export interface paths {
                             total: number;
                             items: {
                                 id: string;
-                                chatroom: string;
+                                name: string;
+                                type: "direct" | "group";
+                                parent: null | string;
+                                members: {
+                                    uid: string;
+                                    callsign: string;
+                                }[];
+                                unread: number;
+                                last_read: null | string;
+                                created: string;
                                 updated: string;
                             }[];
                         };
@@ -49427,7 +49580,7 @@ export interface paths {
         };
         put?: never;
         post?: never;
-        /** Delete User's Chats */
+        /** Delete User's Chatrooms and the Chats they contain */
         delete: {
             parameters: {
                 query: {
@@ -49541,7 +49694,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete User's Chats */
+        /** Delete a Chatroom and the Chats it contains */
         delete: {
             parameters: {
                 query?: never;
@@ -49642,20 +49795,8 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/profile/chatroom/{:chatroom}/read": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Mark every message in a chatroom as read and send Read Receipts to their senders */
-        post: {
+        /** Update a Chatroom - advancing last_read marks earlier Chats as read and sends Read Receipts for Direct Chats */
+        patch: {
             parameters: {
                 query?: never;
                 header?: never;
@@ -49665,7 +49806,14 @@ export interface paths {
                 };
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description message_id of the newest Chat the user has seen */
+                        last_read: string;
+                    };
+                };
+            };
             responses: {
                 /** @description Successful Response */
                 200: {
@@ -49674,10 +49822,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            status: number;
-                            message: string;
-                            /** @description Extended error details (ie: TAK Server exception trace) */
-                            details?: string;
+                            id: string;
+                            name: string;
+                            type: "direct" | "group";
+                            parent: null | string;
+                            members: {
+                                uid: string;
+                                callsign: string;
+                            }[];
+                            unread: number;
+                            last_read: null | string;
+                            created: string;
+                            updated: string;
                         };
                     };
                 };
@@ -49753,10 +49909,6 @@ export interface paths {
                 };
             };
         };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/profile/chatroom/{:chatroom}/chat": {
@@ -50235,7 +50387,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -50528,7 +50689,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -50542,7 +50703,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */
@@ -50881,7 +51042,16 @@ export interface paths {
                                 chatroom: string;
                                 id?: string;
                                 senderCallsign: string;
+                                /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                deleteChild?: string;
                                 chatgrp: unknown;
+                                /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                hierarchy?: {
+                                    uid: string;
+                                    name: string;
+                                    type: "group" | "contact";
+                                    children?: unknown[];
+                                };
                             };
                             track?: {
                                 speed?: string;
@@ -51174,7 +51344,7 @@ export interface paths {
                             };
                             spatial?: {
                                 version?: number;
-                                attitude: {
+                                attitude?: {
                                     /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                     roll: number;
                                     /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -51188,7 +51358,7 @@ export interface paths {
                                     /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                     eYaw?: number;
                                 };
-                                spin: {
+                                spin?: {
                                     /** @description Degrees per second with positive indicating to the pilots right */
                                     roll: number;
                                     /** @description Degrees per second with positive indicating nose up. */
@@ -51438,7 +51608,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -51731,7 +51910,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -51745,7 +51924,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -52193,7 +52372,16 @@ export interface paths {
                                     chatroom: string;
                                     id?: string;
                                     senderCallsign: string;
+                                    /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                    deleteChild?: string;
                                     chatgrp: unknown;
+                                    /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                    hierarchy?: {
+                                        uid: string;
+                                        name: string;
+                                        type: "group" | "contact";
+                                        children?: unknown[];
+                                    };
                                 };
                                 track?: {
                                     speed?: string;
@@ -52486,7 +52674,7 @@ export interface paths {
                                 };
                                 spatial?: {
                                     version?: number;
-                                    attitude: {
+                                    attitude?: {
                                         /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                         roll: number;
                                         /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -52500,7 +52688,7 @@ export interface paths {
                                         /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                         eYaw?: number;
                                     };
-                                    spin: {
+                                    spin?: {
                                         /** @description Degrees per second with positive indicating to the pilots right */
                                         roll: number;
                                         /** @description Degrees per second with positive indicating nose up. */
@@ -64404,7 +64592,16 @@ export interface paths {
                                         chatroom: string;
                                         id?: string;
                                         senderCallsign: string;
+                                        /** @description UID of a group that the sender deleted from the group this message is addressed to */
+                                        deleteChild?: string;
                                         chatgrp: unknown;
+                                        /** @description Group membership tree sent with a GeoChat to a user created group, rooted at the UserGroups group */
+                                        hierarchy?: {
+                                            uid: string;
+                                            name: string;
+                                            type: "group" | "contact";
+                                            children?: unknown[];
+                                        };
                                     };
                                     track?: {
                                         speed?: string;
@@ -64697,7 +64894,7 @@ export interface paths {
                                     };
                                     spatial?: {
                                         version?: number;
-                                        attitude: {
+                                        attitude?: {
                                             /** @description Roll of entity in degrees. Positive indicates listing to the right. */
                                             roll: number;
                                             /** @description Pitch of entity in degrees. Positive indicates nose point up. */
@@ -64711,7 +64908,7 @@ export interface paths {
                                             /** @description 1-sigma error of yaw with respect to a zero mean normal Gaussian distribution. */
                                             eYaw?: number;
                                         };
-                                        spin: {
+                                        spin?: {
                                             /** @description Degrees per second with positive indicating to the pilots right */
                                             roll: number;
                                             /** @description Degrees per second with positive indicating nose up. */

@@ -3,15 +3,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import ImportControl, { ImportSourceEnum } from '../../common/control/import.js';
 import type ConfigStateful from '../config.js';
-import { randomUUID } from 'node:crypto';
 import Modeler from '@openaddresses/batch-generic';
 import { Connection } from '../../common/schema.js';
 import { setTimeout as delay } from 'node:timers/promises';
 import TAK, { TAKAPI } from '@tak-ps/node-tak';
-import CoT, { CoTParser, DirectChatReceipt } from '@tak-ps/node-cot';
+import CoT, { CoTParser, DirectChatReceipt, chatHierarchyGroup, chatHierarchyContacts } from '@tak-ps/node-cot';
 import type ConnectionConfig from '../../common/connection-config.js';
 import { MachineConnConfig, ProfileConnConfig, AdminConnConfig, isCoreEntitySubmitter } from '../../common/connection-config.js';
-import { ProfileChatStatus, WebSocket_Event } from '../../common/enums.js';
+import { ProfileChatStatus, ProfileChatroomType, WebSocket_Event } from '../../common/enums.js';
+import type { Chatroom, ChatroomInput } from '../../common/models/ProfileChatroom.js';
+import type { ChatroomMember } from '../../common/types.js';
 import TAKServerControl, { profileCallsign } from '../../common/control/takserver.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as {
@@ -131,6 +132,69 @@ function isMissionChat(feat: Awaited<ReturnType<typeof CoTParser.to_geojson>>): 
 
     const dest = feat.properties.dest;
     return (Array.isArray(dest) ? dest : dest ? [dest] : []).some((d) => !!d.mission);
+}
+
+const GroupParents = ['UserGroups', 'TeamGroups'];
+
+export const BroadcastChatroom = 'All Chat Rooms';
+const LegacyBroadcastChatrooms = ['All Streaming', 'Streaming'];
+
+/** ATAK falls back to the last segment of the Event UID (GeoChat.<sender>.<conversation>.<messageId>) */
+export function chatMessageId(feat: Awaited<ReturnType<typeof CoTParser.to_geojson>>): string {
+    return feat.properties.chat?.messageId || feat.id.split('.').pop() || feat.id;
+}
+
+/** The Chatroom a GeoChat belongs to from the point of view of the user with the given UID */
+export function chatroomOf(
+    chat: NonNullable<Awaited<ReturnType<typeof CoTParser.to_geojson>>['properties']['chat']>,
+    uid: string,
+): ChatroomInput {
+    const sender = String(chat.chatgrp?._attributes?.uid0);
+    const broadcast = LegacyBroadcastChatrooms.includes(chat.id || chat.chatroom);
+    const id = broadcast ? BroadcastChatroom : (chat.id || chat.chatroom);
+    const name = LegacyBroadcastChatrooms.includes(chat.chatroom) ? BroadcastChatroom : chat.chatroom;
+
+    // ATAK addresses a 1:1 chat to the recipient's UID, TAK Aware to the sender's own UID
+    const direct = id === uid || (id === sender && !GroupParents.includes(chat.parent || ''));
+
+    if (sender !== uid && direct) {
+        return { id: sender, name: chat.senderCallsign, type: ProfileChatroomType.DIRECT };
+    }
+
+    const group = sender !== uid || id === BroadcastChatroom || GroupParents.includes(chat.parent || '');
+
+    return {
+        id,
+        name,
+        type: group ? ProfileChatroomType.GROUP : ProfileChatroomType.DIRECT,
+        parent: chat.parent,
+    };
+}
+
+/** Everyone a Group GeoChat names as a member, other than the user with the given UID */
+export function chatMembers(
+    chat: NonNullable<Awaited<ReturnType<typeof CoTParser.to_geojson>>['properties']['chat']>,
+    uid: string,
+): { members: Array<ChatroomMember>; listed: boolean } {
+    const sender = String(chat.chatgrp?._attributes?.uid0);
+    const members = new Map<string, ChatroomMember>();
+
+    const group = chat.hierarchy ? chatHierarchyGroup(chat.hierarchy, chat.id || chat.chatroom) : undefined;
+
+    const attrs: Record<string, unknown> = chat.chatgrp?._attributes ?? {};
+
+    for (const [key, value] of Object.entries(attrs)) {
+        if (/^uid\d+$/.test(key)) members.set(String(value), { uid: String(value), callsign: String(value) });
+    }
+
+    const listed = group ? chatHierarchyContacts(group) : [];
+    for (const contact of listed) members.set(contact.uid, contact);
+
+    members.set(sender, { uid: sender, callsign: chat.senderCallsign });
+    members.delete(uid);
+    members.delete(chat.id || chat.chatroom);
+
+    return { members: [...members.values()], listed: listed.length > 0 };
 }
 
 /**
@@ -318,6 +382,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                     // device's CoT time so live ordering matches what clients get on refresh
                     let storedCreated: string | undefined;
                     let duplicate = false;
+                    let room: Chatroom | undefined;
+                    let notice = false;
+                    let removed: string | undefined;
 
                     try {
                         if (conn instanceof ProfileConnConfig && feat.properties && feat.properties.chat && receiptStatus) {
@@ -334,32 +401,57 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                             const chat = feat.properties.chat;
                             const myUid = conn.uid();
                             const senderUid = chat.chatgrp?._attributes?.uid0;
-                            const isOutgoing = senderUid === myUid;
-                            // Receipts are only exchanged for 1:1 chats, matching ATAK
-                            const isDirect = !isOutgoing && chat.id === myUid;
+                            const messageId = chatMessageId(feat);
 
-                            const stored = await this.config.models.ProfileChat.ingest({
-                                username: String(conn.id),
-                                chatroom: isOutgoing ? chat.chatroom : chat.senderCallsign,
-                                sender_callsign: chat.senderCallsign,
-                                sender_uid: chat.chatgrp._attributes.uid0,
-                                message_id: chat.messageId || randomUUID(),
-                                message: feat.properties.remarks || '',
-                                read: !isDirect,
-                            });
+                            if (chat.deleteChild) {
+                                notice = true;
 
-                            duplicate = !stored.created;
+                                if (senderUid !== myUid && await this.config.models.ProfileChatroom.removeChild(
+                                    String(conn.id),
+                                    chat.id || chat.chatroom,
+                                    chat.deleteChild,
+                                )) {
+                                    removed = chat.deleteChild;
+                                }
+                            } else {
+                                room = await this.config.models.ProfileChatroom.ensure(String(conn.id), chatroomOf(chat, myUid));
 
-                            // Normalize the pg timestamptz to ISO 8601 before it goes over the wire
-                            storedCreated = new Date(stored.chat.created).toISOString();
+                                if (room.type === ProfileChatroomType.GROUP && room.id !== BroadcastChatroom && senderUid !== myUid) {
+                                    const { members, listed } = chatMembers(chat, myUid);
 
-                            if (stored.created && isDirect && senderUid && chat.messageId) {
-                                void this.get(conn.id)?.tak.write([new DirectChatReceipt({
-                                    to: { uid: senderUid, callsign: chat.senderCallsign },
-                                    from: { uid: myUid, callsign: await profileCallsign(this.config, String(conn.id)) },
-                                    status: 'delivered',
-                                    messageId: chat.messageId,
-                                })], { stripFlow: true });
+                                    room = await this.config.models.ProfileChatroom.membership(String(conn.id), room.id, {
+                                        members,
+                                        hierarchy: chat.hierarchy,
+                                        owner: listed && chat.groupOwner === 'true',
+                                    });
+                                }
+
+                                // Receipts are only exchanged for 1:1 chats, matching ATAK
+                                const isDirect = senderUid !== myUid && room.type === ProfileChatroomType.DIRECT;
+
+                                const stored = await this.config.models.ProfileChat.ingest({
+                                    username: String(conn.id),
+                                    chatroom: room.id,
+                                    sender_callsign: chat.senderCallsign,
+                                    sender_uid: chat.chatgrp._attributes.uid0,
+                                    message_id: messageId,
+                                    message: feat.properties.remarks || '',
+                                    read: senderUid === myUid,
+                                });
+
+                                duplicate = !stored.created;
+
+                                // Normalize the pg timestamptz to ISO 8601 before it goes over the wire
+                                storedCreated = new Date(stored.chat.created).toISOString();
+
+                                if (stored.created && isDirect && senderUid) {
+                                    void this.get(conn.id)?.tak.write([new DirectChatReceipt({
+                                        to: { uid: senderUid, callsign: chat.senderCallsign },
+                                        from: { uid: myUid, callsign: await profileCallsign(this.config, String(conn.id)) },
+                                        status: 'delivered',
+                                        messageId,
+                                    })], { stripFlow: true });
+                                }
                             }
                         } else if (conn instanceof ProfileConnConfig && feat.properties.fileshare) {
                             const file = new URL(feat.properties.fileshare.senderUrl);
@@ -379,7 +471,19 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         console.error('Failed to save COT: ', err);
                     }
 
-                    if (duplicate) continue;
+                    if (removed) {
+                        for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
+                            if (!client.events.includes(WebSocket_Event.MAP) || client.format !== 'geojson') continue;
+
+                            client.ws.send(JSON.stringify({
+                                type: 'chatroom:delete',
+                                connection: conn.id,
+                                data: { id: removed },
+                            }));
+                        }
+                    }
+
+                    if (duplicate || notice) continue;
 
                     for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
                         if (!client.events.includes(WebSocket_Event.MAP)) continue;
@@ -401,7 +505,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                                     connection: conn.id,
                                     data: {
                                         chatroom: feat.properties.chat.chatroom,
-                                        messageId: feat.properties.chat.messageId,
+                                        room: room ? { id: room.id, name: room.name, type: room.type, members: room.members } : undefined,
+                                        messageId: chatMessageId(feat),
                                         from: {
                                             uid: feat.properties.chat.chatgrp?._attributes?.uid0,
                                             callsign: feat.properties.chat.senderCallsign,

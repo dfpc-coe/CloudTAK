@@ -81,13 +81,19 @@
                     <template #item='{item}'>
                         <StandardItem
                             class='d-flex align-items-center gap-3 p-2 w-100'
-                            @click='multiselect ? undefined : router.push(`/menu/chats/${item.name}`)'
+                            @click='multiselect ? undefined : router.push({ name: "home-menu-chat", params: { chatroom: item.id } })'
                         >
                             <div
                                 class='d-flex align-items-center justify-content-center rounded-circle bg-black bg-opacity-25'
                                 style='width: 3rem; height: 3rem; min-width: 3rem;'
                             >
+                                <IconUsers
+                                    v-if='item.type === "group"'
+                                    :size='24'
+                                    stroke='1'
+                                />
                                 <IconUser
+                                    v-else
                                     :size='24'
                                     stroke='1'
                                 />
@@ -143,6 +149,7 @@ import SearchSortFilter from '../util/SearchSortFilter.vue';
 import {
     IconListCheck,
     IconUser,
+    IconUsers,
     IconPlus,
     IconLetterCase,
     IconClock,

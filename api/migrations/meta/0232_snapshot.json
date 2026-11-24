@@ -4050,6 +4050,27 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "profile_chats_username_chatroom_idx": {
+          "name": "profile_chats_username_chatroom_idx",
+          "columns": [
+            {
+              "expression": "username",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "chatroom",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -4065,6 +4086,21 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "profile_chats_chatroom_fk": {
+          "name": "profile_chats_chatroom_fk",
+          "tableFrom": "profile_chats",
+          "tableTo": "profile_chatroom",
+          "columnsFrom": [
+            "username",
+            "chatroom"
+          ],
+          "columnsTo": [
+            "username",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -4077,26 +4113,14 @@
       "name": "profile_chatroom",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "icon": {
-          "name": "icon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
         "username": {
           "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -4114,6 +4138,44 @@
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'direct'"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent": {
+          "name": "parent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "members": {
+          "name": "members",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'[]'::jsonb"
+        },
+        "hierarchy": {
+          "name": "hierarchy",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_read": {
+          "name": "last_read",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -4132,7 +4194,15 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "profile_chatroom_username_id_pk": {
+          "name": "profile_chatroom_username_id_pk",
+          "columns": [
+            "username",
+            "id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

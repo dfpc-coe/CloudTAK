@@ -12,6 +12,8 @@ import ContactManager from './contact.ts';
 
 export const SEND_TIMEOUT_MS = 15000;
 
+export const BroadcastChatroom = 'All Chat Rooms';
+
 type Sendable = { status?: ChatStatus, created: string };
 
 export function isUnsent(chat: Sendable): boolean {
@@ -30,6 +32,25 @@ export function expireSending<T extends Sendable>(chats: T[]): T[] {
 
 export function failIfSending(chat: Sendable): void {
     if (chat.status === ChatStatus.Sending) chat.status = ChatStatus.Failed;
+}
+
+/**
+ * Move a Chatroom that was keyed by callsign, and the Chats in it, onto the UID behind it
+ */
+export async function rekeyChatroom(from: string, to: string, name?: string): Promise<void> {
+    if (from === to) return;
+
+    await db.transaction('rw', db.chatroom, db.chatroom_chats, async () => {
+        const room = await db.chatroom.get(from);
+        if (!room) return;
+
+        if (!await db.chatroom.get(to)) {
+            await db.chatroom.put({ ...room, id: to, name: name || room.name });
+        }
+
+        await db.chatroom.delete(from);
+        await db.chatroom_chats.where('chatroom').equals(from).modify({ chatroom: to });
+    });
 }
 
 export default class ChatroomChats {
@@ -124,22 +145,29 @@ export default class ChatroomChats {
     async markRead(): Promise<void> {
         const room = await db.chatroom.get(this.chatroom);
 
+        if (!room?.unread && !this.unacked) return;
+
+        const newest = (await this.list()).filter((chat) => !isUnsent(chat)).pop();
+        if (!newest) return;
+
         if (room?.unread) {
             await db.chatroom.update(this.chatroom, { unread: 0 });
-        } else if (!this.unacked) {
-            return;
         }
 
         this.unacked = false;
 
-        const res = await server.POST('/api/profile/chatroom/{:chatroom}/read', {
-            params: { path: { ':chatroom': this.chatroom } }
+        const res = await server.PATCH('/api/profile/chatroom/{:chatroom}', {
+            params: { path: { ':chatroom': this.chatroom } },
+            body: { last_read: newest.id }
         });
 
         if (res.error) {
             this.unacked = true;
             console.error('Failed to mark Chats as read', res.error);
+            return;
         }
+
+        await db.chatroom.update(this.chatroom, { last_read: res.data.last_read });
     }
 
     async send(
@@ -194,34 +222,33 @@ export default class ChatroomChats {
         recipient?: { uid: string, callsign: string }
     ): Promise<void> {
         try {
-            if (!recipient) {
-                const single = (await this.list()).find((c) => {
-                    return c.sender_uid !== sender.uid
-                });
+            const room = await db.chatroom.get(this.chatroom);
 
-                if (single) {
-                    recipient = {
-                        uid: single.sender_uid,
-                        callsign: single.sender
-                    }
-                } else {
-                    const contact = await ContactManager.getByCallsign(this.chatroom);
+            const group = room?.type === 'group' ? room : undefined;
 
-                    recipient = contact
-                        ? { uid: contact.uid, callsign: contact.callsign }
-                        : { uid: this.chatroom, callsign: this.chatroom };
+            if (group && this.chatroom !== BroadcastChatroom && !group.members?.length) {
+                throw new Error('Group Chatroom has no known members');
+            }
+
+            if (!group) {
+                recipient ??= await this.recipient(sender, room?.name || this.chatroom);
+
+                if (recipient.uid !== this.chatroom) {
+                    await rekeyChatroom(this.chatroom, recipient.uid, recipient.callsign);
+                    this.chatroom = recipient.uid;
+                    chat.chatroom = recipient.uid;
                 }
             }
 
             const location = (await worker.profile?.location)?.coordinates || [0, 0];
 
             const sent = await worker.conn.sendCOT({
-                chatroom: this.chatroom,
+                chatroom: group ? group.name : recipient?.callsign,
                 from: {
                     uid: sender.uid,
                     callsign: sender.callsign
                 },
-                to: recipient,
+                ...(group ? { group: this.chatroom } : { to: recipient }),
                 message: chat.message,
                 messageId: chat.id,
                 time: chat.created,
@@ -238,5 +265,24 @@ export default class ChatroomChats {
         setTimeout(() => {
             void db.chatroom_chats.where('id').equals(chat.id).modify(failIfSending);
         }, SEND_TIMEOUT_MS);
+    }
+
+    /**
+     * A Direct Chatroom is keyed by the UID of the other party, unless it predates
+     * UID keyed Chatrooms, in which case it is keyed by a callsign that has to be resolved
+     */
+    private async recipient(
+        sender: { uid: string, callsign: string },
+        name: string
+    ): Promise<{ uid: string, callsign: string }> {
+        if (this.chatroom !== name) return { uid: this.chatroom, callsign: name };
+
+        const single = (await this.list()).find((c) => c.sender_uid !== sender.uid);
+        if (single) return { uid: single.sender_uid, callsign: single.sender };
+
+        const contact = await ContactManager.getByCallsign(name);
+        if (contact) return { uid: contact.uid, callsign: contact.callsign };
+
+        return { uid: this.chatroom, callsign: name };
     }
 }

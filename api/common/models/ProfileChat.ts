@@ -5,14 +5,6 @@ import { ProfileChatStatus } from '../enums.js';
 import { sql, eq, and } from 'drizzle-orm';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
-export type ChatList = {
-    total: number;
-    items: Array<{
-        chatroom: string;
-        created: string;
-    }>;
-};
-
 // A status can only progress forward (ie a late "delivered" receipt won't downgrade "read")
 const StatusRank = sql.raw(`
     CASE status
@@ -94,30 +86,22 @@ export default class ProfileChatModel extends Modeler<typeof ProfileChat> {
     }
 
     /**
-     * Mark every unread message in a chatroom as read, returning the messages that changed
+     * Mark every unread message in a chatroom up to its `last_read` as read, returning the messages that changed
      */
     async read(username: string, chatroom: string): Promise<Array<InferSelectModel<typeof ProfileChat>>> {
         return await this.pool.update(this.generic)
             .set({ read: true, updated: sql<string>`Now()` })
-            .where(and(
-                eq(this.generic.username, username),
-                eq(this.generic.chatroom, chatroom),
-                eq(this.generic.read, false),
-            ))
+            .where(sql`
+                ${this.generic.username} = ${username}
+                AND ${this.generic.chatroom} = ${chatroom}
+                AND ${this.generic.read} = False
+                AND ${this.generic.created} <= (
+                    SELECT last_read
+                        FROM profile_chatroom
+                        WHERE username = ${username}
+                            AND id = ${chatroom}
+                )
+            `)
             .returning();
-    }
-
-    async chats(username: string): Promise<ChatList> {
-        const pgres = await this.pool.select({
-            chatroom: this.generic.chatroom,
-            created: sql<string>`MAX(${this.generic.created})`,
-        }).from(this.generic)
-            .where(eq(this.generic.username, username))
-            .groupBy(sql`username, chatroom`);
-
-        return {
-            total: pgres.length,
-            items: pgres as Array<{ chatroom: string; created: string }>,
-        };
     }
 }
