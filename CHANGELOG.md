@@ -24,6 +24,9 @@
 
 ### Pending Release
 
+### v14.1.1 - 2026-11-24
+
+- :rocket: Allow plugins to style breadcrumb history points
 - :bug: Add `key` to LayerTaskUpdateModal to ensure mass updates succeed - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2068
 - :bug: Ensure styles array is reset on any basemap change - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2066
 
