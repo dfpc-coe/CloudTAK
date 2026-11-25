@@ -1,6 +1,10 @@
 <template>
     <div
         class='d-flex position-relative map-shell'
+        :class='{
+            "map-shell--broadcast-chip": gpsChipShown,
+            "map-shell--plugin-pane": pluginPaneShown
+        }'
         style='height: calc(100vh) !important;'
         :style='{
             "--map-side-offset": `${mapSideOffset}px`,
@@ -92,15 +96,16 @@
                 :mode='mode'
                 @set-location='setLocation'
                 @to-location='toLocation'
+                @chip-shown='gpsChipShown = $event'
             />
-            <PluginPane v-if='mode === "Default" && !isDrawing' />
+            <PluginPane
+                v-if='mode === "Default" && !isDrawing'
+                @shown='pluginPaneShown = $event'
+            />
             <div
                 v-if='mapStore.selected.size'
-                class='position-absolute'
-                style='
-                    bottom: calc(var(--map-gps-panel-size, 84px) + 16px + var(--map-bottom-inset, 0px));
-                    left: calc(8px + env(safe-area-inset-left, 0px));
-                '
+                class='position-absolute selected-features-anchor'
+                style='left: calc(8px + env(safe-area-inset-left, 0px));'
             >
                 <SelectFeats :selected='mapStore.selected' />
             </div>
@@ -422,6 +427,9 @@ const route = useRoute();
 const emit = defineEmits(['err']);
 
 const mode = ref<string>('Default');
+// What the map has to leave room for above the GPS panel, reported by the components that draw them
+const gpsChipShown = ref(false);
+const pluginPaneShown = ref(false);
 const locationClickHandler = ref<((e: MapMouseEvent) => void) | null>(null);
 const height = ref<number>(window.innerHeight);
 const width = ref<number>(window.innerWidth);
@@ -1120,6 +1128,14 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
     --map-gps-panel-size: 84px;
     --map-bottom-inset: env(safe-area-inset-bottom, 0px);
     /*
+     * Room for what is drawn above the GPS panel but takes no space of its own, so that nothing
+     * anchored above the panel covers it. Both are 0 until the thing is shown (see the
+     * --broadcast-chip and --plugin-pane modifiers below). Add them to every offset that starts
+     * from --map-gps-panel-size, as the GPS panel's own height is not enough.
+     */
+    --map-gps-chip-size: 0px;
+    --map-plugin-pane-size: 0px;
+    /*
      * The GPS/callsign panel's right edge (its own left inset + responsive
      * width, mirroring GPSPanel.vue's `left`/`width`/`max-width` formulas so
      * the two can't drift apart) - used below to cap the attribution/scale
@@ -1135,6 +1151,24 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
     --map-attrib-gps-gap: 0px;
 }
 
+/* The Paused / Shared from another device banner: 36px high plus a 6px gap (BroadcastChip.vue) */
+.map-shell--broadcast-chip {
+    --map-gps-chip-size: 42px;
+}
+/*
+ * The plugin pane is 50px high plus an 8px gap. It only sits above the GPS panel on small screens
+ * (PluginPane.vue), where the Selected Features window has to go above it. On wider screens it is
+ * at the bottom centre and the window does not meet it.
+ */
+@media (max-width: 600px) {
+    .map-shell--plugin-pane {
+        --map-plugin-pane-size: 58px;
+    }
+}
+.selected-features-anchor {
+    bottom: calc(var(--map-gps-panel-size, 84px) + var(--map-gps-chip-size, 0px) + var(--map-plugin-pane-size, 0px) + 16px + var(--map-bottom-inset, 0px));
+    transition: bottom 0.15s ease;
+}
 @media (max-width: 600px) {
     .map-shell {
         --map-gps-panel-right: min(228px + env(safe-area-inset-left, 0px), 100vw - 62px - env(safe-area-inset-right, 0px));
@@ -1144,7 +1178,8 @@ html[data-bs-theme='light'] .cloudtak-ctrl-btn:focus-within {
 }
 
 .maplibregl-ctrl-bottom-left {
-    bottom: calc(var(--map-gps-panel-size, 84px) + 12px + var(--map-bottom-inset, 0px));
+    bottom: calc(var(--map-gps-panel-size, 84px) + var(--map-gps-chip-size, 0px) + 12px + var(--map-bottom-inset, 0px));
+    transition: bottom 0.15s ease;
     left: calc(8px + env(safe-area-inset-left, 0px));
     right: auto;
     margin: 0;

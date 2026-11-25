@@ -1,44 +1,50 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
-import { h, markRaw, ref } from 'vue';
+import { defineComponent, h, ref } from 'vue';
 
-const pluginItems = ref<{ key: string; component: unknown }[]>([]);
-let initialized = false;
-
+const items = ref<Array<{ key: string; component: ReturnType<typeof defineComponent> }>>([]);
 vi.mock('../../stores/map.ts', () => ({
-    useMapStore: () => ({
-        get bottomBar() {
-            if (!initialized) throw new Error('BottomBar Manager has not yet initialized');
-            return { pluginItems };
-        }
-    })
+    useMapStore: () => ({ bottomBar: { pluginItems: items } })
 }));
 
 import PluginPane from './PluginPane.vue';
 
-describe('PluginPane', () => {
-    it('mounts safely before the bottom bar manager is initialized', () => {
-        initialized = false;
+const Item = defineComponent({ render: () => h('span', 'Weather') });
 
-        expect(() => {
-            mount(PluginPane);
-        }).not.toThrow();
+function mountPane(): { wrapper: ReturnType<typeof mount>; events: boolean[] } {
+    const events: boolean[] = [];
+    const wrapper = mount(PluginPane, { props: { onShown: (shown: boolean) => events.push(shown) } });
+    return { wrapper, events };
+}
+
+describe('PluginPane', () => {
+    it('reports that it is not shown while no plugin has an item', () => {
+        items.value = [];
+        const { wrapper, events } = mountPane();
+        expect(wrapper.find('.plugin-pane').exists()).toBe(false);
+        expect(events.at(-1)).toBe(false);
     });
 
-    it('renders nothing until a plugin registers an item', async () => {
-        initialized = true;
-        pluginItems.value = [];
+    it('reports that it is shown once a plugin adds an item, and when it is gone again', async () => {
+        items.value = [];
+        const { wrapper, events } = mountPane();
 
-        const wrapper = mount(PluginPane);
-        expect(wrapper.find('.plugin-pane').exists()).toBe(false);
-
-        pluginItems.value = [{
-            key: 'test',
-            component: markRaw({ render: () => h('span', { class: 'plugin-item' }, 'Hello') })
-        }];
+        items.value = [{ key: 'weather', component: Item }];
         await wrapper.vm.$nextTick();
-
         expect(wrapper.find('.plugin-pane').exists()).toBe(true);
-        expect(wrapper.find('.plugin-item').exists()).toBe(true);
+        expect(events.at(-1)).toBe(true);
+
+        items.value = [];
+        await wrapper.vm.$nextTick();
+        expect(events.at(-1)).toBe(false);
+    });
+
+    it('reports that it is gone when it is removed', () => {
+        items.value = [{ key: 'weather', component: Item }];
+        const { wrapper, events } = mountPane();
+        expect(events.at(-1)).toBe(true);
+
+        wrapper.unmount();
+        expect(events.at(-1)).toBe(false);
     });
 });

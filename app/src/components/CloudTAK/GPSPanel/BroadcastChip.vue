@@ -31,16 +31,12 @@ import { computed } from 'vue';
 import { LocationState } from '../../../utils/events.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useSharingStore } from '../../../stores/sharing.ts';
+import { broadcastChipMode } from '../../../utils/broadcast-chip.ts';
 
 const mapStore = useMapStore();
 const sharing = useSharingStore();
 
-// Paused (native app) wins: the user chose it and nothing else is true while it holds
-const mode = computed<'paused' | 'standby' | null>(() => {
-    if (sharing.paused) return 'paused';
-    if (sharing.standby && sharing.broadcastKnown) return 'standby';
-    return null;
-});
+const mode = computed(() => broadcastChipMode(sharing));
 
 const text = computed(() => {
     if (mode.value === 'paused') return 'Paused \u00b7 not connected';

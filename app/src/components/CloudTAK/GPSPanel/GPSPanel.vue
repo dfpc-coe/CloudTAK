@@ -104,7 +104,7 @@
 </template>
 
 <script setup lang='ts'>
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, watch } from 'vue';
 import { LocationState } from '../../../utils/events.ts';
 import { useMapStore } from '../../../stores/map.ts';
 import { useAppStore } from '../../../stores/app.ts';
@@ -121,13 +121,18 @@ import GPSPanelCoordinates from './GPSPanelCoordinates.vue';
 import BroadcastChip from './BroadcastChip.vue';
 import SharingToggle from '../SharingToggle.vue';
 import { useSharingStore } from '../../../stores/sharing.ts';
+import { broadcastChipMode } from '../../../utils/broadcast-chip.ts';
 import { isNativePlatform } from '../../../utils/capacitor.ts';
 
 const props = defineProps<{
     mode: string;
 }>();
 
-defineEmits(['set-location', 'to-location']);
+const emit = defineEmits<{
+    (e: 'set-location'): void;
+    (e: 'to-location'): void;
+    (e: 'chip-shown', shown: boolean): void;
+}>();
 
 const mapStore = useMapStore();
 const appStore = useAppStore();
@@ -149,6 +154,12 @@ const hidden = computed(() => {
     if (!appStore.isMobileDetected) return false;
     return props.mode === 'SetLocation' || mapStore.draw.mode !== DrawToolMode.STATIC;
 });
+
+// The banner above the panel is only on screen while the panel is. The map moves what sits above the
+// panel up by the banner's height while it is
+const chipShown = computed(() => !hidden.value && broadcastChipMode(sharing) !== null);
+watch(chipShown, (shown) => emit('chip-shown', shown), { immediate: true });
+onBeforeUnmount(() => emit('chip-shown', false));
 
 const isLive = computed(() => {
     return mapStore.location === LocationState.Live && !mapStore.manualLocationMode;
