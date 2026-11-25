@@ -1,3 +1,6 @@
+import * as Vue from 'vue'
+import * as VueRouter from 'vue-router'
+import * as VueTabler from '@tak-ps/vue-tabler'
 import { createApp, watch } from 'vue'
 import { PluginAPI } from '../plugin.ts';
 import type { PluginStatic, PluginInstance } from '../plugin.ts'
@@ -99,6 +102,14 @@ app.config.errorHandler = vueErrorHandler;
 
 app.use(router);
 app.use(pinia);
+
+Object.assign(globalThis, {
+    __CLOUDTAK__: {
+        'vue': Vue,
+        'vue-router': VueRouter,
+        '@tak-ps/vue-tabler': VueTabler
+    }
+});
 
 const plugins: Record<string, {
     default: PluginStatic
