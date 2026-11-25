@@ -112,26 +112,85 @@ unknown sources. A new build installs over the old one, as long as it is signed 
 The tag must not start with `v`: `release.yml` turns every `v*` tag into a release that triggers
 the production deployment.
 
-**Set up once.**
+**How it was set up (25 Nov 2026), and how to repeat it.** The first release run built version 14.1.0,
+and its APK is signed with the key below.
 
-1. Create the release keystore and back it up somewhere safe. If the key is lost, installed apps
-   cannot be updated, only replaced.
+1. **Create the release keystore.** Do this in a folder outside the repository:
 
-       keytool -genkeypair -v -keystore tak-nz-release.jks -alias tak-nz \
+       mkdir -p ~/android-signing && cd ~/android-signing
+       keytool -genkeypair -v \
+         -keystore tak-nz-release.jks \
+         -alias tak-nz \
          -keyalg RSA -keysize 4096 -validity 36500
 
-2. Create the `android-release` environment (Settings > Environments), with yourself as required
-   reviewer and `main` as the only deployment branch.
-3. Add the secrets to the environment:
+   - The alias is `tak-nz`, the key is RSA 4096 and valid for 100 years.
+   - `keytool` asks for a keystore password, the certificate details and a key password. The key
+     password is the same as the keystore password (Enter at that prompt), so there is one password.
+   - The certificate is `CN=Christian Elsen, OU=TAK.NZ, O=TAK.NZ, L=Wellington, ST=Wellington, C=NZ`.
+     These details are visible to anyone who installs the app.
+   - Check it: `keytool -list -v -keystore tak-nz-release.jks`
 
-       gh secret set ANDROID_KEYSTORE_BASE64 --env android-release --repo TAK-NZ/CloudTAK < <(base64 -w0 tak-nz-release.jks)
+2. **Back it up.** Save `tak-nz-release.jks`, its password and the alias in the password manager.
+   If any of them is lost, installed apps cannot be updated, only replaced. Nothing else needs a
+   backup: the `.idsig` file that `apksigner` writes next to an APK is a per-build signature for
+   incremental installs. It is not part of the key and is created again on every signing.
+
+3. **Create the `android-release` environment** (Settings > Environments), with `chriselsen` as the
+   required reviewer and `main` as the only deployment branch. From the terminal:
+
+       gh api -X PUT repos/TAK-NZ/CloudTAK/environments/android-release --input - <<'JSON'
+       {
+         "reviewers": [{"type": "User", "id": 5304256}],
+         "deployment_branch_policy": {"protected_branches": false, "custom_branch_policies": true}
+       }
+       JSON
+       gh api -X POST repos/TAK-NZ/CloudTAK/environments/android-release/deployment-branch-policies \
+         -f name=main -f type=branch
+
+   The user id is the reviewer's GitHub user id (`gh api user -q .id`).
+
+4. **Add the four secrets to the environment.** Run the commands one at a time. The first reads the
+   keystore from the pipe. The passwords are asked for, and the terminal shows `*` for each character.
+
+       gh secret set ANDROID_KEYSTORE_BASE64 --env android-release --repo TAK-NZ/CloudTAK \
+         --body "$(base64 -w0 tak-nz-release.jks)"
+       gh secret set ANDROID_KEY_ALIAS --env android-release --repo TAK-NZ/CloudTAK --body tak-nz
        gh secret set ANDROID_KEYSTORE_PASSWORD --env android-release --repo TAK-NZ/CloudTAK
-       gh secret set ANDROID_KEY_ALIAS --env android-release --repo TAK-NZ/CloudTAK
        gh secret set ANDROID_KEY_PASSWORD --env android-release --repo TAK-NZ/CloudTAK
 
-4. Optional, for push: add `GOOGLE_SERVICES_JSON_B64`, the Firebase `google-services.json` in
-   base64. Without it the app is built without push, as `build.gradle` only applies the Google
-   Services plugin when the file exists.
+   Check with `gh secret list --env android-release --repo TAK-NZ/CloudTAK`. GitHub never shows a
+   secret back, so a typo only shows in the first run.
+
+5. **Check the key before the first run.** This signs a copy of a debug APK with the real keystore, the
+   same way the workflow does, and prints the certificate:
+
+       T=~/Android/Sdk/build-tools/36.0.0
+       $T/zipalign -f 4 app-debug.apk test-aligned.apk
+       $T/apksigner sign --ks tak-nz-release.jks --ks-key-alias tak-nz --out test-signed.apk test-aligned.apk
+       $T/apksigner verify --print-certs test-signed.apk
+
+   Delete `test-signed.apk` and its `.idsig` file afterwards.
+
+6. **Optional, for push:** add `GOOGLE_SERVICES_JSON_B64`, the Firebase `google-services.json` in
+   base64, the same way as the other secrets. Without it the app is built without push, as
+   `build.gradle` only applies the Google Services plugin when the file exists.
+
+7. **Run it.** Actions > Android release > Run workflow on `main`, then approve it. "Publish" is
+   ticked by default. Untick it to build and sign only: the APK is then only in the run's artifact
+   (`android-release-apk`, kept for 14 days) and `android-latest` is not touched.
+
+**The signing key.** Every release must show this certificate fingerprint. A build with another
+fingerprint was signed with a different key, and phones refuse to update an installed app with it.
+
+    SHA-256: 31:ae:c2:e1:c8:27:9c:ab:6b:07:24:7c:36:db:54:50:3d:74:b6:38:e7:22:cb:33:00:b5:a3:b6:9a:a5:9c:47
+
+Check a download with `apksigner verify --print-certs TAK-NZ-CloudTAK.apk` and compare the SHA-256
+digest, which `apksigner` prints without colons.
+
+**If the key is lost or leaked.** Create a new keystore (steps 1 to 4, a new alias is fine) and run the
+workflow. Phones that have the old build cannot update to it. The app has to be uninstalled and
+installed again, which clears its local data. If the key leaked, also delete the secrets, then replace
+them. A Play Store release would use its own upload key, and Google signs the app for users.
 
 **Good to know.**
 
@@ -140,8 +199,9 @@ the production deployment.
 - `versionCode` is the value in `build.gradle`, which comes from upstream. Builds of the same version
   share it. That is fine for sideloading but not for the Play Store, which needs a higher code for
   every upload.
-- The workflow cannot be tested without the keystore secrets. The first run is the real test.
-- Untick "Publish" to build and sign only. The APK is then only in the run's artifact.
+- Each run replaces the `android-latest` release, so there is a few seconds in which its link gives a
+  404. The run also keeps the APK as an artifact for 14 days.
+- An unpublished build is the way to try a change to the workflow without touching the release.
 
 ---
 
