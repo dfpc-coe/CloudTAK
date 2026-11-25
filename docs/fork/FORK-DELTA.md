@@ -1002,6 +1002,26 @@ wake lock and location watch, and is never persisted.
 The Android foreground-service notification text is fixed when the watch starts, so it
 no longer claims the team can see you.
 
+
+**Room for the banner above the GPS panel.** The Paused / Shared from another device banner
+(`BroadcastChip.vue`) is absolutely positioned 6px above the GPS panel, so it takes no layout room.
+Windows anchored from `--map-gps-panel-size` used to be covered by it: the Selected Features window
+lost its buttons behind it, and on phones the plugin pane (`PluginPane.vue`) sat on top of both.
+
+- `Map.vue` sets `--map-gps-chip-size` (42px = the 36px banner plus a 6px gap) on `.map-shell` while the
+  banner is shown, and `--map-plugin-pane-size` (58px = 50px plus 8px, only on screens 600px or
+  narrower, where the pane is above the GPS panel) while the plugin pane is shown. Both are 0
+  otherwise.
+- `GPSPanel.vue` and `PluginPane.vue` report whether they are shown (`chip-shown`, `shown`), so the
+  rule for when the banner is on screen (not paused or standby, and the panel not hidden under a
+  bottom pane on a small screen) lives in one place. `utils/broadcast-chip.ts` holds the mode rule
+  that the banner and the panel share.
+- Every offset that starts from `--map-gps-panel-size` has to add `--map-gps-chip-size`: the Selected
+  Features anchor (`.selected-features-anchor`, which also adds the plugin pane), the plugin pane on
+  small screens and `.maplibregl-ctrl-bottom-left`. `map-layout.spec.ts` fails when one is added
+  without it.
+- If the banner height changes (a longer text that wraps, a bigger button), change the 42px.
+
 ---
 
 ## Web compass heading

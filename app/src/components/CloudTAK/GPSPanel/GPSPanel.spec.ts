@@ -252,3 +252,60 @@ describe('GPSPanel', () => {
         });
     });
 });
+
+describe('GPSPanel: room for the banner', () => {
+    function chipEvents(wrapper: ReturnType<typeof mountPanel>): boolean[] {
+        return (wrapper.emitted('chip-shown') ?? []).map((args) => args[0] as boolean);
+    }
+
+    it('reports no banner while this session is the broadcaster', () => {
+        sharing.paused = false;
+        sharing.standby = false;
+        expect(chipEvents(mountPanel()).at(-1)).toBe(false);
+    });
+
+    it('reports the banner while paused and when the state changes', async () => {
+        sharing.paused = true;
+        const wrapper = mountPanel();
+        expect(chipEvents(wrapper).at(-1)).toBe(true);
+
+        sharing.paused = false;
+        await wrapper.vm.$nextTick();
+        expect(chipEvents(wrapper).at(-1)).toBe(false);
+
+        sharing.standby = true;
+        sharing.broadcastKnown = true;
+        await wrapper.vm.$nextTick();
+        expect(chipEvents(wrapper).at(-1)).toBe(true);
+
+        sharing.standby = false;
+        sharing.broadcastKnown = false;
+    });
+
+    it('reports no banner when the panel is hidden under a bottom pane on a small screen', async () => {
+        sharing.paused = true;
+        appStore.isMobileDetected = true;
+        const wrapper = mountPanel('SetLocation');
+        expect(chipEvents(wrapper).at(-1)).toBe(false);
+
+        await wrapper.setProps({ mode: 'Default' });
+        expect(chipEvents(wrapper).at(-1)).toBe(true);
+
+        appStore.isMobileDetected = false;
+        sharing.paused = false;
+    });
+
+    it('reports no banner when the panel goes away', () => {
+        sharing.paused = true;
+        const events: boolean[] = [];
+        const wrapper = mount(GPSPanel, {
+            props: { mode: 'Default', onChipShown: (shown: boolean) => events.push(shown) },
+            global: { stubs: { GPSPanelCoordinates: true, SharingToggle: true, BroadcastChip: true } }
+        });
+        expect(events.at(-1)).toBe(true);
+
+        wrapper.unmount();
+        expect(events.at(-1)).toBe(false);
+        sharing.paused = false;
+    });
+});
