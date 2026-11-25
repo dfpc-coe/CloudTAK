@@ -22,13 +22,6 @@ on:
         description: 'Publish as the android-latest release (untick to build and sign only)'
         type: boolean
         default: true
-      plugins:
-        description: 'Web plugins to build in: the list of the Demo and Test stack (dev-test) or of production (prod)'
-        type: choice
-        options:
-          - dev-test
-          - prod
-        default: dev-test
 
 permissions:
   contents: read
@@ -81,18 +74,15 @@ jobs:
             app/android/gradle/wrapper/gradle-wrapper.properties
 
       # The web plugins are baked into the app's bundled web files, the same way the Docker
-      # image does it (api/bin/plugin.ts), so the phone app has the plugins of the chosen stack.
-      # The list is in cdk/cdk.json, as it is for the Demo build (demo-build.yml). Production has
-      # none at the moment, so dev-test is the default.
+      # image does it (api/bin/plugin.ts), so the phone app has the plugins production has.
+      # The list is in cdk/cdk.json, the cleaning up is the same as in production-build.yml.
       - name: Install the web plugins
-        env:
-          PLUGIN_PROFILE: ${{ inputs.plugins || 'dev-test' }}
         run: |
-          PLUGINS=$(jq -r --arg profile "$PLUGIN_PROFILE" '.context[$profile].cloudtak.webPlugins // ""' cdk/cdk.json)
+          PLUGINS=$(jq -r '.context.prod.cloudtak.webPlugins // ""' cdk/cdk.json)
           PLUGINS=$(echo "$PLUGINS" | tr -s ',[:space:]' ',' | sed 's/^,//;s/,$//')
-          echo "Plugins ($PLUGIN_PROFILE): $PLUGINS"
+          echo "Plugins: $PLUGINS"
           if [ -z "$PLUGINS" ]; then
-            echo "::warning::No web plugins are configured for '$PLUGIN_PROFILE' in cdk/cdk.json, the app is built without any"
+            echo "::warning::No web plugins are configured for prod in cdk/cdk.json, the app is built without any"
           fi
           cd api
           WEB_PLUGINS="$PLUGINS" node bin/plugin.ts

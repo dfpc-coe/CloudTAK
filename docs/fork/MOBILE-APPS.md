@@ -102,9 +102,9 @@ Two workflows build the Android app:
   `android-latest` release. Run it by hand from the Actions tab (it only runs from `main`, and
   needs approval from the `android-release` environment). The iOS equivalent is `ios-testflight.yml`.
 
-The web plugins are built into the app. The list comes from `cdk/cdk.json`, like the Demo build, and the
-`plugins` input of the workflow picks which stack's list to use: `dev-test` (the Demo and Test stack, the
-default) or `prod`. Production has no plugins configured at the moment.
+The web plugins are built into the app. The list is `cloudtak.webPlugins` of the `prod` profile in
+`cdk/cdk.json`, the same list as the production image and the iOS build. Keep it equal to the `dev-test`
+list, which the Demo and Test stack run.
 
 The release is rolling: every run deletes the previous `android-latest` release and its tag, then
 creates them again, so only the latest build is kept. The download link does not change:
