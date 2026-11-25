@@ -41,7 +41,8 @@
                             stroke='2.5'
                             class='icons-muted flex-shrink-0'
                         />
-                        <IconAlbum
+                        <component
+                            :is='group.uid === FAVORITES_UID ? IconStar : IconAlbum'
                             :size='18'
                             stroke='1.5'
                             class='icons-muted flex-shrink-0'
@@ -56,6 +57,7 @@
                         />
                     </button>
                     <TablerIconButton
+                        v-if='group.uid !== FAVORITES_UID'
                         title='Open Iconset'
                         @click='router.push(`/menu/iconset/${group.uid}`)'
                     >
@@ -76,10 +78,11 @@
                     <div class='icons-grid pb-2'>
                         <IconTile
                             v-for='icon in visible(group)'
-                            :key='icon.name'
+                            :key='`${group.uid}-${icon.name}`'
                             :icon='icon'
                             :src='iconUrl(icon)'
-                            @click='openIcon(icon)'
+                            :title='group.uid === FAVORITES_UID ? `Drop ${IconCache.leaf(icon.path)} point` : icon.path'
+                            @click='group.uid === FAVORITES_UID ? dropPoint(icon) : openIcon(icon)'
                         />
                     </div>
                     <button
@@ -103,6 +106,10 @@ import { useRouter } from 'vue-router';
 import IconCache from '../../../base/icon.ts';
 import IconsetCache from '../../../base/iconset.ts';
 import IconTile from './IconTile.vue';
+import { useMapStore } from '../../../stores/map.ts';
+import { useAppStore } from '../../../stores/app.ts';
+import { DrawToolMode } from '../../../stores/modules/draw.ts';
+import { useIconFavorites, FAVORITES_UID, FAVORITES_NAME } from '../../../utils/icon-favorites.ts';
 import {
     TablerNone,
     TablerInput,
@@ -115,6 +122,7 @@ import {
     IconArrowRight,
     IconChevronDown,
     IconChevronRight,
+    IconStar,
 } from '@tabler/icons-vue';
 import type { DBIcon, DBIconset } from '../../../database.ts';
 
@@ -127,6 +135,8 @@ interface Group {
 const PAGE = 96;
 
 const router = useRouter();
+const mapStore = useMapStore();
+const appStore = useAppStore();
 const error = ref<Error | undefined>(undefined);
 const loading = ref(true);
 
@@ -139,9 +149,16 @@ const expanded = ref(new Set<string>());
 const urls = new Map<string, string>();
 let subscription: Subscription | undefined;
 
+const { favorites } = useIconFavorites();
+
 const groups = computed<Group[]>(() => {
     const needle = filter.value.trim().toLowerCase();
     const grouped = new Map<string, DBIcon[]>();
+
+    const matches = (icon: DBIcon): boolean => {
+        return icon.path.toLowerCase().includes(needle)
+            || (icon.type2525b || '').toLowerCase().includes(needle);
+    };
 
     for (const icon of icons.value) {
         const list = grouped.get(icon.iconset);
@@ -150,6 +167,20 @@ const groups = computed<Group[]>(() => {
     }
 
     const res: Group[] = [];
+
+    if (favorites.value.length) {
+        const byName = new Map(icons.value.map((icon) => [icon.name, icon]));
+        const all = favorites.value
+            .map((name) => byName.get(name))
+            .filter((icon): icon is DBIcon => !!icon);
+
+        const matched = !needle || FAVORITES_NAME.toLowerCase().includes(needle)
+            ? all
+            : all.filter(matches);
+
+        if (matched.length) res.push({ uid: FAVORITES_UID, name: FAVORITES_NAME, icons: matched });
+    }
+
     for (const iconset of iconsets.value) {
         const all = grouped.get(iconset.uid) ?? [];
 
@@ -158,10 +189,7 @@ const groups = computed<Group[]>(() => {
             continue;
         }
 
-        const matched = all.filter((icon) => {
-            return icon.path.toLowerCase().includes(needle)
-                || (icon.type2525b || '').toLowerCase().includes(needle);
-        });
+        const matched = all.filter(matches);
 
         if (matched.length) res.push({ uid: iconset.uid, name: iconset.name, icons: matched });
     }
@@ -195,7 +223,7 @@ async function load(list: DBIconset[]): Promise<void> {
         iconsets.value = list;
         icons.value = all.sort((a, b) => a.path.localeCompare(b.path));
 
-        open.value ??= new Set(all.length <= PAGE ? list.map((iconset) => iconset.uid) : []);
+        open.value ??= new Set([FAVORITES_UID, ...(all.length <= PAGE ? list.map((iconset) => iconset.uid) : [])]);
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
@@ -229,6 +257,12 @@ function toggle(group: Group): void {
 
 function visible(group: Group): DBIcon[] {
     return expanded.value.has(group.uid) ? group.icons : group.icons.slice(0, PAGE);
+}
+
+async function dropPoint(icon: DBIcon): Promise<void> {
+    await mapStore.draw.start(DrawToolMode.POINT, { icon: icon.name });
+
+    if (appStore.isMobileDetected) await router.push('/');
 }
 
 function openIcon(icon: DBIcon): void {

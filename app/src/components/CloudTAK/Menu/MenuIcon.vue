@@ -112,6 +112,20 @@
                                             v-text='icon.name'
                                         />
                                     </div>
+                                    <TablerIconButton
+                                        v-if='favoriteKey'
+                                        class='align-self-start'
+                                        :class='{ "text-yellow": isFavorite(favoriteKey) }'
+                                        :title='isFavorite(favoriteKey) ? "Remove from Favorites" : "Add to Favorites"'
+                                        :aria-pressed='isFavorite(favoriteKey)'
+                                        @click='toggleFavorite(favoriteKey)'
+                                    >
+                                        <component
+                                            :is='isFavorite(favoriteKey) ? IconStarFilled : IconStar'
+                                            :size='24'
+                                            stroke='1.5'
+                                        />
+                                    </TablerIconButton>
                                 </div>
 
                                 <div class='row gy-3 gx-0 gx-sm-3'>
@@ -162,7 +176,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import IconCache from '../../../base/icon.ts';
 import IconsetCache from '../../../base/iconset.ts';
@@ -177,11 +191,12 @@ import {
     TablerInput,
     TablerUploadLogo
 } from '@tak-ps/vue-tabler';
-import { IconPencil, IconMapPinPlus } from '@tabler/icons-vue';
+import { IconPencil, IconMapPinPlus, IconStar, IconStarFilled } from '@tabler/icons-vue';
 import { DrawToolMode } from '../../../stores/modules/draw.ts';
 import { useAppStore } from '../../../stores/app.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ProfileConfig from '../../../base/profile.ts';
+import { useIconFavorites } from '../../../utils/icon-favorites.ts';
 import type { Iconset } from '../../../types.ts';
 import type { DBIcon } from '../../../database.ts';
 
@@ -207,6 +222,13 @@ const iconObjectUrl = ref('');
 
 const iconset = ref<Pick<Iconset, 'name' | 'username'>>({ name: '', username: null });
 const icon = ref<IconDraft>({ name: '', data: '', type2525b: null });
+
+const { isFavorite, toggle: toggleFavorite } = useIconFavorites();
+
+const favoriteKey = computed<string>(() => {
+    if (route.params.icon === 'new' || !icon.value.name) return '';
+    return IconCache.key(`${String(route.params.iconset)}:${icon.value.name}`);
+});
 
 onMounted(async () => {
     const isSysAdmin = await ProfileConfig.get('system_admin');

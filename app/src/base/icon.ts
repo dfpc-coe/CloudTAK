@@ -35,6 +35,11 @@ export default class Icon {
         return await db.icon.get(icon);
     }
 
+    /** Return the cached icons for the given keys, in order, skipping any that are not cached */
+    static async many(icons: string[]): Promise<DBIcon[]> {
+        return (await db.icon.bulkGet(icons)).filter((icon): icon is DBIcon => !!icon);
+    }
+
     /**
      * Return all cached icons ordered by key.
      */

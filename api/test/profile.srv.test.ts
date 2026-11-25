@@ -36,6 +36,7 @@ test('GET: api/profile', async () => {
             tak_loc: null,
             tak_loc_freq: 2000,
             menu_order: [],
+            icon_favorites: [],
             display_stale: '10 Minutes',
             display_distance: 'mile',
             display_elevation: 'feet',
@@ -98,6 +99,7 @@ test('PATCH: api/profile', async () => {
             tak_loc: null,
             tak_loc_freq: 2000,
             menu_order: [],
+            icon_favorites: [],
             display_stale: '10 Minutes',
             display_distance: 'mile',
             display_elevation: 'feet',
@@ -238,6 +240,7 @@ test('GET: api/profile - New User / New Defaults', async () => {
             tak_loc: null,
             tak_loc_freq: 2000,
             menu_order: [],
+            icon_favorites: [],
             display_stale: 'Immediate',
             display_distance: 'meter',
             display_elevation: 'meter',
@@ -264,6 +267,45 @@ test('GET: api/profile - New User / New Defaults', async () => {
             system_admin: false,
             agency_admin: [],
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PATCH: api/profile - Icon Favorites', async () => {
+    try {
+        const res = await flight.fetch('/api/profile', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.configtest,
+            },
+            body: {
+                icon_favorites: ['iconset-uid:folder/icon', 'other-uid:icon'],
+            },
+        }, true);
+
+        assert.deepEqual(res.body.icon_favorites, ['iconset-uid:folder/icon', 'other-uid:icon']);
+
+        const get = await flight.fetch('/api/profile', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.configtest,
+            },
+        }, true);
+
+        assert.deepEqual(get.body.icon_favorites, ['iconset-uid:folder/icon', 'other-uid:icon']);
+
+        const cleared = await flight.fetch('/api/profile', {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.configtest,
+            },
+            body: {
+                icon_favorites: [],
+            },
+        }, true);
+
+        assert.deepEqual(cleared.body.icon_favorites, []);
     } catch (err) {
         assert.ifError(err);
     }

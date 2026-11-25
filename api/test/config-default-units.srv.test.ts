@@ -187,6 +187,7 @@ test('GET api/profile', async () => {
             tak_loc: null,
             tak_loc_freq: 2000,
             menu_order: [],
+            icon_favorites: [],
             display_stale: '30 Minutes',
             display_distance: 'kilometer',
             display_elevation: 'meter',

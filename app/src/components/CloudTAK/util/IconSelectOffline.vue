@@ -187,7 +187,21 @@
                         :class='{ "text-center": params.showNames }'
                         @click='selectIcon(icon); modal = false'
                     >
-                        <div class='card'>
+                        <div class='card position-relative'>
+                            <button
+                                type='button'
+                                class='icon-favorite position-absolute top-0 end-0 p-1'
+                                :class='{ "icon-favorite--active": isFavorite(icon.name) }'
+                                :title='isFavorite(icon.name) ? "Remove from Favorites" : "Add to Favorites"'
+                                :aria-pressed='isFavorite(icon.name)'
+                                @click.stop='toggleFavorite(icon.name)'
+                            >
+                                <component
+                                    :is='isFavorite(icon.name) ? IconStarFilled : IconStar'
+                                    :size='16'
+                                    stroke='1.5'
+                                />
+                            </button>
                             <div
                                 class='card-body text-center p-1'
                                 :class='{ "py-2": params.showNames }'
@@ -222,7 +236,9 @@ import {
     IconTrash,
     IconPhotoSearch,
     IconChevronDown,
-    IconSearch
+    IconSearch,
+    IconStar,
+    IconStarFilled
 } from '@tabler/icons-vue';
 import {
     TablerInlineAlert,
@@ -267,7 +283,8 @@ const params = ref({
 });
 
 const {
-    loading, sets, setName, setNames, filter, filtered: filteredIcons, urls: iconUrls, load, selectSet
+    loading, sets, setName, setNames, filter, filtered: filteredIcons, urls: iconUrls, load, selectSet,
+    isFavorite, toggleFavorite
 } = useIconsetIcons();
 
 const selected = ref<DBIcon | null>(null);
@@ -334,3 +351,23 @@ async function fetchSelected(): Promise<void> {
     selectedUrl.value = URL.createObjectURL(icon.data);
 }
 </script>
+
+<style scoped>
+.icon-favorite {
+    line-height: 0;
+    color: var(--tblr-secondary-color);
+    background: none;
+    border: 0;
+    opacity: 0.5;
+}
+
+.icon-favorite:hover,
+.icon-favorite:focus-visible,
+.icon-favorite--active {
+    opacity: 1;
+}
+
+.icon-favorite--active {
+    color: var(--tblr-yellow);
+}
+</style>
