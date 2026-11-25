@@ -1,0 +1,27 @@
+// Used by the Android workflows only (copied into ~/.gradle/init.d).
+//
+// Maven Central answers GitHub's hosted runners with "429 Too Many Requests", so a build cannot
+// resolve its dependencies. This points every Maven Central repository, of the build scripts, the
+// plugins and the projects, at Google's mirror of Central instead. The project files stay as
+// upstream has them.
+def central = 'https://repo.maven.apache.org/maven2'
+def mirror = 'https://maven-central.storage-download.googleapis.com/maven2/'
+
+def redirect = { repositories ->
+    repositories.configureEach { repository ->
+        if (repository instanceof MavenArtifactRepository && repository.url.toString().startsWith(central)) {
+            repository.url = mirror
+        }
+    }
+}
+
+beforeSettings { settings ->
+    redirect(settings.pluginManagement.repositories)
+    redirect(settings.buildscript.repositories)
+    redirect(settings.dependencyResolutionManagement.repositories)
+}
+
+allprojects {
+    redirect(buildscript.repositories)
+    redirect(repositories)
+}

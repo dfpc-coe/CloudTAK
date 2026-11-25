@@ -92,6 +92,59 @@ When the test build works, continue with the full plan below.
 
 ---
 
+## CI: Android release APK
+
+Two workflows build the Android app:
+
+- `.github/workflows/android-build-check.yml` builds a debug APK on pull requests that touch
+  `app/android/**`. It needs no secrets.
+- `.github/workflows/android-release.yml` builds and signs the release APK and publishes it as the
+  `android-latest` release. Run it by hand from the Actions tab (it only runs from `main`, and
+  needs approval from the `android-release` environment). The iOS equivalent is `ios-testflight.yml`.
+
+The release is rolling: every run deletes the previous `android-latest` release and its tag, then
+creates them again, so only the latest build is kept. The download link does not change:
+
+    https://github.com/TAK-NZ/CloudTAK/releases/download/android-latest/TAK-NZ-CloudTAK.apk
+
+The release has a `.sha256` file next to the APK. Testers install the APK and allow installs from
+unknown sources. A new build installs over the old one, as long as it is signed with the same key.
+The tag must not start with `v`: `release.yml` turns every `v*` tag into a release that triggers
+the production deployment.
+
+**Set up once.**
+
+1. Create the release keystore and back it up somewhere safe. If the key is lost, installed apps
+   cannot be updated, only replaced.
+
+       keytool -genkeypair -v -keystore tak-nz-release.jks -alias tak-nz \
+         -keyalg RSA -keysize 4096 -validity 36500
+
+2. Create the `android-release` environment (Settings > Environments), with yourself as required
+   reviewer and `main` as the only deployment branch.
+3. Add the secrets to the environment:
+
+       gh secret set ANDROID_KEYSTORE_BASE64 --env android-release --repo TAK-NZ/CloudTAK < <(base64 -w0 tak-nz-release.jks)
+       gh secret set ANDROID_KEYSTORE_PASSWORD --env android-release --repo TAK-NZ/CloudTAK
+       gh secret set ANDROID_KEY_ALIAS --env android-release --repo TAK-NZ/CloudTAK
+       gh secret set ANDROID_KEY_PASSWORD --env android-release --repo TAK-NZ/CloudTAK
+
+4. Optional, for push: add `GOOGLE_SERVICES_JSON_B64`, the Firebase `google-services.json` in
+   base64. Without it the app is built without push, as `build.gradle` only applies the Google
+   Services plugin when the file exists.
+
+**Good to know.**
+
+- The APK is signed with `apksigner` after Gradle builds it unsigned, so `app/android/app/build.gradle`
+  needs no signing block. That file also changes upstream and would conflict on a sync.
+- `versionCode` is the value in `build.gradle`, which comes from upstream. Builds of the same version
+  share it. That is fine for sideloading but not for the Play Store, which needs a higher code for
+  every upload.
+- The workflow cannot be tested without the keystore secrets. The first run is the real test.
+- Untick "Publish" to build and sign only. The APK is then only in the run's artifact.
+
+---
+
 ## 1. Decisions needed first
 
 | Decision | Notes |

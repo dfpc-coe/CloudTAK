@@ -1,0 +1,85 @@
+name: Android build check
+
+# Compiles a debug build of the Android app, so a change that breaks the Android project is
+# caught on the pull request. It needs no signing key and no secrets.
+
+on:
+  pull_request:
+    paths:
+      - 'app/android/**'
+      - '.github/gradle/ci-init.gradle'
+      - 'app/capacitor.config.json'
+      - 'app/package.json'
+      - 'app/package-lock.json'
+      - '.github/workflows/android-build-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+          cache-dependency-path: |
+            app/android/**/*.gradle*
+            app/android/gradle/wrapper/gradle-wrapper.properties
+
+      # Maven Central answers GitHub's hosted runners with 429 Too Many Requests. The init script
+      # points the build at Google's mirror of it
+      - name: Use a mirror of Maven Central
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cp .github/gradle/ci-init.gradle ~/.gradle/init.d/ci-init.gradle
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Build the web app
+        working-directory: app
+        run: npm run build
+
+      - name: Sync Capacitor into the Android project
+        working-directory: app
+        run: npx cap sync android
+
+      # compileSdk is 36. The runner image may or may not have it, this makes sure of it. sdkmanager
+      # is not on the PATH of the hosted runners, so it is looked for in the SDK
+      - name: Android SDK
+        run: |
+          sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$sdk" >> "$GITHUB_ENV"
+          sdkmanager=$(ls "$sdk"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          echo "Android SDK $sdk, sdkmanager $sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null || true
+          "$sdkmanager" --install "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Build the debug APK
+        working-directory: app/android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Keep the debug APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: android-debug-apk
+          path: app/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
