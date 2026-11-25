@@ -75,19 +75,19 @@ jobs:
 
       # The web plugins are baked into the app's bundled web files, the same way the Docker
       # image does it (api/bin/plugin.ts), so the phone app has the plugins production has.
-      # Maven Central answers GitHub's hosted runners with 429 Too Many Requests. The init script
-      # points the build at Google's mirror of it
-      - name: Use a mirror of Maven Central
-        run: |
-          mkdir -p ~/.gradle/init.d
-          cp .github/gradle/ci-init.gradle ~/.gradle/init.d/ci-init.gradle
-
+      # The list is in cdk/cdk.json, the cleaning up is the same as in production-build.yml.
       - name: Install the web plugins
         run: |
           PLUGINS=$(jq -r '.context.prod.cloudtak.webPlugins // ""' cdk/cdk.json)
+          PLUGINS=$(echo "$PLUGINS" | tr -s ',[:space:]' ',' | sed 's/^,//;s/,$//')
           echo "Plugins: $PLUGINS"
+          if [ -z "$PLUGINS" ]; then
+            echo "::warning::No web plugins are configured for prod in cdk/cdk.json, the app is built without any"
+          fi
           cd api
           WEB_PLUGINS="$PLUGINS" node bin/plugin.ts
+          echo "Plugins installed in app/plugins:"
+          ls ../app/plugins
 
       - name: Install dependencies
         working-directory: app

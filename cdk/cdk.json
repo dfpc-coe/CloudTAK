@@ -112,7 +112,7 @@
         "oidcAgencyAdminGroupPrefix": "CloudTAKAgency",
         "authentikChannelGroupPrefix": "tak_",
         "localOnlyAccounts": ["ckadmin"],
-        "webPlugins": "",
+        "webPlugins": "https://github.com/TAK-NZ/cloudtak-plugin-rubbersheet.git,https://github.com/TAK-NZ/cloudtak-plugin-weather.git,https://github.com/TAK-NZ/cloudtak-plugin-sar.git",
         "pmtilesProvisionedConcurrency": 10,
         "enableInboundMail": true
       },
