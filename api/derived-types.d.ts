@@ -57734,6 +57734,7 @@ export interface paths {
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
+                            icon_favorites: string[];
                         };
                     };
                 };
@@ -57868,6 +57869,7 @@ export interface paths {
                         geometry_point_type?: string;
                         geometry_point_color?: string;
                         geometry_point_icon?: string;
+                        icon_favorites?: string[];
                     };
                 };
             };
@@ -57933,6 +57935,7 @@ export interface paths {
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
+                            icon_favorites: string[];
                         };
                     };
                 };
@@ -61896,6 +61899,7 @@ export interface paths {
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
+                            icon_favorites: string[];
                             /** @description Public metadata of an X509 certificate - clients derive expiry state from validTo */
                             certificate?: {
                                 subject: string;
@@ -62184,6 +62188,7 @@ export interface paths {
                             geometry_point_type?: string;
                             geometry_point_color?: string;
                             geometry_point_icon?: string;
+                            icon_favorites: string[];
                             /** @description Public metadata of an X509 certificate - clients derive expiry state from validTo */
                             certificate?: {
                                 subject: string;

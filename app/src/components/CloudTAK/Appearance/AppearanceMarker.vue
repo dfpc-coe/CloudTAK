@@ -96,6 +96,22 @@
                 </button>
             </div>
 
+            <button
+                v-if='icon'
+                type='button'
+                class='btn btn-sm btn-ghost-secondary d-flex align-items-center gap-1 mt-1'
+                :aria-pressed='isFavorite(icon)'
+                @click='toggleFavorite(icon)'
+            >
+                <component
+                    :is='isFavorite(icon) ? IconStarFilled : IconStar'
+                    :size='16'
+                    stroke='1.5'
+                    :class='{ "text-yellow": isFavorite(icon) }'
+                />
+                <span v-text='isFavorite(icon) ? "Remove from Favorites" : "Add to Favorites"' />
+            </button>
+
             <ColorSwatches
                 class='pt-2'
                 :model-value='color'
@@ -143,7 +159,7 @@
 
 <script setup lang='ts'>
 import { computed, watch } from 'vue';
-import { IconInfoCircle } from '@tabler/icons-vue';
+import { IconInfoCircle, IconStar, IconStarFilled } from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerEnum,
@@ -185,7 +201,8 @@ const emit = defineEmits<{
 }>();
 
 const {
-    loading, sets, setName, setNames, filter: iconFilter, filtered: filteredIcons, urls, load, follow, selectSet
+    loading, sets, setName, setNames, filter: iconFilter, filtered: filteredIcons, urls, load, follow, selectSet,
+    isFavorite, toggleFavorite
 } = useIconsetIcons();
 
 watch(() => props.marker, async (marker) => {

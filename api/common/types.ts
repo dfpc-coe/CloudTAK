@@ -581,6 +581,10 @@ export const Profile = Type.Object({
     geometry_point_type: Type.Optional(Type.String()),
     geometry_point_color: Type.Optional(Type.String()),
     geometry_point_icon: Type.Optional(Type.String()),
+
+    icon_favorites: Type.Array(Type.String({
+        description: 'Icon reference in the form <iconset uid>:<icon path>',
+    }), { maxItems: 500 }),
 });
 
 export const ProfilePatchBody = Type.Partial(Profile);

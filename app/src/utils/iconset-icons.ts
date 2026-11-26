@@ -1,11 +1,13 @@
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import Icon from '../base/icon.ts';
 import Iconset from '../base/iconset.ts';
+import { useIconFavorites, FAVORITES_UID, FAVORITES_NAME } from './icon-favorites.ts';
 import type { DBIcon, DBIconset } from '../database.ts';
 
 /**
  * Locally cached iconsets and the icons of the selected one, with an object
- * URL per icon, for icon pickers
+ * URL per icon, for icon pickers. The user's favorite icons are offered as a
+ * leading virtual iconset
  */
 export function useIconsetIcons() {
     const loading = ref({ sets: false, icons: false });
@@ -15,8 +17,16 @@ export function useIconsetIcons() {
     const urls = ref<Map<string, string>>(new Map());
     const filter = ref('');
 
-    const setNames = computed<string[]>(() => sets.value.map((set) => set.name));
-    const setName = computed<string>(() => sets.value.find((set) => set.uid === setUid.value)?.name || '');
+    const { favorites, ready, isFavorite, toggle: toggleFavorite } = useIconFavorites();
+
+    const options = computed<Array<{ uid: string, name: string }>>(() => {
+        const real = sets.value.map((set) => ({ uid: set.uid, name: set.name }));
+        if (!favorites.value.length) return real;
+        return [{ uid: FAVORITES_UID, name: FAVORITES_NAME }, ...real];
+    });
+
+    const setNames = computed<string[]>(() => options.value.map((set) => set.name));
+    const setName = computed<string>(() => options.value.find((set) => set.uid === setUid.value)?.name || '');
 
     const filtered = computed<DBIcon[]>(() => {
         const f = filter.value.trim().toLowerCase();
@@ -25,6 +35,12 @@ export function useIconsetIcons() {
     });
 
     onUnmounted(revoke);
+
+    watch(favorites, async () => {
+        if (setUid.value !== FAVORITES_UID) return;
+        if (!favorites.value.length) setUid.value = sets.value[0]?.uid ?? '';
+        await fetchIcons();
+    });
 
     function revoke(): void {
         for (const url of urls.value.values()) URL.revokeObjectURL(url);
@@ -36,7 +52,7 @@ export function useIconsetIcons() {
         return uid && sets.value.some((set) => set.uid === uid) ? uid : undefined;
     }
 
-    /** Load the iconsets once, opening the one that owns `icon`, else the first */
+    /** Load the iconsets once, opening the one that owns `icon`, else the favorites, else the first */
     async function load(icon?: string): Promise<void> {
         if (sets.value.length) return;
 
@@ -48,7 +64,11 @@ export function useIconsetIcons() {
             loading.value.sets = false;
         }
 
-        setUid.value = owner(icon) ?? sets.value[0]?.uid ?? '';
+        await ready;
+
+        setUid.value = owner(icon)
+            ?? (favorites.value.length ? FAVORITES_UID : sets.value[0]?.uid)
+            ?? '';
 
         await fetchIcons();
     }
@@ -57,13 +77,14 @@ export function useIconsetIcons() {
     async function follow(icon?: string): Promise<void> {
         const uid = owner(icon);
         if (!uid || uid === setUid.value) return;
+        if (setUid.value === FAVORITES_UID && isFavorite(icon)) return;
 
         setUid.value = uid;
         await fetchIcons();
     }
 
     async function selectSet(name: string): Promise<void> {
-        const set = sets.value.find((set) => set.name === name);
+        const set = options.value.find((set) => set.name === name);
         if (!set || set.uid === setUid.value) return;
 
         setUid.value = set.uid;
@@ -81,7 +102,9 @@ export function useIconsetIcons() {
 
         try {
             const uid = setUid.value;
-            const list = await Icon.list(uid);
+            const list = uid === FAVORITES_UID
+                ? await Icon.many([...favorites.value])
+                : await Icon.list(uid);
             if (uid !== setUid.value) return;
 
             revoke();
@@ -96,5 +119,8 @@ export function useIconsetIcons() {
         }
     }
 
-    return { loading, sets, setName, setNames, filter, filtered, urls, load, follow, selectSet };
+    return {
+        loading, sets, setName, setNames, filter, filtered, urls, load, follow, selectSet,
+        isFavorite, toggleFavorite
+    };
 }
