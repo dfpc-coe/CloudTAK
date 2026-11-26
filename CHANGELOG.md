@@ -24,6 +24,11 @@
 
 ### Pending Release
 
+### v14.3.0 - 2026-11-26
+
+- :tada: Introduce Tauri Beta which will replace the original CloudTAK-Native for desktop use
+- :rocket: Add 3rd state to show that the app is connecting
+
 ### v14.2.0 - 2026-11-25
 
 - :tada: Plugins can now be loaded at runtime, including on iOS & Android, instead of being compiled into the web build. Plugins are in beta and the plugin API may change between releases
