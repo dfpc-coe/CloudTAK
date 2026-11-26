@@ -24,6 +24,17 @@
 
 ### Pending Release
 
+### v14.2.0 - 2026-11-25
+
+- :tada: Plugins can now be loaded at runtime, including on iOS & Android, instead of being compiled into the web build. Plugins are in beta and the plugin API may change between releases
+- :tada: Add a `Plugins` page under `Settings` where a user chooses which enabled plugins to load. A loaded plugin is stored on the device after a confirmation prompt, is loaded again on every start, including offline, and is removed if an administrator disables or deletes it
+- :tada: Administrators upload a plugin as a single `.tar.gz` containing `manifest.json` & `index.js` via `POST /api/plugin/bundle`, which creates the plugin named in the manifest or replaces its current version. The manifest carries the name, version, `sha256` of `index.js` and optional description, author, license, homepage & logo
+- :rocket: `POST /api/plugin` and `POST /api/plugin/:plugin/bundle` are removed in favour of `POST /api/plugin/bundle`, and `PATCH /api/plugin/:plugin` now only enables or disables a plugin
+- :rocket: Plugin names must now be unique - existing duplicates have their id appended by the migration
+- :rocket: Allow `blob:` in the `script-src` Content Security Policy so stored plugin bundles can be imported
+- :tada: Menus on mobile can be dragged down by their header to any height and dismissed with a swipe. A flick carries the menu to half height or back to full, the map behind a shortened menu stays interactive, and the menu fades out as it is swiped closed
+- :arrow_up: Update `@tak-ps/vue-tabler` to `5.14.0` for swipeable modals
+
 ### v14.1.1 - 2026-11-24
 
 - :rocket: Allow plugins to style breadcrumb history points
