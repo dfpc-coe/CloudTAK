@@ -7,6 +7,22 @@
             />
         </template>
         <template #default>
+            <TablerInlineAlert
+                class='mb-2'
+                severity='info'
+                title='Beta'
+                description='Plugins are in beta and may change or stop working between releases.'
+            />
+            <TablerAlert
+                v-if='toggleError'
+                :err='toggleError'
+            />
+            <TablerInlineAlert
+                v-if='offline && !loading'
+                severity='warning'
+                title='Offline'
+                description='Showing plugins stored on this device'
+            />
             <TablerLoading v-if='loading' />
             <TablerAlert
                 v-else-if='error'
@@ -24,64 +40,31 @@
                 <StandardItem
                     v-for='plugin in list.items'
                     :key='plugin.id'
-                    :hover='false'
+                    class='cursor-pointer'
+                    :class='{ "plugin-loaded": loadedPlugins.has(plugin.id) }'
+                    :aria-pressed='loadedPlugins.has(plugin.id)'
+                    :title='loadedPlugins.has(plugin.id) ? `Unload ${plugin.name}` : `Load ${plugin.name}`'
+                    @click='request(plugin)'
                 >
-                    <div class='d-flex align-items-center px-2 py-2'>
-                        <img
-                            v-if='plugin.logo'
-                            :src='plugin.logo'
-                            :alt='`${plugin.name} logo`'
-                            width='32'
-                            height='32'
-                            style='object-fit: contain;'
-                        >
-                        <IconPuzzle
-                            v-else
-                            :size='32'
-                            stroke='1'
+                    <PluginSummary
+                        class='px-2 py-2'
+                        :plugin='plugin'
+                    >
+                        <TablerLoading
+                            v-if='busy === plugin.id'
+                            :inline='true'
+                            desc=''
                         />
+                        <span
+                            v-else-if='loadedPlugins.has(plugin.id)'
+                            class='badge bg-green text-white'
+                        >Loaded</span>
                         <div
-                            class='ms-2 flex-grow-1'
-                            style='min-width: 0;'
-                        >
-                            <div class='d-flex align-items-center'>
-                                <div
-                                    class='font-weight-bold text-truncate'
-                                    v-text='plugin.name'
-                                />
-                                <div
-                                    v-if='plugin.version'
-                                    class='ms-auto subheader'
-                                    v-text='`v${plugin.version}`'
-                                />
-                            </div>
-                            <div
-                                v-if='plugin.author'
-                                class='subheader text-truncate'
-                                v-text='`by ${plugin.author}`'
-                            />
-                            <div
-                                v-if='plugin.description'
-                                class='subheader text-wrap'
-                                v-text='plugin.description'
-                            />
-                            <div
-                                v-if='plugin.license || plugin.homepage'
-                                class='subheader d-flex align-items-center gap-2'
-                            >
-                                <span
-                                    v-if='plugin.license'
-                                    v-text='plugin.license'
-                                />
-                                <a
-                                    v-if='plugin.homepage'
-                                    :href='plugin.homepage'
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                >Homepage</a>
-                            </div>
-                        </div>
-                    </div>
+                            v-if='plugin.version'
+                            class='subheader'
+                            v-text='`v${plugin.version}`'
+                        />
+                    </PluginSummary>
                 </StandardItem>
             </div>
 
@@ -96,26 +79,52 @@
                     />
                 </div>
             </div>
+
+            <TablerConfirm
+                v-model:open='confirmLoad'
+                displaytype='none'
+                label='Load'
+                heading='Load Plugin'
+                :description='`${pending?.name} will be stored on this device and run with full access to CloudTAK each time it starts.`'
+                @confirm='toggle'
+            />
+            <TablerDelete
+                v-model:open='confirmUnload'
+                displaytype='none'
+                label='Unload'
+                @delete='toggle'
+            />
         </template>
     </MenuTemplate>
 </template>
 
 <script setup lang='ts'>
 import { ref, onMounted, watch } from 'vue';
-import type { PluginList } from '../../../types.ts';
+import type { Plugin, PluginList } from '../../../types.ts';
+import { loadedPlugins, loadPlugin, unloadPlugin, reconcilePlugins } from '../../../plugin-loader.ts';
+import { listStoredPlugins } from '../../../utils/plugin-store.ts';
 import { server } from '../../../std.ts';
 import {
     TablerNone,
     TablerAlert,
+    TablerConfirm,
+    TablerDelete,
+    TablerInlineAlert,
     TablerPager,
     TablerLoading,
     TablerRefreshButton
 } from '@tak-ps/vue-tabler';
-import { IconPuzzle } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import StandardItem from '../util/StandardItem.vue';
+import PluginSummary from '../../util/PluginSummary.vue';
 
 const error = ref<Error | undefined>();
+const toggleError = ref<Error | undefined>();
+const busy = ref<string | undefined>();
+const pending = ref<Plugin | undefined>();
+const confirmLoad = ref(false);
+const confirmUnload = ref(false);
+const offline = ref(false);
 const loading = ref(true);
 const paging = ref({
     limit: 20,
@@ -127,17 +136,41 @@ const list = ref<PluginList>({
     items: []
 });
 
-watch(paging.value, async () => {
-    await fetchList();
-});
+watch(paging.value, fetchList);
+onMounted(fetchList);
 
-onMounted(async () => {
-    await fetchList();
-});
+function request(plugin: Plugin) {
+    if (busy.value) return;
+
+    pending.value = plugin;
+
+    if (loadedPlugins.has(plugin.id)) confirmUnload.value = true;
+    else confirmLoad.value = true;
+}
+
+async function toggle() {
+    const plugin = pending.value;
+    if (!plugin) return;
+
+    busy.value = plugin.id;
+    toggleError.value = undefined;
+
+    try {
+        if (loadedPlugins.has(plugin.id)) await unloadPlugin(plugin.id);
+        else await loadPlugin(plugin);
+    } catch (err) {
+        toggleError.value = err instanceof Error ? err : new Error(String(err));
+    } finally {
+        busy.value = undefined;
+        confirmLoad.value = false;
+        confirmUnload.value = false;
+    }
+}
 
 async function fetchList() {
     loading.value = true;
     error.value = undefined;
+    offline.value = false;
 
     try {
         const res = await server.GET('/api/plugin', {
@@ -156,10 +189,25 @@ async function fetchList() {
         if (res.error) throw new Error(res.error.message || 'Failed to load plugins');
 
         list.value = res.data;
+
+        await reconcilePlugins();
     } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
+        const stored = await listStoredPlugins();
+
+        if (stored.length) {
+            offline.value = true;
+            list.value = { total: stored.length, items: stored };
+        } else {
+            error.value = err instanceof Error ? err : new Error(String(err));
+        }
     } finally {
         loading.value = false;
     }
 }
 </script>
+
+<style scoped>
+.plugin-loaded {
+    border-color: var(--tblr-green);
+}
+</style>

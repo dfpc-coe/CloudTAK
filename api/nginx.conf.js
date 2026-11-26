@@ -8,6 +8,7 @@ const url = new URL(process.env.API_URL);
 
 const csp = {
     'default-src': [`'self'`],
+    'script-src': [`'self'`, 'blob:'],
     'img-src': [`'self'`, 'data:', 'blob:'],
     'media-src': [`'self'`, 'data:', 'blob:'],
     'font-src': [`'self'`, 'data:'],
@@ -54,7 +55,7 @@ if (url.hostname === 'localhost') {
         if (cspstr.endsWith(';')) cspstr += ' ';
         cspstr += `${key} ${value.join(' ')}`
 
-        if (['img-src', 'media-src', 'connect-src', 'default-src'].includes(key)) {
+        if (['img-src', 'media-src', 'connect-src', 'default-src', 'script-src'].includes(key)) {
             if (isIP) {
                 cspstr += ` ${url.hostname}:*`;
             } else if (isSub) {

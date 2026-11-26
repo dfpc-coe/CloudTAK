@@ -1,15 +1,17 @@
 import zlib from 'node:zlib';
 import { createHash } from 'node:crypto';
+import type { IncomingMessage } from 'node:http';
 import type { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import tar from 'tar-stream';
+import { Busboy } from '@fastify/busboy';
 import Err from '@openaddresses/batch-error';
 import { Type, type Static } from '@sinclair/typebox';
 import { Value } from '@sinclair/typebox/value';
 import * as Default from './limits.js';
 
 export const PLUGIN_API_VERSION = 1;
-export const BUNDLE_MAX_BYTES = 25 * 1024 * 1024;
+const BUNDLE_MAX_BYTES = 25 * 1024 * 1024;
 
 const LOGO_MAX_LENGTH = 100_000;
 const MANIFEST = 'manifest.json';
@@ -81,7 +83,7 @@ function parseManifest(raw: Buffer): Static<typeof PluginManifest> {
 /**
  * Read a gzipped tar containing exactly manifest.json and index.js at its root
  */
-export async function readBundle(input: Readable): Promise<PluginBundle> {
+async function readBundle(input: Readable): Promise<PluginBundle> {
     const gunzip = zlib.createGunzip();
     const extract = tar.extract();
     const files = new Map<string, Buffer>();
@@ -139,4 +141,60 @@ export async function readBundle(input: Readable): Promise<PluginBundle> {
         manifest: parsed,
         index,
     };
+}
+
+/**
+ * Read the Plugin bundle out of a multipart upload
+ */
+export function readUpload(req: IncomingMessage): Promise<PluginBundle> {
+    const contentType = req.headers['content-type'];
+
+    if (!contentType?.startsWith('multipart/form-data')) {
+        throw new Err(400, null, 'Unsupported Content-Type');
+    }
+
+    return new Promise((resolve, reject) => {
+        const bb = new Busboy({
+            headers: {
+                'content-type': contentType,
+            },
+            limits: {
+                files: 1,
+                fileSize: BUNDLE_MAX_BYTES,
+            },
+        });
+
+        let bundle: Promise<PluginBundle | undefined> | undefined;
+        let error: unknown;
+
+        bb.on('file', (fieldname, file, filename) => {
+            if (!/\.(tar\.gz|tgz)$/i.test(filename || '')) {
+                error = new Err(400, null, 'Only .tar.gz bundles can be uploaded');
+                file.resume();
+                return;
+            }
+
+            file.on('limit', () => {
+                error = new Err(400, null, `Bundle exceeds ${BUNDLE_MAX_BYTES} bytes`);
+            });
+
+            bundle = readBundle(file).catch((err: unknown) => {
+                error ??= err;
+                return undefined;
+            });
+        }).on('error', (err) => {
+            req.unpipe(bb);
+            req.resume();
+
+            reject(new Err(400, err instanceof Error ? err : new Error(String(err)), 'Malformed multipart upload'));
+        }).on('finish', async () => {
+            const read = await bundle;
+
+            if (error) reject(error);
+            else if (!read) reject(new Err(400, null, 'No Bundle Provided'));
+            else resolve(read);
+        });
+
+        req.pipe(bb);
+    });
 }

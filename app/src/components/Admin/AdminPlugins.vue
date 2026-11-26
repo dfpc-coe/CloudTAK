@@ -21,6 +21,13 @@
             />
         </Teleport>
 
+        <TablerInlineAlert
+            class='m-3'
+            severity='info'
+            title='Beta'
+            description='Plugins are in beta and the plugin API may change between releases.'
+        />
+
         <TablerAlert
             v-if='error'
             :err='error'
@@ -72,48 +79,7 @@
                             :key='plugin.id'
                         >
                             <td>
-                                <div class='d-flex align-items-center'>
-                                    <img
-                                        v-if='plugin.logo'
-                                        :src='plugin.logo'
-                                        :alt='`${plugin.name} logo`'
-                                        width='32'
-                                        height='32'
-                                        style='object-fit: contain;'
-                                    >
-                                    <IconPuzzle
-                                        v-else
-                                        :size='32'
-                                        stroke='1'
-                                    />
-                                    <div class='ms-2'>
-                                        <div v-text='plugin.name' />
-                                        <div
-                                            v-if='plugin.author'
-                                            class='text-secondary small'
-                                            v-text='`by ${plugin.author}`'
-                                        />
-                                        <div
-                                            class='text-secondary small'
-                                            v-text='plugin.description'
-                                        />
-                                        <div
-                                            v-if='plugin.license || plugin.homepage'
-                                            class='text-secondary small d-flex align-items-center gap-2'
-                                        >
-                                            <span
-                                                v-if='plugin.license'
-                                                v-text='plugin.license'
-                                            />
-                                            <a
-                                                v-if='plugin.homepage'
-                                                :href='plugin.homepage'
-                                                target='_blank'
-                                                rel='noopener noreferrer'
-                                            >Homepage</a>
-                                        </div>
-                                    </div>
-                                </div>
+                                <PluginSummary :plugin='plugin' />
                             </td>
                             <td>
                                 <span
@@ -158,21 +124,20 @@ import { onMounted, ref } from 'vue';
 import { server } from '../../std.ts';
 import type { PluginList, Plugin } from '../../types.ts';
 import Upload from '../util/Upload.vue';
+import PluginSummary from '../util/PluginSummary.vue';
 import {
     TablerAlert,
     TablerBytes,
     TablerDelete,
     TablerEpoch,
     TablerIconButton,
+    TablerInlineAlert,
     TablerLoading,
     TablerNone,
     TablerRefreshButton,
     TablerToggle,
 } from '@tak-ps/vue-tabler';
-import {
-    IconPuzzle,
-    IconUpload,
-} from '@tabler/icons-vue';
+import { IconUpload } from '@tabler/icons-vue';
 
 const error = ref<Error | undefined>();
 const loading = ref(true);

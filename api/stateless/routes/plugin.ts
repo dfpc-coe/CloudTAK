@@ -1,4 +1,3 @@
-import path from 'node:path';
 import Stream from 'node:stream';
 import { randomUUID } from 'node:crypto';
 import { Type } from '@sinclair/typebox';
@@ -6,15 +5,13 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Param } from '@openaddresses/batch-generic';
-import { Busboy } from '@fastify/busboy';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
 import type ConfigStateless from '../config.js';
 import { Plugin } from '../../common/schema.js';
 import { PluginResponse, StandardResponse } from '../../common/types.js';
 import * as Default from '../lib/limits.js';
-import { readBundle, BUNDLE_MAX_BYTES, PLUGIN_API_VERSION, type PluginBundle } from '../lib/plugin-bundle.js';
-
+import { readUpload, PLUGIN_API_VERSION } from '../lib/plugin-bundle.js';
 
 function bundleKey(id: string, version: string): string {
     return `plugin/${id}/${version}/index.js`;
@@ -162,119 +159,48 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const contentType = req.headers['content-type'];
+            const { manifest, index } = await readUpload(req);
 
-            if (
-                !contentType
-                || !contentType.startsWith('multipart/form-data')
-            ) {
-                throw new Err(400, null, 'Unsupported Content-Type');
+            const existing = (await config.models.Plugin.list({
+                limit: 1,
+                where: sql`name = ${manifest.name}`,
+            })).items[0];
+
+            if (existing?.version === manifest.version) {
+                throw new Err(400, null, `${manifest.name} ${manifest.version} has already been uploaded`);
             }
 
-            const bb = new Busboy({
-                headers: {
-                    'content-type': contentType,
-                },
-                limits: {
-                    files: 1,
-                    fileSize: BUNDLE_MAX_BYTES,
-                },
-            });
+            const id = existing?.id ?? randomUUID();
+            const key = bundleKey(id, manifest.version);
 
-            let handled = false;
-            let bundlePromise: Promise<PluginBundle | Error> | undefined;
-            let uploadError: Error | undefined;
+            const fields = {
+                description: manifest.description ?? '',
+                author: manifest.author ?? '',
+                license: manifest.license ?? '',
+                homepage: manifest.homepage ?? '',
+                logo: manifest.logo ?? null,
+                api_version: manifest.api_version ?? PLUGIN_API_VERSION,
+                version: manifest.version,
+                sha256: manifest.sha256,
+                size: index.length,
+                username: user.email,
+            };
 
-            function respond(err: unknown) {
-                if (handled || res.headersSent) return;
-                handled = true;
+            await S3.put(key, Stream.Readable.from([index]));
 
-                req.unpipe(bb);
-                req.resume();
-
-                Err.respond(err instanceof Err
-                    ? err
-                    : new Err(400, err instanceof Error ? err : new Error(String(err)), 'Malformed multipart upload'), res);
+            let plugin;
+            try {
+                plugin = existing
+                    ? await config.models.Plugin.commit(id, { ...fields, updated: sql`Now()` })
+                    : await config.models.Plugin.generate({ id, name: manifest.name, ...fields });
+            } catch (err) {
+                await S3.del(key);
+                throw err;
             }
 
-            bb.on('file', (fieldname, file, filename) => {
-                const name = path.basename(filename || '').toLowerCase();
+            if (existing?.version) await S3.del(bundleKey(id, existing.version));
 
-                if (!name.endsWith('.tar.gz') && !name.endsWith('.tgz')) {
-                    uploadError = new Err(400, null, 'Only .tar.gz bundles can be uploaded');
-                    file.resume();
-                    return;
-                }
-
-                file.on('limit', () => {
-                    uploadError = new Err(400, null, `Bundle exceeds ${BUNDLE_MAX_BYTES} bytes`);
-                });
-
-                bundlePromise = readBundle(file).catch((err: unknown) => err instanceof Error ? err : new Error(String(err)));
-            }).on('error', (err) => {
-                respond(err);
-            }).on('finish', async () => {
-                try {
-                    if (handled) return;
-                    if (uploadError) throw uploadError;
-                    if (!bundlePromise) throw new Err(400, null, 'No Bundle Provided');
-
-                    const bundle = await bundlePromise;
-                    if (uploadError) throw uploadError;
-                    if (bundle instanceof Error) throw bundle;
-
-                    const { manifest, index } = bundle;
-
-                    const existing = (await config.models.Plugin.list({
-                        limit: 1,
-                        where: sql`name = ${manifest.name}`,
-                    })).items[0];
-
-                    if (existing && existing.version === manifest.version) {
-                        throw new Err(400, null, `${manifest.name} ${manifest.version} has already been uploaded`);
-                    }
-
-                    const id = existing ? existing.id : randomUUID();
-                    const key = bundleKey(id, manifest.version);
-
-                    const fields = {
-                        description: manifest.description ?? '',
-                        author: manifest.author ?? '',
-                        license: manifest.license ?? '',
-                        homepage: manifest.homepage ?? '',
-                        logo: manifest.logo ?? null,
-                        api_version: manifest.api_version ?? PLUGIN_API_VERSION,
-                        version: manifest.version,
-                        sha256: manifest.sha256,
-                        size: index.length,
-                        username: user.email,
-                    };
-
-                    await S3.put(key, Stream.Readable.from([index]));
-
-                    let plugin;
-                    try {
-                        plugin = existing
-                            ? await config.models.Plugin.commit(existing.id, { ...fields, updated: sql`Now()` })
-                            : await config.models.Plugin.generate({ id, name: manifest.name, ...fields });
-                    } catch (err) {
-                        await S3.del(key);
-                        throw err;
-                    }
-
-                    if (existing?.version) {
-                        await S3.del(`plugin/${existing.id}/${existing.version}/`, { recurse: true });
-                    }
-
-                    handled = true;
-
-                    res.json(plugin);
-                } catch (err) {
-                    respond(err);
-                }
-            });
-
-            req.pipe(bb);
+            res.json(plugin);
         } catch (err) {
             Err.respond(err, res);
         }
