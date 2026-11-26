@@ -22,7 +22,7 @@
         </Teleport>
 
         <TablerInlineAlert
-            class='m-3'
+            class='px-3 pt-3'
             severity='info'
             title='Beta'
             description='Plugins are in beta and the plugin API may change between releases.'
