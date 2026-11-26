@@ -180,6 +180,8 @@ export const useMapStore = defineStore('cloudtak', {
         // Human-readable description of the current map loading step
         loadingStage: string;
         isOpen: boolean;
+        // When the connection first closed, null while open or never opened
+        connectionClosedAt: number | null;
         // Device network status as reported by the device store
         isOnline: boolean;
         // Last connectivity restoration - watch it to retry deferred work
@@ -248,6 +250,7 @@ export const useMapStore = defineStore('cloudtak', {
             offlineTiles: new Set<string>(),
             channelChange: false,
             isOpen: false,
+            connectionClosedAt: null,
             isOnline: typeof navigator === 'undefined' || navigator.onLine !== false,
             syncTrigger: null,
             isMapLoaded: false,
@@ -303,6 +306,15 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
+        setConnectionOpen: function(open: boolean): void {
+            this.isOpen = open;
+            if (open) {
+                this.connectionClosedAt = null;
+            } else if (this.connectionClosedAt === null) {
+                this.connectionClosedAt = Date.now();
+            }
+        },
+
         // A refreshed login token - the worker reconnects its WebSocket with it
         updateToken: async function(token: string): Promise<void> {
             if (!this._worker) return;
@@ -1210,14 +1222,14 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (msg.type === WorkerMessageType.Map_Projection) {
                     map.setProjection(msg.body);
                 } else if (msg.type === WorkerMessageType.Connection_Open) {
-                    this.isOpen = true;
+                    this.setConnectionOpen(true);
                 } else if (msg.type === WorkerMessageType.Connection_Close) {
-                    this.isOpen = false;
+                    this.setConnectionOpen(false);
                 } else if (msg.type === WorkerMessageType.Connection_AuthFailure) {
-                    this.isOpen = false;
+                    this.setConnectionOpen(false);
                     await useAppStore().sessionExpired();
                 } else if (msg.type === WorkerMessageType.Connection_Revoked) {
-                    this.isOpen = false;
+                    this.setConnectionOpen(false);
                     await useAppStore().sessionRevoked();
                 } else if (msg.type === WorkerMessageType.Network_Change) {
                     this.isOnline = msg.body.online === true;
@@ -1475,7 +1487,7 @@ export const useMapStore = defineStore('cloudtak', {
             const wakeLockMode = (await ProfileConfig.get('display_wakelock'))?.value;
             await deviceStore.wakeLock.applyPreference(wakeLockMode);
 
-            this.isOpen = await this.worker.conn.isOpen;
+            this.setConnectionOpen(await this.worker.conn.isOpen);
 
             this.loadingStage = '';
         },

@@ -15,8 +15,22 @@ export function isIOSPlatform(): boolean {
     return Capacitor.getPlatform() === 'ios';
 }
 
+export function isTauriPlatform(): boolean {
+    if ('__TAURI_INTERNALS__' in globalThis) return true;
+    if (typeof location === 'undefined') return false;
+    return location.protocol === 'tauri:' || location.hostname === 'tauri.localhost';
+}
+
+/**
+ * The web bundle ships inside the app (Capacitor or Tauri) and the API is a
+ * remote server chosen on the Setup page, rather than the page origin.
+ */
+export function isBundledPlatform(): boolean {
+    return isNativePlatform() || isTauriPlatform();
+}
+
 export function supportsServiceWorker(): boolean {
-    return typeof navigator !== 'undefined' && !isNativePlatform() && 'serviceWorker' in navigator;
+    return typeof navigator !== 'undefined' && !isBundledPlatform() && 'serviceWorker' in navigator;
 }
 
 /**
