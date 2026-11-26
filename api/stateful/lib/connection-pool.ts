@@ -168,27 +168,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.importControl = new ImportControl(config);
         this.chat = new ChatControl(config);
 
-        this.pingInterval = setInterval(() => {
-            try {
-                for (const [key, clients] of this.config.wsClients.entries()) {
-                    for (const client of clients) {
-                        const broadcast = client.client?.config instanceof ProfileConnConfig
-                            ? this.config.locationArbiter.state(key, client.session)
-                            : undefined;
-                        client.ws.send(JSON.stringify({
-                            type: 'status',
-                            data: {
-                                version: pkg.version,
-                                time: new Date().toISOString(),
-                                broadcast,
-                            },
-                        }));
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to send ping: ', err);
-            }
-        }, 5000);
+        this.pingInterval = setInterval(() => this.sendStatus(), 5000);
 
         this.pingInterval.unref();
     }
@@ -278,6 +258,33 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
 
         await Promise.all(conns);
+    }
+
+    /** Send the status message to the WebSocket clients of one connection, or of all of them */
+    sendStatus(id?: number | string): void {
+        try {
+            const entries = id === undefined
+                ? this.config.wsClients.entries()
+                : [[String(id), this.config.wsClients.get(String(id)) || []] as const];
+
+            for (const [key, clients] of entries) {
+                for (const client of clients) {
+                    const broadcast = client.client?.config instanceof ProfileConnConfig
+                        ? this.config.locationArbiter.state(key, client.session)
+                        : undefined;
+                    client.ws.send(JSON.stringify({
+                        type: 'status',
+                        data: {
+                            version: pkg.version,
+                            time: new Date().toISOString(),
+                            broadcast,
+                        },
+                    }));
+                }
+            }
+        } catch (err) {
+            console.error('Failed to send status: ', err);
+        }
     }
 
     status(id: number | string): 'live' | 'dead' | 'unknown' {

@@ -20,9 +20,11 @@ function rig() {
     const arbiter = new LocationArbiter({ now: () => clock.t });
     const written: CoT[][] = [];
     const relayed: Array<{ cots: CoT[]; excludeSession?: string }> = [];
+    const statuses: string[] = [];
     const config = {
         locationArbiter: arbiter,
         conns: {
+            sendStatus: (id: string) => { statuses.push(id); },
             cots: async (_conn: unknown, cots: CoT[], opts: { excludeSession?: string } = {}) => {
                 relayed.push({ cots, excludeSession: opts.excludeSession });
             },
@@ -34,7 +36,7 @@ function rig() {
         tak: { write: (cots: CoT[]) => { written.push(cots); } },
     } as unknown as ConnectionClient;
     (config.conns as unknown as { get: () => ConnectionClient }).get = () => client;
-    return { arbiter, config, profile, client, written, relayed, advance: (ms: number) => { clock.t += ms; } };
+    return { arbiter, config, profile, client, written, relayed, statuses, advance: (ms: number) => { clock.t += ms; } };
 }
 
 async function selfCot(longitude: number, latitude: number, accuracy?: number): Promise<CoT> {
@@ -144,14 +146,16 @@ test('ConnectionWebSocket: the user\'s own position is arbitrated and relayed, 0
 });
 
 test('ConnectionWebSocket: Take over moves the role on the claimant\'s next fix', async () => {
-    const { client, written, advance } = rig();
+    const { client, written, statuses, advance } = rig();
     const phone = socket(client, 'phone');
     const laptop = socket(client, 'laptop');
     await phone({ type: 'cot', data: selfFeature(174.77, -41.28, 8) });
     advance(1000);
     await laptop({ type: 'broadcast:claim' });
+    statuses.length = 0;
     await laptop({ type: 'cot', data: selfFeature(174.80, -41.30) });
     assert.equal(written.length, 2);
+    assert.deepEqual(statuses, [USER], 'the user\'s sessions are told straight away');
     assert.equal(written[1][0].uid(), written[0][0].uid(), 'the laptop is now the user');
     advance(1000);
     await phone({ type: 'cot', data: selfFeature(174.77, -41.28, 8) });

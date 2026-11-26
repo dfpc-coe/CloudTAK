@@ -124,6 +124,7 @@ export class ConnectionWebSocket {
                                 accuracy,
                                 channel: 'ws',
                             });
+                            if (decision.changed) client.config.config.conns.sendStatus(client.config.id);
                             if (decision.secondary) toSecondary(cot, decision.secondary);
                             else if (!decision.accept) return;
                             relay = source !== 'none';

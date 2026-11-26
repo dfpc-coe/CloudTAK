@@ -158,6 +158,12 @@ describe('GPSPanel', () => {
         await wrapper.find('[data-test="broadcast-chip-action"]').trigger('click');
         expect(store.worker.conn.claimBroadcast).toHaveBeenCalledTimes(1);
         expect(wrapper.emitted('to-location')).toBeUndefined();
+        expect(wrapper.find('[data-test="broadcast-chip-pending"]').exists()).toBe(true);
+        expect(wrapper.find('[data-test="broadcast-chip-action"]').attributes('disabled')).toBeDefined();
+
+        store.standbyFor = 'Laptop (browser)';
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('[data-test="broadcast-chip-pending"]').exists()).toBe(false);
 
         store.location = LocationState.Disabled;
         await wrapper.vm.$nextTick();

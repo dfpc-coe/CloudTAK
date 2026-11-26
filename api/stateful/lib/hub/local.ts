@@ -109,6 +109,7 @@ export default class LocalHub implements HubClient {
         let relay = false;
         if (req.selfLocation && typeof req.connection === 'string') {
             const decision = this.config.locationArbiter.decide(req.connection, { ...req.selfLocation, channel: 'post' });
+            if (decision.changed) this.config.conns.sendStatus(req.connection);
             if (decision.secondary) {
                 for (const cot of req.cots) toSecondary(cot, decision.secondary);
             } else if (!decision.accept) {

@@ -573,7 +573,10 @@ export default class AtlasConnection {
 
     /** Ask to become the location broadcaster of the user */
     claimBroadcast(): void {
-        this.sendCOT({}, 'broadcast:claim');
+        if (!this.sendCOT({}, 'broadcast:claim')) return;
+
+        // The claim takes effect on this session's next fix
+        this.atlas.profile.sendStandbyFix();
     }
 
     /** @returns false if the WebSocket was not open and nothing was sent */

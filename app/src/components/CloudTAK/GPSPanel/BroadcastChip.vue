@@ -14,22 +14,48 @@
         <button
             type='button'
             class='btn btn-sm btn-info flex-shrink-0 broadcast-chip-action'
-            :disabled='!hasPosition'
+            :disabled='!hasPosition || claiming'
             :title='hasPosition ? undefined : "Set your location first"'
             data-test='broadcast-chip-action'
-            @click.stop='mapStore.worker.conn.claimBroadcast()'
+            @click.stop='claim'
         >
+            <span
+                v-if='claiming'
+                class='spinner-border spinner-border-sm me-1 broadcast-chip-spinner'
+                role='status'
+                data-test='broadcast-chip-pending'
+            />
             Take over
         </button>
     </div>
 </template>
 
 <script setup lang='ts'>
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { LocationState } from '../../../utils/events.ts';
 import { useMapStore } from '../../../stores/map.ts';
 
 const mapStore = useMapStore();
+
+const CLAIM_TIMEOUT_MS = 10000;
+
+const claiming = ref(false);
+let claimTimer: ReturnType<typeof setTimeout> | undefined;
+
+function claim(): void {
+    claiming.value = true;
+    void mapStore.worker.conn.claimBroadcast();
+
+    clearTimeout(claimTimer);
+    claimTimer = setTimeout(() => { claiming.value = false; }, CLAIM_TIMEOUT_MS);
+}
+
+watch(() => mapStore.standbyFor, () => {
+    claiming.value = false;
+    clearTimeout(claimTimer);
+});
+
+onBeforeUnmount(() => clearTimeout(claimTimer));
 
 const text = computed(() => `Shared from ${mapStore.standbyFor}`);
 
@@ -55,5 +81,11 @@ const hasPosition = computed(() => {
 .broadcast-chip-action {
     padding: 0.1rem 0.5rem;
     font-size: 0.75rem;
+}
+
+.broadcast-chip-spinner {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-width: 1.5px;
 }
 </style>

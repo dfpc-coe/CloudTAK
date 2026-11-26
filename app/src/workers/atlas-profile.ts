@@ -252,20 +252,14 @@ export default class AtlasProfile {
         this.timerSelf = setInterval(async () => {
             // Falls back to the manual location, then to 0,0 as TAK Server
             // needs an SA to register the connection
-            const args: [number[]?, number?, (number | null)?] = this.location.accuracy
-                ? [this.location.coordinates, this.location.accuracy, this.location.altitude]
-                : [];
-
             if (this.atlas.broadcastStandby) {
                 // Keep reporting so the server can promote this session, the
                 // local self marker comes from the broadcaster's relayed position
-                const feat = this.selfFeature(...args);
-                feat.properties.archived = false;
-                this.atlas.conn.sendCOT(feat);
+                this.sendStandbyFix();
                 return;
             }
 
-            await this.CoT(...args);
+            await this.CoT(...this.selfArgs());
 
             const me = await this.atlas.db.get(this.uid());
 
@@ -283,6 +277,19 @@ export default class AtlasProfile {
                 this.atlas.conn.sendCOT(feat)
             }
         }, (this.profile_loc_freq && this.profile_loc_freq.value) ? Number(this.profile_loc_freq.value) : 5000);
+    }
+
+    private selfArgs(): [number[]?, number?, (number | null)?] {
+        return this.location.accuracy
+            ? [this.location.coordinates, this.location.accuracy, this.location.altitude]
+            : [];
+    }
+
+    /** Report this session's position without touching the local self marker */
+    sendStandbyFix(): void {
+        const feat = this.selfFeature(...this.selfArgs());
+        feat.properties.archived = false;
+        this.atlas.conn.sendCOT(feat);
     }
 
     async loadServer(): Promise<Server> {
