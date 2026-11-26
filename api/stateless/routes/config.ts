@@ -92,6 +92,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
     const profileControl = new ProfileControl(config);
 
     await schema.get('/config', {
+        security: Auth.security({ optional: true }),
         name: 'Get Config',
         group: 'Config',
         description: 'Get Config',

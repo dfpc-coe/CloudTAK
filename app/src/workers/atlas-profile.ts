@@ -250,15 +250,22 @@ export default class AtlasProfile {
         }
 
         this.timerSelf = setInterval(async () => {
-            // Always send CoT - use GPS coordinates if available, manual location if set, otherwise default to 0,0
-            if (this.location.accuracy) {
-                await this.CoT(this.location.coordinates, this.location.accuracy, this.location.altitude);
-            } else if (this.profile_loc && this.profile_loc.value) {
-                await this.CoT();
-            } else {
-                // Send 0,0 location when no valid location is available
-                await this.CoT([0, 0]);
+            // Falls back to the manual location, then to 0,0 as TAK Server
+            // needs an SA to register the connection
+            const args: [number[]?, number?, (number | null)?] = this.location.accuracy
+                ? [this.location.coordinates, this.location.accuracy, this.location.altitude]
+                : [];
+
+            if (this.atlas.broadcastStandby) {
+                // Keep reporting so the server can promote this session, the
+                // local self marker comes from the broadcaster's relayed position
+                const feat = this.selfFeature(...args);
+                feat.properties.archived = false;
+                this.atlas.conn.sendCOT(feat);
+                return;
             }
+
+            await this.CoT(...args);
 
             const me = await this.atlas.db.get(this.uid());
 
@@ -522,6 +529,10 @@ export default class AtlasProfile {
     }
 
     async CoT(coords?: number[], accuracy?: number, altitude?: number | null): Promise<void> {
+        await this.atlas.db.add(this.selfFeature(coords, accuracy, altitude));
+    }
+
+    selfFeature(coords?: number[], accuracy?: number, altitude?: number | null): Feature {
         if (!this.server) throw new Error('Profile must be loaded before CoT is called');
 
         let coordinates: number[] | null = coords || null;
@@ -585,6 +596,6 @@ export default class AtlasProfile {
             geometry: { type: 'Point', coordinates: [...coordinates, hae] }
         }
 
-        await this.atlas.db.add(feat);
+        return feat;
     }
 }

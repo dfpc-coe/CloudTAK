@@ -25,6 +25,9 @@ export default class Atlas {
     username: string;
     initialized: boolean;
     suspended: boolean;
+    // Another session of this user is the location broadcaster
+    broadcastStandby: boolean;
+    sessionLabel: string;
 
     db = Comlink.proxy(new AtlasDatabase(this));
     conn = Comlink.proxy(new AtlasConnection(this));
@@ -38,6 +41,8 @@ export default class Atlas {
         this.username = '';
         this.initialized = false;
         this.suspended = false;
+        this.broadcastStandby = false;
+        this.sessionLabel = '';
 
         this.channel.onmessage = (event: MessageEvent<WorkerMessage>) => {
             const msg = event.data;
@@ -83,6 +88,10 @@ export default class Atlas {
 
         await db.config.put({ key: 'token', value: authToken });
         if (!this.conn.isOpen) this.conn.connect(this.username);
+    }
+
+    setSessionLabel(label: string): void {
+        this.sessionLabel = label;
     }
 
     async init(authToken: string) {

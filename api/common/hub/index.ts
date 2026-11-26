@@ -56,6 +56,13 @@ export type SubmitCotsRequest = {
 
     /** Reject unless the CoTs were written to a TAK connection that is ready for them */
     confirm?: boolean;
+
+    /** The CoTs are the user's own position, forwarded only from their broadcaster session */
+    selfLocation?: {
+        session?: string;
+        source: 'gps' | 'manual' | 'none';
+        accuracy?: number | null;
+    };
 };
 
 export interface HubClient {
