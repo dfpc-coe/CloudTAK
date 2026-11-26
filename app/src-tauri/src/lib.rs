@@ -42,6 +42,21 @@ fn change_server(app: &AppHandle) {
     let _ = window.eval("window.location.replace('/setup.html')");
 }
 
+// WebKitGTK has no setting for pinch-to-zoom, so its zoom gesture is detached.
+#[cfg(target_os = "linux")]
+fn disable_pinch_zoom(window: &WebviewWindow) {
+    use gtk::glib::{gobject_ffi, ObjectExt};
+
+    let _ = window.with_webview(|webview| unsafe {
+        if let Some(gesture) = webview.inner().data::<gtk::GestureZoom>("wk-view-zoom-gesture") {
+            gobject_ffi::g_signal_handlers_destroy(gesture.as_ptr().cast());
+        }
+    });
+}
+
+#[cfg(not(target_os = "linux"))]
+fn disable_pinch_zoom(_window: &WebviewWindow) {}
+
 fn build_menu(app: &AppHandle) -> tauri::Result<tauri::menu::Menu<tauri::Wry>> {
     let file = SubmenuBuilder::new(app, "File")
         .item(&MenuItemBuilder::with_id("change-server", "Change Server URL").build(app)?)
@@ -144,7 +159,7 @@ pub fn run() {
             let handle = app.handle().clone();
             let nav_handle = handle.clone();
 
-            WebviewWindowBuilder::new(app, MAIN, WebviewUrl::App("index.html".into()))
+            let window = WebviewWindowBuilder::new(app, MAIN, WebviewUrl::App("index.html".into()))
                 .title("CloudTAK")
                 .inner_size(1200.0, 800.0)
                 .min_inner_size(480.0, 480.0)
@@ -178,6 +193,8 @@ pub fn run() {
                     true
                 })
                 .build()?;
+
+            disable_pinch_zoom(&window);
 
             Ok(())
         })
