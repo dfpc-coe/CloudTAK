@@ -247,3 +247,17 @@ test('sourceOf: tells GPS, manual and no position apart', () => {
     assert.deepEqual(sourceOf(undefined, 8), { source: 'none' });
     assert.deepEqual(sourceOf([NaN, 1], 8), { source: 'none' });
 });
+
+test('LocationArbiter: a standby fix carries a stable marker uid and the session label', () => {
+    const { arbiter, advance } = setup();
+    arbiter.label(U, 'laptop', 'Chrome on Windows');
+    assert.equal(arbiter.decide(U, gps('phone', 8)).secondary, undefined);
+    advance(1000);
+    const first = arbiter.decide(U, gps('laptop', 10)).secondary;
+    advance(1000);
+    const second = arbiter.decide(U, gps('laptop', 10)).secondary;
+    assert.ok(first?.uid);
+    assert.deepEqual(second, first);
+    assert.equal(first.label, 'Chrome on Windows');
+    assert.equal(arbiter.decide(U, { session: 'laptop', source: 'none', channel: 'ws' }).secondary, undefined);
+});

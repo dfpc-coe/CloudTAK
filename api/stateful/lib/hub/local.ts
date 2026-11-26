@@ -7,6 +7,7 @@ import type { InferSelectModel } from 'drizzle-orm';
 import type { GeofenceStatus } from '../connection-geofence.js';
 import type { HubClient, ConnStatus, PoolSummary, PresenceMap, SubmitCotsRequest } from '../../../common/hub/index.js';
 import type ConfigStateful from '../../config.js';
+import { toSecondary } from '../location-arbiter.js';
 
 export default class LocalHub implements HubClient {
     config: ConfigStateful;
@@ -105,11 +106,15 @@ export default class LocalHub implements HubClient {
     }
 
     async submitCots(req: SubmitCotsRequest): Promise<void> {
-        // A fix dropped by the arbiter is a success, the native layer must not retry
         let relay = false;
         if (req.selfLocation && typeof req.connection === 'string') {
             const decision = this.config.locationArbiter.decide(req.connection, { ...req.selfLocation, channel: 'post' });
-            if (!decision.accept) return;
+            if (decision.secondary) {
+                for (const cot of req.cots) toSecondary(cot, decision.secondary);
+            } else if (!decision.accept) {
+                // Not an error, the native layer must not retry
+                return;
+            }
             relay = req.selfLocation.source !== 'none';
         }
 

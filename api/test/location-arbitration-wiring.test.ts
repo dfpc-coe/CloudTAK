@@ -77,7 +77,7 @@ test('LocalHub.submitCots: the broadcaster is forwarded and relayed to the other
     assert.equal(relayed[0].excludeSession, 'phone');
 });
 
-test('LocalHub.submitCots: a second session is dropped without an error', async () => {
+test('LocalHub.submitCots: a second session is forwarded as a marker of its own', async () => {
     const { config, written, relayed, advance } = rig();
     const hub = new LocalHub(config);
     const send = async (session: string, accuracy: number) => hub.submitCots({
@@ -88,8 +88,21 @@ test('LocalHub.submitCots: a second session is dropped without an error', async 
     await send('phone', 8);
     advance(1000);
     await send('tablet', 10);
-    assert.equal(written.length, 1);
-    assert.equal(relayed.length, 1);
+    assert.equal(written.length, 2);
+    assert.equal(relayed.length, 2);
+    assert.equal(relayed[1].excludeSession, 'tablet');
+
+    const self = written[0][0];
+    const marker = written[1][0];
+    assert.notEqual(marker.uid(), self.uid());
+    assert.equal(marker.callsign(), 'TEST');
+    assert.equal(marker.detail().__group, undefined);
+    assert.equal(marker.detail().contact?._attributes.endpoint, undefined);
+    assert.deepEqual(marker.position(), self.position());
+
+    advance(1000);
+    await send('tablet', 10);
+    assert.equal(written[2][0].uid(), marker.uid(), 'the marker keeps its uid');
 });
 
 test('LocalHub.submitCots: 0,0 is forwarded but not relayed while no session has a position', async () => {
@@ -111,7 +124,7 @@ test('LocalHub.submitCots: CoTs without selfLocation are untouched', async () =>
     assert.equal(written.length, 1);
 });
 
-test('ConnectionWebSocket: the user\'s own position is gated and relayed, 0,0 is dropped while another session broadcasts', async () => {
+test('ConnectionWebSocket: the user\'s own position is arbitrated and relayed, 0,0 is dropped while another session broadcasts', async () => {
     const { client, written, relayed, advance } = rig();
     const phone = socket(client, 'phone');
     const laptop = socket(client, 'laptop');
@@ -123,10 +136,11 @@ test('ConnectionWebSocket: the user\'s own position is gated and relayed, 0,0 is
 
     advance(1000);
     await laptop({ type: 'cot', data: selfFeature(174.77, -41.28, 12) });
-    assert.equal(written.length, 1, 'standby session is not forwarded');
+    assert.equal(written.length, 2);
+    assert.notEqual(written[1][0].uid(), written[0][0].uid(), 'standby session is forwarded as its own marker');
 
     await laptop({ type: 'cot', data: selfFeature(0, 0) });
-    assert.equal(written.length, 1, '0,0 is not forwarded over a live broadcaster');
+    assert.equal(written.length, 2, '0,0 is not forwarded over a live broadcaster');
 });
 
 test('ConnectionWebSocket: Take over moves the role on the claimant\'s next fix', async () => {
@@ -138,9 +152,10 @@ test('ConnectionWebSocket: Take over moves the role on the claimant\'s next fix'
     await laptop({ type: 'broadcast:claim' });
     await laptop({ type: 'cot', data: selfFeature(174.80, -41.30) });
     assert.equal(written.length, 2);
+    assert.equal(written[1][0].uid(), written[0][0].uid(), 'the laptop is now the user');
     advance(1000);
     await phone({ type: 'cot', data: selfFeature(174.77, -41.28, 8) });
-    assert.equal(written.length, 2, 'the phone is now on standby');
+    assert.notEqual(written[2][0].uid(), written[0][0].uid(), 'the phone is now on standby');
 });
 
 test('ConnectionWebSocket: other CoTs from the user are not arbitrated', async () => {

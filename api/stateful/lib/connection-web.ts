@@ -8,7 +8,7 @@ import { ChatMessageStatus, WebSocket_Event } from '../../common/enums.js';
 import { ProfileConnConfig } from '../../common/connection-config.js';
 import { profileCallsign } from '../../common/control/takserver.js';
 import LegacyChatControl from '../../common/chat/legacy.js';
-import { sourceOf } from './location-arbiter.js';
+import { sourceOf, toSecondary } from './location-arbiter.js';
 import { rawDataToString } from '../../common/stringify.js';
 
 export class ConnectionWebSocket {
@@ -124,7 +124,8 @@ export class ConnectionWebSocket {
                                 accuracy,
                                 channel: 'ws',
                             });
-                            if (!decision.accept) return;
+                            if (decision.secondary) toSecondary(cot, decision.secondary);
+                            else if (!decision.accept) return;
                             relay = source !== 'none';
                         }
 

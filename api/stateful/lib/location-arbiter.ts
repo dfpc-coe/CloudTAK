@@ -1,7 +1,7 @@
 /**
  * Picks one session per user as the broadcaster of their location, as every
  * session of a user shares one self CoT uid. Fixes from the other sessions are
- * dropped before they reach the TAK Server.
+ * sent to the TAK Server as a plain marker of that session, not as the user.
  *
  * In order: an explicit claim wins, GPS beats a manual location, the
  * broadcaster keeps the role while it reports, a challenger needs a clearly
@@ -14,6 +14,9 @@
  * Fails open: a fix without a session, a sole session and any fix after a
  * restart are accepted.
  */
+
+import { randomUUID } from 'node:crypto';
+import type CoT from '@tak-ps/node-cot';
 
 export type FixSource = 'gps' | 'manual' | 'none';
 
@@ -35,6 +38,8 @@ export type Decision = {
     reason: string;
     /** The broadcaster changed as a result of this fix */
     changed: boolean;
+    /** A refused fix that is a real position, forwarded as a marker of its own instead */
+    secondary?: { uid: string; label?: string };
 };
 
 export type ArbiterOptions = {
@@ -69,6 +74,8 @@ type SessionState = {
     /** Last time a valid fix arrived over the WebSocket - the richer source while the app is open */
     lastWsFix?: number;
     label?: string;
+    /** uid of the marker this session reports under while it is not the broadcaster */
+    uid: string;
 };
 
 type UserState = {
@@ -148,7 +155,7 @@ export default class LocationArbiter {
             existing.label = label;
         } else {
             state.sessions.set(session, {
-                seen: this.opts.now(), lastFix: 0, gap: 0, source: 'none', label,
+                seen: this.opts.now(), lastFix: 0, gap: 0, source: 'none', label, uid: randomUUID(),
             });
         }
     }
@@ -200,6 +207,11 @@ export default class LocationArbiter {
             accuracy: typeof fix.accuracy === 'number' && fix.accuracy > 0 ? fix.accuracy : undefined,
             lastWsFix: fix.channel === 'ws' ? now : previous?.lastWsFix,
             label: previous?.label,
+            uid: previous?.uid ?? randomUUID(),
+        };
+        const standby: Decision = {
+            accept: false, reason: 'standby', changed: false,
+            secondary: { uid: session.uid, label: session.label },
         };
 
         // While the open app reports over the WebSocket (battery, takv), its native
@@ -248,11 +260,11 @@ export default class LocationArbiter {
                 promote(fix.session, false);
                 return { accept: true, reason: 'broadcaster went quiet', changed };
             }
-            return { accept: false, reason: 'standby', changed: false };
+            return standby;
         }
 
         // Rule 1 again: a pinned broadcaster is only replaced by an explicit claim
-        if (state.pinned) return { accept: false, reason: 'standby', changed: false };
+        if (state.pinned) return standby;
 
         const holderSession = holder as SessionState;
 
@@ -271,7 +283,7 @@ export default class LocationArbiter {
             return { accept: true, reason: 'clearly better fix', changed };
         }
 
-        return { accept: false, reason: 'standby', changed: false };
+        return standby;
     }
 
     /**
@@ -307,4 +319,21 @@ export function sourceOf(
         return { source: 'gps', accuracy: ce };
     }
     return { source: 'manual' };
+}
+
+/**
+ * Turn a self position into a plain marker of the session that reported it, so
+ * a device that is not the broadcaster stays on the map without moving the user
+ */
+export function toSecondary(cot: CoT, secondary: NonNullable<Decision['secondary']>): void {
+    const callsign = cot.callsign();
+    const detail = cot.detail();
+
+    cot.uid(secondary.uid);
+    delete detail.__group;
+    delete detail.takv;
+    delete detail.uid;
+    detail.contact = {
+        _attributes: { callsign: secondary.label ? `${callsign} (${secondary.label})` : callsign },
+    };
 }

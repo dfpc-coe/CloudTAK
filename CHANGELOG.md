@@ -24,7 +24,7 @@
 
 ### Pending Release
 
-- :tada: Only one session of a user broadcasts their location - the server picks the browser, iOS or Android session with the best position and drops the fixes of the others, so the marker no longer jumps between devices. The GPS panel shows which device is sharing and offers `Take over`
+- :tada: Only one session of a user broadcasts their location - the server picks the browser, iOS or Android session with the best position, so the marker no longer jumps between devices. The user's other sessions stay on the map as plain markers named after the device. The GPS panel shows which device is sharing and offers `Take over`
 - :rocket: A session without a GPS fix or manual location still registers with the TAK Server at `0,0`, but no longer overrides a position reported by another of the user's sessions
 
 ### v14.3.0 - 2026-11-26
