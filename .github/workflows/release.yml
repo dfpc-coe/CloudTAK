@@ -51,6 +51,71 @@ jobs:
         with:
           body_path: RELEASE
 
+  desktop:
+    needs: build
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-26.04
+            args: ''
+            bundle: src-tauri/target/release/bundle
+          - os: windows-latest
+            args: ''
+            bundle: src-tauri/target/release/bundle
+          - os: macos-latest
+            args: '--target universal-apple-darwin'
+            bundle: src-tauri/target/universal-apple-darwin/release/bundle
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./app/
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ runner.os == 'macOS' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src-tauri
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libxdo-dev \
+            libssl-dev \
+            patchelf
+
+      - name: npm install
+        run: npm install
+
+      - name: Build Desktop App
+        run: npm run desktop:build -- ${{ matrix.args }}
+
+      - name: Upload to Github Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          gh release upload "${{ github.ref_name }}" --clobber \
+            ${{ matrix.bundle }}/deb/*.deb \
+            ${{ matrix.bundle }}/appimage/*.AppImage \
+            ${{ matrix.bundle }}/nsis/*.exe \
+            ${{ matrix.bundle }}/dmg/*.dmg
+
   deploy-pages:
     needs: build
     runs-on: ubuntu-latest
