@@ -48,6 +48,7 @@ import Config from '../base/config.ts';
 import { isNativePlatform, whenForegrounded } from '../utils/capacitor.ts';
 import { withTimeout } from '../utils/async.ts';
 import { sessionLabel } from '../utils/session-label.ts';
+import { CameraFollower } from '../utils/camera-follower.ts';
 import { db, suspendDatabase, resumeDatabase, liveQuery } from '../database.ts';
 import { serializeWorkerBootConfig } from '../utils/worker-boot.ts';
 
@@ -82,6 +83,7 @@ let lastSelf: { lat: number; lng: number } | null = null;
 let locationPendingTimer: ReturnType<typeof setTimeout> | null = null;
 // Compass rotation was enabled by the soft follow rather than by the user
 let selfFollowOrientation = false;
+let cameraFollower: CameraFollower | null = null;
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -478,11 +480,12 @@ export const useMapStore = defineStore('cloudtak', {
             this.orientOnHeading = false;
             selfFollowOrientation = true;
             this.userOrientationMode = true;
-            if (this._map) this.map.setBearing(this.deviceHeading);
+            cameraFollower?.setBearing(this.deviceHeading);
         },
         releaseSelfFollow: function(): void {
             this.selfFollow = false;
             this.orientOnHeading = false;
+            cameraFollower?.setCenter(null);
 
             if (selfFollowOrientation) this.setOrientationMode(false);
         },
@@ -490,6 +493,8 @@ export const useMapStore = defineStore('cloudtak', {
             selfFollowOrientation = false;
             this.orientOnHeading = false;
             this.userOrientationMode = enabled;
+            if (!enabled) cameraFollower?.stop();
+            else if (this.deviceHeading !== null) cameraFollower?.setBearing(this.deviceHeading);
         },
         selfCameraBlocked: function(): boolean {
             return this.locked.length > 0
@@ -506,6 +511,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!this._map || !this.gpsCoordinates) return false;
             if (![LocationState.Live, LocationState.Preset].includes(this.location)) return false;
 
+            cameraFollower?.setCenter(null);
             this.map.jumpTo({ center: this.gpsCoordinates, zoom });
             return true;
         },
@@ -553,9 +559,9 @@ export const useMapStore = defineStore('cloudtak', {
                 return;
             }
 
-            // Compass driven setBearing() calls would cut an ease short
-            if (this.userOrientationMode && this.deviceHeading !== null) {
-                map.jumpTo({ center: next });
+            // The compass rotation and an ease cannot share the camera
+            if (this.userOrientationMode && this.deviceHeading !== null && cameraFollower) {
+                cameraFollower.setCenter(next);
             } else {
                 map.easeTo({ center: next, duration: SELF_FOLLOW_EASE_MS });
             }
@@ -870,6 +876,9 @@ export const useMapStore = defineStore('cloudtak', {
                 }
                 this._history = undefined;
             }
+
+            cameraFollower?.stop();
+            cameraFollower = null;
 
             if (this._map) {
                 try {
@@ -1312,8 +1321,8 @@ export const useMapStore = defineStore('cloudtak', {
                     this.armSelfFollow();
                 }
 
-                if (this.userOrientationMode && heading !== null && this._map) {
-                    this.map.setBearing(heading);
+                if (this.userOrientationMode && heading !== null) {
+                    cameraFollower?.setBearing(heading);
                 }
             });
 
@@ -1604,6 +1613,7 @@ export const useMapStore = defineStore('cloudtak', {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore Don't remove me unless npm run doc passes
             this._map = markRaw(map);
+            cameraFollower = new CameraFollower(map);
             this._draw = markRaw(new DrawTool(this));
             this._icons = markRaw(new IconManager(map, {
                 syncIcons: () => this.worker.sync.syncIcons(),

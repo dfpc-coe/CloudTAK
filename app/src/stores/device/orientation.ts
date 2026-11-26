@@ -46,7 +46,7 @@ export class OrientationPermission {
             const handle = await CapgoCompass.addListener('headingChange', (event) => {
                 callback(event.value);
             });
-            await CapgoCompass.startListening();
+            await CapgoCompass.startListening({ minInterval: 50, minHeadingChange: 0.5 });
             return async () => {
                 try { await CapgoCompass.stopListening(); } catch { /* ignore */ }
                 try { await handle.remove(); } catch { /* ignore */ }
