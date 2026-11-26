@@ -1,32 +1,17 @@
-import path from 'node:path';
 import Stream from 'node:stream';
-import { createHash } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { Type } from '@sinclair/typebox';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { Param } from '@openaddresses/batch-generic';
-import { Busboy } from '@fastify/busboy';
 import Auth, { AuthUserAccess } from '../../common/auth.js';
 import S3 from '../../common/aws/s3.js';
 import type ConfigStateless from '../config.js';
 import { Plugin } from '../../common/schema.js';
 import { PluginResponse, StandardResponse } from '../../common/types.js';
 import * as Default from '../lib/limits.js';
-
-const BUNDLE_MAX_BYTES = 25 * 1024 * 1024;
-
-const PluginVersion = Type.String({
-    minLength: 1,
-    maxLength: 64,
-    pattern: '^[a-zA-Z0-9][a-zA-Z0-9._+-]*$',
-    description: 'Version of the Plugin bundle',
-});
-
-const PluginApiVersion = Type.Integer({
-    minimum: 1,
-    description: 'Version of the CloudTAK Plugin API the bundle was built against',
-});
+import { readUpload, PLUGIN_API_VERSION } from '../lib/plugin-bundle.js';
 
 function bundleKey(id: string, version: string): string {
     return `plugin/${id}/${version}/index.js`;
@@ -101,43 +86,14 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.post('/plugin', {
-        name: 'Create Plugin',
-        group: 'Plugin',
-        description: 'Create a Plugin. It stays disabled until a bundle is uploaded and it is enabled',
-        body: Type.Object({
-            name: Default.NameField,
-            description: Type.Optional(Default.DescriptionField),
-            api_version: Type.Optional(PluginApiVersion),
-        }),
-        res: PluginResponse,
-        security: Auth.security({ admin: true }),
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req);
-
-            const plugin = await config.models.Plugin.generate({
-                ...req.body,
-                username: user.email,
-            });
-
-            res.json(plugin);
-        } catch (err) {
-            Err.respond(err, res);
-        }
-    });
-
     await schema.patch('/plugin/:plugin', {
         name: 'Update Plugin',
         group: 'Plugin',
-        description: 'Update a Plugin',
+        description: 'Enable or disable a Plugin',
         params: Type.Object({
             plugin: Type.String({ format: 'uuid' }),
         }),
         body: Type.Object({
-            name: Type.Optional(Default.NameField),
-            description: Type.Optional(Default.DescriptionField),
-            api_version: Type.Optional(PluginApiVersion),
             enabled: Type.Optional(Type.Boolean()),
         }),
         res: PluginResponse,
@@ -190,16 +146,10 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         }
     });
 
-    await schema.post('/plugin/:plugin/bundle', {
+    await schema.post('/plugin/bundle', {
         name: 'Upload Bundle',
         group: 'Plugin',
-        description: 'Upload a new version of the Plugin bundle as a single ES module',
-        params: Type.Object({
-            plugin: Type.String({ format: 'uuid' }),
-        }),
-        query: Type.Object({
-            version: PluginVersion,
-        }),
+        description: 'Upload a Plugin bundle as a .tar.gz containing manifest.json and index.js. Creates the Plugin named in the manifest or replaces its current version',
         body: {
             'multipart/form-data': true,
         },
@@ -209,122 +159,48 @@ export default async function router(schema: Schema, config: ConfigStateless) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const existing = await config.models.Plugin.from(req.params.plugin);
-            const version = req.query.version;
+            const { manifest, index } = await readUpload(req);
 
-            if (existing.version === version) {
-                throw new Err(400, null, `Version ${version} has already been uploaded`);
+            const existing = (await config.models.Plugin.list({
+                limit: 1,
+                where: sql`name = ${manifest.name}`,
+            })).items[0];
+
+            if (existing?.version === manifest.version) {
+                throw new Err(400, null, `${manifest.name} ${manifest.version} has already been uploaded`);
             }
 
-            const contentType = req.headers['content-type'];
+            const id = existing?.id ?? randomUUID();
+            const key = bundleKey(id, manifest.version);
 
-            if (
-                !contentType
-                || !contentType.startsWith('multipart/form-data')
-            ) {
-                throw new Err(400, null, 'Unsupported Content-Type');
+            const fields = {
+                description: manifest.description ?? '',
+                author: manifest.author ?? '',
+                license: manifest.license ?? '',
+                homepage: manifest.homepage ?? '',
+                logo: manifest.logo ?? null,
+                api_version: manifest.api_version ?? PLUGIN_API_VERSION,
+                version: manifest.version,
+                sha256: manifest.sha256,
+                size: index.length,
+                username: user.email,
+            };
+
+            await S3.put(key, Stream.Readable.from([index]));
+
+            let plugin;
+            try {
+                plugin = existing
+                    ? await config.models.Plugin.commit(id, { ...fields, updated: sql`Now()` })
+                    : await config.models.Plugin.generate({ id, name: manifest.name, ...fields });
+            } catch (err) {
+                await S3.del(key);
+                throw err;
             }
 
-            const bb = new Busboy({
-                headers: {
-                    'content-type': contentType,
-                },
-                limits: {
-                    files: 1,
-                    fileSize: BUNDLE_MAX_BYTES,
-                },
-            });
+            if (existing?.version) await S3.del(bundleKey(id, existing.version));
 
-            const key = bundleKey(existing.id, version);
-            const hash = createHash('sha256');
-            let size = 0;
-
-            let handled = false;
-            let uploadPromise: Promise<void> | undefined;
-            let uploadError: Error | undefined;
-            let meter: Stream.Transform | undefined;
-
-            function respond(err: unknown) {
-                if (handled || res.headersSent) return;
-                handled = true;
-
-                req.unpipe(bb);
-                req.resume();
-
-                const wrapped = err instanceof Err
-                    ? err
-                    : new Err(400, err instanceof Error ? err : new Error(String(err)), 'Malformed multipart upload');
-
-                if (meter && !meter.destroyed) {
-                    meter.destroy(wrapped);
-                }
-
-                Err.respond(wrapped, res);
-            }
-
-            bb.on('file', (fieldname, file, filename) => {
-                try {
-                    const ext = path.parse(path.basename(filename || '')).ext.toLowerCase();
-                    if (!['.js', '.mjs'].includes(ext)) throw new Err(400, null, 'Only .js or .mjs bundles can be uploaded');
-
-                    file.on('limit', () => {
-                        uploadError = new Err(400, null, `Bundle exceeds ${BUNDLE_MAX_BYTES} bytes`);
-                    });
-
-                    meter = new Stream.Transform({
-                        transform(chunk: Buffer, encoding, callback) {
-                            hash.update(chunk);
-                            size += chunk.length;
-                            callback(null, chunk);
-                        },
-                    });
-
-                    file.pipe(meter);
-                    uploadPromise = S3.put(key, meter);
-                } catch (err) {
-                    uploadError = err instanceof Error ? err : new Error(String(err));
-                    file.resume();
-                }
-            }).on('error', (err) => {
-                respond(err);
-            }).on('finish', async () => {
-                try {
-                    if (handled) return;
-                    if (!uploadPromise && !uploadError) throw new Err(400, null, 'No Bundle Provided');
-
-                    if (uploadPromise) await uploadPromise;
-
-                    if (uploadError) {
-                        if (uploadPromise) await S3.del(key);
-                        throw uploadError;
-                    }
-
-                    if (!size) {
-                        await S3.del(key);
-                        throw new Err(400, null, 'Bundle is empty');
-                    }
-
-                    const plugin = await config.models.Plugin.commit(existing.id, {
-                        version,
-                        sha256: hash.digest('hex'),
-                        size,
-                        username: user.email,
-                        updated: sql`Now()`,
-                    });
-
-                    if (existing.version) {
-                        await S3.del(`plugin/${existing.id}/${existing.version}/`, { recurse: true });
-                    }
-
-                    handled = true;
-
-                    res.json(plugin);
-                } catch (err) {
-                    respond(err);
-                }
-            });
-
-            req.pipe(bb);
+            res.json(plugin);
         } catch (err) {
             Err.respond(err, res);
         }

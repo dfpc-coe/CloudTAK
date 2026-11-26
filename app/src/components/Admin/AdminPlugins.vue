@@ -5,10 +5,10 @@
             to='#admin-config-actions'
         >
             <TablerIconButton
-                :title='creating ? "Cancel" : "Create Plugin"'
-                @click='creating = !creating'
+                :title='uploading ? "Cancel" : "Upload Plugin"'
+                @click='uploading = !uploading'
             >
-                <IconPlus
+                <IconUpload
                     :size='32'
                     stroke='1'
                 />
@@ -21,6 +21,13 @@
             />
         </Teleport>
 
+        <TablerInlineAlert
+            class='px-3 pt-3'
+            severity='info'
+            title='Beta'
+            description='Plugins are in beta and the plugin API may change between releases.'
+        />
+
         <TablerAlert
             v-if='error'
             :err='error'
@@ -28,71 +35,17 @@
         />
 
         <div
-            v-if='creating'
-            class='card m-3'
-        >
-            <div class='card-body row g-2'>
-                <div class='col-12 col-md-4'>
-                    <TablerInput
-                        v-model='draft.name'
-                        label='Name'
-                    />
-                </div>
-                <div class='col-12 col-md-8'>
-                    <TablerInput
-                        v-model='draft.description'
-                        label='Description'
-                    />
-                </div>
-                <div class='col-12 d-flex'>
-                    <button
-                        class='btn btn-primary ms-auto'
-                        :disabled='!draft.name.trim()'
-                        @click='createPlugin'
-                    >
-                        Create
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div
             v-if='uploading'
             class='card m-3'
         >
-            <div class='card-header'>
-                <h3 class='card-title'>
-                    Upload bundle for {{ uploading.name }}
-                </h3>
-            </div>
-            <div class='card-body'>
-                <TablerInput
-                    v-model='uploadVersion'
-                    label='Version'
-                    placeholder='1.0.0'
-                />
-            </div>
             <Upload
-                v-if='uploadUrl'
-                :key='uploadUrl.toString()'
                 :url='uploadUrl'
-                mimetype='.js,.mjs'
-                label='Upload the built plugin as a single ES module'
-                @cancel='uploading = undefined'
+                mimetype='.tar.gz,.tgz,application/gzip'
+                label='Upload a plugin bundle (.tar.gz)'
+                @cancel='uploading = false'
                 @done='onUploadDone'
                 @error='error = $event'
             />
-            <div
-                v-else
-                class='card-body pt-0 d-flex'
-            >
-                <button
-                    class='btn ms-auto'
-                    @click='uploading = undefined'
-                >
-                    Cancel
-                </button>
-            </div>
         </div>
 
         <div style='min-height: 20vh'>
@@ -126,22 +79,13 @@
                             :key='plugin.id'
                         >
                             <td>
-                                <div v-text='plugin.name' />
-                                <div
-                                    class='text-secondary small'
-                                    v-text='plugin.description'
-                                />
+                                <PluginSummary :plugin='plugin' />
                             </td>
                             <td>
                                 <span
-                                    v-if='plugin.version'
                                     :title='plugin.sha256 || ""'
                                     v-text='plugin.version'
                                 />
-                                <span
-                                    v-else
-                                    class='text-secondary'
-                                >No bundle</span>
                             </td>
                             <td>
                                 <TablerBytes
@@ -161,15 +105,6 @@
                             </td>
                             <td>
                                 <div class='btn-list justify-content-end flex-nowrap'>
-                                    <TablerIconButton
-                                        title='Upload Bundle'
-                                        @click='startUpload(plugin)'
-                                    >
-                                        <IconUpload
-                                            :size='24'
-                                            stroke='1'
-                                        />
-                                    </TablerIconButton>
                                     <TablerDelete
                                         displaytype='icon'
                                         @delete='deletePlugin(plugin)'
@@ -185,46 +120,33 @@
 </template>
 
 <script setup lang='ts'>
-import { computed, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { server } from '../../std.ts';
 import type { PluginList, Plugin } from '../../types.ts';
 import Upload from '../util/Upload.vue';
+import PluginSummary from '../util/PluginSummary.vue';
 import {
     TablerAlert,
     TablerBytes,
     TablerDelete,
     TablerEpoch,
     TablerIconButton,
-    TablerInput,
+    TablerInlineAlert,
     TablerLoading,
     TablerNone,
     TablerRefreshButton,
     TablerToggle,
 } from '@tak-ps/vue-tabler';
-import {
-    IconPlus,
-    IconUpload,
-} from '@tabler/icons-vue';
+import { IconUpload } from '@tabler/icons-vue';
 
 const error = ref<Error | undefined>();
 const loading = ref(true);
-const creating = ref(false);
-const uploading = ref<Plugin | undefined>();
-const uploadVersion = ref('');
-const draft = ref({ name: '', description: '' });
+const uploading = ref(false);
+const uploadUrl = new URL('/api/plugin/bundle', window.location.origin);
 
 const list = ref<PluginList>({
     total: 0,
     items: [],
-});
-
-const uploadUrl = computed(() => {
-    const version = uploadVersion.value.trim();
-    if (!uploading.value || !/^[a-zA-Z0-9][a-zA-Z0-9._+-]*$/.test(version)) return undefined;
-
-    const url = new URL(`/api/plugin/${uploading.value.id}/bundle`, window.location.origin);
-    url.searchParams.set('version', version);
-    return url;
 });
 
 onMounted(async () => {
@@ -253,28 +175,6 @@ async function fetchList() {
         error.value = err instanceof Error ? err : new Error(String(err));
     } finally {
         loading.value = false;
-    }
-}
-
-async function createPlugin() {
-    try {
-        const res = await server.POST('/api/plugin', {
-            body: {
-                name: draft.value.name.trim(),
-                description: draft.value.description,
-            },
-        });
-
-        if (res.error) throw new Error(res.error.message);
-
-        draft.value = { name: '', description: '' };
-        creating.value = false;
-
-        await fetchList();
-
-        if (res.data) startUpload(res.data);
-    } catch (err) {
-        error.value = err instanceof Error ? err : new Error(String(err));
     }
 }
 
@@ -310,7 +210,6 @@ async function deletePlugin(plugin: Plugin) {
         });
 
         if (res.error) throw new Error(res.error.message);
-        if (uploading.value?.id === plugin.id) uploading.value = undefined;
     } catch (err) {
         error.value = err instanceof Error ? err : new Error(String(err));
     }
@@ -318,14 +217,9 @@ async function deletePlugin(plugin: Plugin) {
     await fetchList();
 }
 
-function startUpload(plugin: Plugin) {
-    error.value = undefined;
-    uploadVersion.value = '';
-    uploading.value = plugin;
-}
-
 async function onUploadDone() {
-    uploading.value = undefined;
+    error.value = undefined;
+    uploading.value = false;
     await fetchList();
 }
 </script>

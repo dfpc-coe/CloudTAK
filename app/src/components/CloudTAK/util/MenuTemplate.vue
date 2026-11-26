@@ -1,12 +1,19 @@
 <template>
     <TablerModal
         v-if='isModal'
+        v-model:height='sheetHeight'
         size='xl'
+        swipeable
+        :min-height='SHEET_MIN_HEIGHT'
+        @close='router.push("/")'
     >
         <div
             class='main-menu-modal-frame w-100 px-0 d-flex flex-column overflow-hidden'
         >
-            <div class='modal-header d-flex align-items-center py-2 px-2 flex-shrink-0'>
+            <div
+                class='modal-header d-flex align-items-center py-2 px-2 flex-shrink-0'
+                data-modal-swipe
+            >
                 <TablerIconButton
                     v-if='backType === "back"'
                     title='Back'
@@ -174,6 +181,15 @@
     </div>
 </template>
 
+<script lang='ts'>
+import { ref } from 'vue';
+
+const SHEET_MIN_HEIGHT = 0.5;
+
+// Shared by every menu so the height the user dragged to survives moving between menus
+const sheetHeight = ref(1);
+</script>
+
 <script setup lang='ts'>
 
 import {
@@ -255,6 +271,8 @@ const backType = computed(() => {
     }
 });
 
+if (sheetHeight.value < SHEET_MIN_HEIGHT) sheetHeight.value = 1;
+
 const isModal = computed(() => props.standalone && appStore.isMobileDetected);
 </script>
 
@@ -269,11 +287,12 @@ const isModal = computed(() => props.standalone && appStore.isMobileDetected);
 }
 
 /* Mobile standalone menu is shown as a near-fullscreen modal with a single header.
- * The status bar inset is subtracted twice to keep the centered modal's top edge
- * clear of the transparent native status bar. */
+ * The status bar inset is subtracted twice to keep the modal's top edge clear of
+ * the transparent native status bar. --tblr-modal-sheet is the fraction of that
+ * height the user has dragged the modal to. */
 .main-menu-modal-frame {
-    height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
-    max-height: calc(100dvh - 2rem - 2 * var(--status-bar-height, 0px));
+    height: calc((100dvh - 2rem - 2 * var(--status-bar-height, 0px)) * var(--tblr-modal-sheet, 1));
+    max-height: calc((100dvh - 2rem - 2 * var(--status-bar-height, 0px)) * var(--tblr-modal-sheet, 1));
 }
 
 /*

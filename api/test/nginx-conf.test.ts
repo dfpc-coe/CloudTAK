@@ -71,6 +71,7 @@ test('nginx.conf: https subdomain produces full CSP with wildcard parent domain'
         csp[0],
         `add_header 'Content-Security-Policy' "`
         + `default-src 'self' map.example.com:* *.example.com:*; `
+        + `script-src 'self' blob: map.example.com:* *.example.com:*; `
         + `img-src 'self' data: blob: map.example.com:* *.example.com:*; `
         + `media-src 'self' data: blob: map.example.com:* *.example.com:*; `
         + `font-src 'self' data:; `

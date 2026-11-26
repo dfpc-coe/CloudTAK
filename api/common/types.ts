@@ -632,6 +632,7 @@ export const PluginResponse = createSelectSchema(schemas.Plugin, {
     sha256: Type.Union([Type.Null(), Type.String()]),
     size: Type.Union([Type.Null(), Type.Integer()]),
     username: Type.Union([Type.Null(), Type.String()]),
+    logo: Type.Union([Type.Null(), Type.String()]),
 });
 
 /** Query params appended to tile and TileJSON requests, e.g. slope classes as repeatable `layer` values */

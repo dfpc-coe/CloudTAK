@@ -1,9 +1,10 @@
 import { createApp, watch } from 'vue'
 import { PluginAPI } from '../plugin.ts';
-import type { PluginStatic, PluginInstance } from '../plugin.ts'
+import type { PluginStatic } from '../plugin.ts'
 import router from './router.ts'
 import { createPinia } from 'pinia'
 import { useMapStore } from './stores/map.ts';
+import { initPluginLoader, installPlugin, setPluginsEnabled, autoloadPlugins, reconcilePlugins } from './plugin-loader.ts';
 import { isNativePlatform, supportsServiceWorker } from './utils/capacitor.ts';
 import { initServiceWorker } from './utils/service-worker.ts';
 import { initGlobalErrorReporting, vueErrorHandler } from './lib/reporting/index.ts';
@@ -106,25 +107,16 @@ const plugins: Record<string, {
     eager: true
 });
 
-const pluginAPI = new PluginAPI(app, router, pinia);
-const pluginInstances: PluginInstance[] = [];
+initPluginLoader(app, new PluginAPI(app, router, pinia));
 
 for (const path in plugins) {
-    const instance = await plugins[path].default.install(app, pluginAPI);
-    pluginInstances.push(instance);
+    await installPlugin(path, plugins[path].default);
 }
 
+await autoloadPlugins();
+void reconcilePlugins();
+
 const mapStore = useMapStore(pinia);
-watch(() => mapStore.isMapLoadedFully, async (isLoaded) => {
-    if (isLoaded) {
-        for (const instance of pluginInstances) {
-            await instance.enable();
-        }
-    } else {
-        for (const instance of pluginInstances) {
-            await instance.disable();
-        }
-    }
-}, { immediate: true });
+watch(() => mapStore.isMapLoadedFully, (isLoaded) => setPluginsEnabled(isLoaded), { immediate: true });
 
 app.mount('#app');
