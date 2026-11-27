@@ -24,8 +24,16 @@
 
 ### Pending Release
 
-- :tada: Only one session of a user broadcasts their location - the server picks the browser, iOS or Android session with the best position, so the marker no longer jumps between devices. The user's other sessions stay on the map as plain markers named after the device. The GPS panel shows which device is sharing and offers `Take over`
+### v14.4.0 - 2026-11-26
+
+- :tada: Only one session of a user broadcasts their location - the server picks the browser, iOS or Android session with the best position, so the marker no longer jumps between devices. The GPS panel shows which device is sharing and offers `Take over` - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2051 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1883
+- :tada: A user's other sessions stay on the map as plain markers named after the device they are running on - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1775
+- :tada: The map centres on the user's location on launch and on return to the foreground, then follows it while it stays near the centre of the view. Panning away releases the follow and the locate button restores it - Closes: https://github.com/dfpc-coe/CloudTAK/issues/1434
+- :rocket: The follow rotates the map to the device compass when one is available, and the rotation now glides between compass readings instead of stepping
 - :rocket: A session without a GPS fix or manual location still registers with the TAK Server at `0,0`, but no longer overrides a position reported by another of the user's sessions
+- :bug: Allow the public `login::*` config keys to be read without credentials so custom login page branding is applied again - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2063
+- :bug: Numeric inputs for sensor range & azimuth, basemap update frequency and composite layer opacity no longer store an empty or non-numeric value
+- :arrow_up: Update `@tak-ps/vue-tabler` to `6.0.0`
 
 ### v14.3.0 - 2026-11-26
 
