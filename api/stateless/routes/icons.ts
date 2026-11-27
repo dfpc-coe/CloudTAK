@@ -14,6 +14,7 @@ import { sql, eq } from 'drizzle-orm';
 import { StandardResponse, IconResponse, IconsetResponse } from '../../common/types.js';
 import { Icon, Iconset, ProfileFile, BasemapVector } from '../../common/schema.js';
 import ProfileOverlayControl from '../../common/control/profile-overlay.js';
+import IconsetControl from '../../common/control/iconset.js';
 import * as Default from '../lib/limits.js';
 
 export type SpriteRecord = {
@@ -33,6 +34,7 @@ export enum IconsetExportEnum {
 
 export default async function router(schema: Schema, config: ConfigStateless) {
     const overlayControl = new ProfileOverlayControl(config);
+    const iconsetControl = new IconsetControl(config);
     const DefaultSprite = {
         json: JSON.parse(String(await fs.readFile(new URL('../../icons/generator.json', import.meta.url)))),
         image: await fs.readFile(new URL('../../icons/generator.png', import.meta.url)),
@@ -207,9 +209,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             const iconset = await config.models.Iconset.from(req.params.iconset);
 
-            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
+            await iconsetControl.ensureReadPermission(iconset, user);
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${iconset.name}.${req.query.format}"`);
@@ -452,9 +452,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
 
             if (req.query.iconset) {
                 const iconset = await config.models.Iconset.from(req.query.iconset);
-                if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
-                    throw new Err(400, null, 'You don\'t have permission to access this resource');
-                }
+                await iconsetControl.ensureReadPermission(iconset, user);
             }
 
             const list = await config.models.Icon.list({
@@ -465,7 +463,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 where: sql`
                     icons.name ~* ${req.query.filter}
                     AND (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
-                    AND (username IS NULL OR username = ${user.email})
+                    AND (${Param(req.query.iconset)}::TEXT IS NOT NULL OR username IS NULL OR username = ${user.email})
                     AND ${scope}
                 `,
             });
@@ -490,9 +488,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
             const user = await Auth.as_user(config, req);
 
             const iconset = await config.models.Iconset.from(req.params.iconset);
-            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
-                throw new Err(400, null, 'You don\'t have permission to access this resource');
-            }
+            await iconsetControl.ensureReadPermission(iconset, user);
 
             if (isNaN(Number(req.params.icon))) {
                 const decoded = decodeURIComponent(String(req.params.icon)).replace(/^\/+/, '');
@@ -660,9 +656,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 res.json(DefaultSprite.json);
             } else {
                 const iconset = await config.models.Iconset.from(req.params.iconset);
-                if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
-                    throw new Err(400, null, 'You don\'t have permission to access this resource');
-                }
+                await iconsetControl.ensureReadPermission(iconset, user);
 
                 if (iconset.spritesheet_json) {
                     res.json(iconset.spritesheet_json);
@@ -697,9 +691,7 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 res.send(DefaultSprite.image);
             } else {
                 const iconset = await config.models.Iconset.from(req.params.iconset);
-                if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
-                    throw new Err(400, null, 'You don\'t have permission to access this resource');
-                }
+                await iconsetControl.ensureReadPermission(iconset, user);
 
                 if (iconset.spritesheet_data) {
                     res.send(Buffer.from(iconset.spritesheet_data, 'base64'));

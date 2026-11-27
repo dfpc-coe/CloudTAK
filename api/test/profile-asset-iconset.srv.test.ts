@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import Flight from './flight.js';
 import Sinon from 'sinon';
+import { ProfileFileChannel } from '../common/schema.js';
 import {
     S3Client,
     HeadObjectCommand,
@@ -14,6 +15,7 @@ const flight = new Flight();
 flight.init({ takserver: true });
 flight.takeoff();
 flight.user({ username: 'admin' });
+flight.user({ username: 'member', admin: false });
 
 const assetId = '1e34f3bc-3c34-4f0a-8b52-91bd8b0d25d3';
 const iconsetId = 'profile-iconset';
@@ -202,6 +204,122 @@ test('PROFILE: verify cascade delete of icons', async () => {
             messages: [],
             status: 404,
         });
+    } catch (err) {
+        assert.ifError(err);
+    }
+});
+
+test('PROFILE: iconset of a channel shared asset is readable by channel members', async () => {
+    const sharedIconset = 'shared-iconset';
+    const sharedAsset = '5b0c6c1e-6c0a-4f0e-9a52-3d1d6f1f6a11';
+
+    const read = async (url: string) => {
+        return await flight.fetch(url, {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.member,
+            },
+        }, false);
+    };
+
+    try {
+        flight.tak.mockMarti.unshift(async (request, response) => {
+            if (request.method === 'GET' && request.url === '/Marti/api/groups/all?useCache=true') {
+                response.setHeader('Content-Type', 'application/json');
+                response.write(JSON.stringify({
+                    version: '3',
+                    type: 'com.bbn.marti.remote.groups.Group',
+                    data: [{
+                        name: 'Shared Ops',
+                        direction: 'IN',
+                        active: true,
+                        bitpos: 42,
+                    }],
+                }));
+                response.end();
+                return true;
+            }
+
+            return false;
+        });
+
+        await flight.fetch('/api/iconset', {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                uid: sharedIconset,
+                version: 1,
+                name: 'Shared Iconset',
+                internal: true,
+                scope: 'user',
+            },
+        }, true);
+
+        await flight.fetch(`/api/iconset/${sharedIconset}/icon?regen=false`, {
+            method: 'POST',
+            auth: {
+                bearer: flight.token.admin,
+            },
+            body: {
+                name: 'camera.png',
+                data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+            },
+        }, true);
+
+        await flight.config?.models.ProfileFile.generate({
+            id: sharedAsset,
+            username: 'admin@example.com',
+            path: '/',
+            name: 'shared.kmz',
+            iconset: sharedIconset,
+            size: 456,
+            artifacts: [],
+        });
+
+        const unshared = await read(`/api/iconset/${sharedIconset}/icon/camera`);
+        assert.equal(unshared.status, 400);
+        assert.equal(unshared.body.message, 'You don\'t have permission to access this resource');
+
+        await flight.config?.pg.insert(ProfileFileChannel).values({
+            file: sharedAsset,
+            channel: 7n,
+        });
+
+        assert.equal((await read(`/api/iconset/${sharedIconset}/icon/camera`)).status, 400);
+
+        await flight.config?.pg.insert(ProfileFileChannel).values({
+            file: sharedAsset,
+            channel: 42n,
+        });
+
+        const icon = await read(`/api/iconset/${sharedIconset}/icon/camera`);
+        assert.equal(icon.status, 200);
+        assert.equal(icon.body.iconset, sharedIconset);
+
+        const iconset = await read(`/api/iconset/${sharedIconset}`);
+        assert.equal(iconset.status, 200);
+        assert.equal(iconset.body.uid, sharedIconset);
+
+        const icons = await read(`/api/icon?iconset=${sharedIconset}`);
+        assert.equal(icons.status, 200);
+        assert.equal(icons.body.total, 1);
+
+        const all = await read('/api/icon');
+        assert.equal(all.status, 200);
+        assert.ok(!all.body.items.some((i: { iconset: string }) => i.iconset === sharedIconset));
+
+        const patch = await flight.fetch(`/api/iconset/${sharedIconset}`, {
+            method: 'PATCH',
+            auth: {
+                bearer: flight.token.member,
+            },
+            body: {
+                default_group: 'Hijacked',
+            },
+        }, false);
+        assert.equal(patch.status, 400);
     } catch (err) {
         assert.ifError(err);
     }
