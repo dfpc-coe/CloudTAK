@@ -24,6 +24,11 @@
 
 ### Pending Release
 
+### v14.4.1 - 2026-11-27
+
+- :bug: Logging out always returns to the login page: the device wipe now runs once, behind a `Signing out…` screen, instead of racing a second wipe triggered by the server's session revocation and stranding the user on an unauthenticated map - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2064 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1970 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1889 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1774
+- :bug: An expired or revoked session no longer shows `Maximum call stack size exceeded` on the login page: the Atlas worker handle is kept out of reactive state so tearing down the map cannot recurse - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2014 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1649
+
 ### v14.4.0 - 2026-11-26
 
 - :tada: Only one session of a user broadcasts their location - the server picks the browser, iOS or Android session with the best position, so the marker no longer jumps between devices. The GPS panel shows which device is sharing and offers `Take over` - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2051 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1883
