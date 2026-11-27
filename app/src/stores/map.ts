@@ -86,8 +86,6 @@ const LOCATION_PENDING_TIMEOUT_MS = 30000;
 
 let lastSelf: { lat: number; lng: number } | null = null;
 let locationPendingTimer: ReturnType<typeof setTimeout> | null = null;
-// Compass rotation was enabled by the soft follow rather than by the user
-let selfFollowOrientation = false;
 let cameraFollower: CameraFollower | null = null;
 
 function waitForAtlasWorkerReady(worker: Worker): Promise<void> {
@@ -149,8 +147,6 @@ export const useMapStore = defineStore('cloudtak', {
         selfFollow: boolean;
         // Centre on the self puck when the next fix arrives
         locateOnFix: boolean;
-        // Rotate the map to the compass once the follow is armed and a heading is known
-        orientOnHeading: boolean;
         // A GPS fix has been requested and not yet delivered
         locationPending: boolean;
 
@@ -273,7 +269,6 @@ export const useMapStore = defineStore('cloudtak', {
             locked: [],
             selfFollow: true,
             locateOnFix: false,
-            orientOnHeading: true,
             locationPending: false,
             terrainEnabled: false,
             hasNoChannels: false,
@@ -465,34 +460,14 @@ export const useMapStore = defineStore('cloudtak', {
                 this.locateOnFix = false;
             }, LOCATION_PENDING_TIMEOUT_MS);
         },
-        /**
-         * Arm the soft follow, rotating the map to the device compass when one is available
-         */
         armSelfFollow: function(): void {
             this.selfFollow = true;
-
-            if (this.userOrientationMode) return;
-
-            if (this.deviceHeading === null) {
-                this.orientOnHeading = true;
-                return;
-            }
-
-            this.orientOnHeading = false;
-            selfFollowOrientation = true;
-            this.userOrientationMode = true;
-            cameraFollower?.setBearing(this.deviceHeading);
         },
         releaseSelfFollow: function(): void {
             this.selfFollow = false;
-            this.orientOnHeading = false;
             cameraFollower?.setCenter(null);
-
-            if (selfFollowOrientation) this.setOrientationMode(false);
         },
         setOrientationMode: function(enabled: boolean): void {
-            selfFollowOrientation = false;
-            this.orientOnHeading = false;
             this.userOrientationMode = enabled;
             if (!enabled) cameraFollower?.stop();
             else if (this.deviceHeading !== null) cameraFollower?.setBearing(this.deviceHeading);
@@ -1325,10 +1300,6 @@ export const useMapStore = defineStore('cloudtak', {
                     ? (this._map as mapgl.Map & { _geolocateControl?: GeolocateControl })._geolocateControl
                     : undefined;
                 if (control) control.setHeading(heading);
-
-                if (heading !== null && this.orientOnHeading && this.selfFollow) {
-                    this.armSelfFollow();
-                }
 
                 if (this.userOrientationMode && heading !== null) {
                     cameraFollower?.setBearing(heading);
