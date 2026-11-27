@@ -57,6 +57,11 @@ import type { LngLat, LngLatLike, Point, MapMouseEvent, MapGeoJSONFeature, GeoJS
 import type { Position } from '@capacitor/geolocation';
 import type { Position as GeoJSONPosition } from 'geojson';
 
+// Kept outside Pinia state: Vue's reactive set trap recurses forever on a Comlink proxy
+let atlasRawWorker: Worker | undefined;
+let atlasWorkerReady: Promise<void> | undefined;
+let atlasWorker: Comlink.Remote<Atlas> | undefined;
+
 const finiteOrNull = (value: unknown): number | null => {
     return typeof value === 'number' && Number.isFinite(value) ? value : null;
 };
@@ -185,9 +190,7 @@ export const useMapStore = defineStore('cloudtak', {
         // Native app is in the background: storage is suspended, timers paused
         backgrounded: boolean;
 
-        _rawWorker?: Worker;
-        _workerReady?: Promise<void>;
-        _worker?: Comlink.Remote<Atlas>;
+        workerStarted: boolean;
         mission: Subscription | undefined;
         terrainEnabled: boolean;
         container?: HTMLElement;
@@ -232,9 +235,7 @@ export const useMapStore = defineStore('cloudtak', {
         }
     } => {
         return {
-            _rawWorker: undefined,
-            _workerReady: undefined,
-            _worker: undefined,
+            workerStarted: false,
             _destroying: undefined,
             _bottomBar: markRaw(new BottomBarManager()),
             timer: null,
@@ -331,8 +332,8 @@ export const useMapStore = defineStore('cloudtak', {
             return this._history as HistoryLayer;
         },
         worker: function(): Comlink.Remote<Atlas> {
-            if (!this._worker) throw new Error('Atlas worker has not yet started');
-            return this._worker as Comlink.Remote<Atlas>;
+            if (!this.workerStarted || !atlasWorker) throw new Error('Atlas worker has not yet started');
+            return atlasWorker;
         }
     },
     actions: {
@@ -347,8 +348,8 @@ export const useMapStore = defineStore('cloudtak', {
 
         // A refreshed login token - the worker reconnects its WebSocket with it
         updateToken: async function(token: string): Promise<void> {
-            if (!this._worker) return;
-            await this.worker.setToken(token);
+            if (!atlasWorker) return;
+            await atlasWorker.setToken(token);
         },
 
         startLocationWatch: async function() {
@@ -701,7 +702,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         startWorker: function() {
-            if (this._rawWorker) return;
+            if (atlasRawWorker) return;
 
             // The server URL rides along on the worker name so the worker's
             // module evaluation never waits on IndexedDB
@@ -715,9 +716,10 @@ export const useMapStore = defineStore('cloudtak', {
                 true
             );
 
-            this._rawWorker = markRaw(rawWorker);
-            this._workerReady = waitForAtlasWorkerReady(rawWorker);
-            this._worker = markRaw(Comlink.wrap<Atlas>(rawWorker));
+            atlasRawWorker = rawWorker;
+            atlasWorkerReady = waitForAtlasWorkerReady(rawWorker);
+            atlasWorker = Comlink.wrap<Atlas>(rawWorker);
+            this.workerStarted = true;
         },
         startRefreshTimer: function() {
             if (this.timer) window.clearInterval(this.timer);
@@ -743,7 +745,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             // Worker first - its WebSocket handlers are the busiest writers
-            if (this._worker) {
+            if (atlasWorker) {
                 try {
                     await withTimeout(this.worker.suspend(), WORKER_LIFECYCLE_TIMEOUT_MS, 'Atlas worker suspend');
                 } catch (err) {
@@ -773,7 +775,7 @@ export const useMapStore = defineStore('cloudtak', {
             // against a still-suspended main-thread database
             resumeDatabase();
 
-            if (this._worker) {
+            if (atlasWorker) {
                 try {
                     await withTimeout(this.worker.resume(), WORKER_LIFECYCLE_TIMEOUT_MS, 'Atlas worker resume');
                 } catch (err) {
@@ -813,8 +815,8 @@ export const useMapStore = defineStore('cloudtak', {
         },
         _destroy: async function() {
             // Capture current worker instances to avoid races with $reset()/state() creating new ones.
-            const currentWorker = this._worker;
-            const currentRawWorker = this._rawWorker;
+            const currentWorker = atlasWorker;
+            const currentRawWorker = atlasRawWorker;
             const deviceStore = useDeviceStore();
 
             if (this.timer) {
@@ -889,6 +891,13 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
             OverlayManager.clearLoaded();
+
+            if (atlasRawWorker === currentRawWorker) {
+                atlasWorker = undefined;
+                atlasRawWorker = undefined;
+                atlasWorkerReady = undefined;
+            }
+
             this.$reset();
         },
         makeActiveMission: async function(mission?: Subscription): Promise<void> {
@@ -1329,7 +1338,7 @@ export const useMapStore = defineStore('cloudtak', {
             const { value: token } = await Preferences.get({ key: 'token' });
 
             this.loadingStage = 'Initializing worker…';
-            await withTimeout(this._workerReady!, WORKER_READY_TIMEOUT_MS, 'Atlas worker startup');
+            await withTimeout(atlasWorkerReady!, WORKER_READY_TIMEOUT_MS, 'Atlas worker startup');
             await withTimeout(this.worker.setSessionLabel(sessionLabel()), WORKER_INIT_TIMEOUT_MS, 'Session label');
             await withTimeout(this.worker.init(token || ''), WORKER_INIT_TIMEOUT_MS, 'Atlas worker init');
 

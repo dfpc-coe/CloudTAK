@@ -648,7 +648,11 @@ onMounted(async () => {
                 break;
             }
 
-            await mapStore.destroy();
+            try {
+                await mapStore.destroy();
+            } catch (err) {
+                console.error('Map teardown failed:', err);
+            }
             mapStore.loadingStage = 'Load failed - retrying…';
             await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
@@ -718,7 +722,9 @@ onBeforeUnmount(() => {
     bootComplete = true;
     removeAppLifecycleListeners?.();
     inviteChannel?.close();
-    void mapStore.destroy();
+    mapStore.destroy().catch((err: unknown) => {
+        console.error('Map teardown failed:', err);
+    });
 });
 
 function selectFeat(selectedFeat: MapGeoJSONFeature | COT) {
