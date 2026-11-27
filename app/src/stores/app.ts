@@ -20,6 +20,9 @@ const REFRESH_RETRY_MS = 10 * 60 * 1000;
 let refreshInflight: Promise<string | undefined> | undefined;
 let refreshFailedAt = 0;
 
+let logoutInflight: Promise<void> | undefined;
+let revokeInflight: Promise<void> | undefined;
+
 function decodeToken(token: string): { expiry: number; lifetime: number } {
     const payload = JSON.parse(atob(token.split('.')[1]));
     return {
@@ -35,6 +38,7 @@ export type ResolvedThemeMode = 'light' | 'dark';
 // operation can never strand the user on the loading splash.
 const BOOT_LOCAL_TIMEOUT_MS = 2000;
 const BOOT_NETWORK_TIMEOUT_MS = 10000;
+const TEARDOWN_TIMEOUT_MS = 10000;
 
 // Kept outside Pinia state so Vue does not attempt to proxy them.
 let displayStyleSub: Subscription | undefined;
@@ -291,18 +295,47 @@ export const useAppStore = defineStore('cloudtak-app', {
         // The server terminated this session - nothing to revoke, just wipe
         // the device and return to login
         async sessionRevoked(): Promise<void> {
+            revokeInflight ??= this.revoke();
+            return await revokeInflight;
+        },
+
+        async revoke(): Promise<void> {
+            this.signingOut();
+
+            try {
+                // The Atlas worker must release IndexedDB before it is deleted
+                const { useMapStore } = await import('./map.ts');
+                await withTimeout(useMapStore().destroy(), TEARDOWN_TIMEOUT_MS, 'Map teardown');
+            } catch (err) {
+                console.warn('Map teardown did not complete', err);
+            }
+
+            try {
+                await withTimeout(this.destroySession(), TEARDOWN_TIMEOUT_MS, 'Session wipe');
+            } catch (err) {
+                console.warn('Session wipe did not complete', err);
+            } finally {
+                window.location.href = '/login';
+            }
+        },
+
+        // Swaps the router view for the loading splash so nothing
+        // unauthenticated stays interactive while the session is torn down
+        signingOut(): void {
             this.user = false;
             this.tokenExpiry = null;
             setSessionRefresher(undefined);
-
-            await this.destroySession();
-            window.location.href = '/login';
+            this.loadingStage = 'Signing out…';
+            this.loading = true;
         },
 
         async logout(): Promise<void> {
-            this.user = false;
-            this.tokenExpiry = null;
-            setSessionRefresher(undefined);
+            logoutInflight ??= this.revokeAndLogout();
+            return await logoutInflight;
+        },
+
+        async revokeAndLogout(): Promise<void> {
+            this.signingOut();
 
             // Drop the device's push registration first; it belongs to this
             // account, and the next user on the device must register their own

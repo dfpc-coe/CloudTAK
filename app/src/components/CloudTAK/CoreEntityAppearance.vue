@@ -289,7 +289,7 @@ async function persist(body: ReturnType<typeof entityStyleFrom>): Promise<void> 
 }
 
 async function syncMapFeature(): Promise<void> {
-    if (!entity.value || !mapStore._worker) return;
+    if (!entity.value || !mapStore.workerStarted) return;
 
     try {
         const cot = await mapStore.worker.db.get(entity.value.id);
