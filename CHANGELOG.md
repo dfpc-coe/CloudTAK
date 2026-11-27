@@ -24,6 +24,11 @@
 
 ### Pending Release
 
+### v14.4.2 - 2026-11-27
+
+- :rocket: Don't default to compass on when the app first launches
+- :rocket: Allow shared files to access iconsets associated with them automatically
+
 ### v14.4.1 - 2026-11-27
 
 - :bug: Logging out always returns to the login page: the device wipe now runs once, behind a `Signing out…` screen, instead of racing a second wipe triggered by the server's session revocation and stranding the user on an unauthenticated map - Closes: https://github.com/dfpc-coe/CloudTAK/issues/2064 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1970 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1889 Closes: https://github.com/dfpc-coe/CloudTAK/issues/1774
