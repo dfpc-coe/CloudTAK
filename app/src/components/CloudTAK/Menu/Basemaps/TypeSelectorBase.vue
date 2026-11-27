@@ -182,9 +182,10 @@
                 <div class='col-12'>
                     <TablerInput
                         v-if='editing.frequency !== undefined && editing.frequency !== null'
-                        v-model='editing.frequency'
+                        :model-value='editing.frequency'
                         label='Update Frequency (Seconds)'
                         description='How often to refresh the tiles in seconds'
+                        @update:model-value='editing.frequency = Number($event) || 0'
                     >
                         <TablerBadge
                             text-color='var(--tblr-body-color)'

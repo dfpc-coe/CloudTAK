@@ -156,4 +156,21 @@ test('Security: public routes need no credentials', async () => {
     assert.equal(res.status, 200);
 });
 
+test('Security: public config keys need no credentials', async () => {
+    const res = await raw('/api/config?keys=login::name,login::logo');
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body['login::name'], 'CloudTAK');
+});
+
+test('Security: non-public config keys still need credentials', async () => {
+    const user = await raw('/api/config?keys=login::name,map::center');
+    assert.equal(user.status, 401);
+
+    const admin = await raw('/api/config?keys=geofence::password', {
+        headers: { authorization: `Bearer ${flight.token.user}` },
+    });
+    assert.equal(admin.status, 401);
+});
+
 flight.landing();

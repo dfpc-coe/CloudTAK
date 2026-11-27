@@ -22,8 +22,14 @@
                     data-test='set-location'
                     @click.stop='$emit("set-location")'
                 >
+                    <span
+                        v-if='acquiring'
+                        class='spinner-border spinner-border-sm text-secondary gps-panel-spinner'
+                        role='status'
+                        data-test='location-pending'
+                    />
                     <IconLocation
-                        v-if='mapStore.location === LocationState.Live'
+                        v-else-if='mapStore.location === LocationState.Live'
                         :size='18'
                         stroke='1'
                         :color='locationColor'
@@ -62,6 +68,7 @@
         </div>
 
         <GPSPanelCoordinates />
+        <BroadcastChip />
     </div>
 </template>
 
@@ -78,6 +85,7 @@ import {
     IconLocationOff,
 } from '@tabler/icons-vue';
 import GPSPanelCoordinates from './GPSPanelCoordinates.vue';
+import BroadcastChip from './BroadcastChip.vue';
 
 const props = defineProps<{
     mode: string;
@@ -98,6 +106,12 @@ const isLive = computed(() => {
     return mapStore.location === LocationState.Live && !mapStore.manualLocationMode;
 });
 
+const acquiring = computed(() => {
+    if (props.mode === 'SetLocation' || mapStore.manualLocationMode) return false;
+    if (mapStore.location === LocationState.Preset) return false;
+    return mapStore.locationPending || mapStore.location === LocationState.Loading;
+});
+
 const locationAccuracy = computed(() => {
     if (!isLive.value) return undefined;
     return mapStore.locationAccuracy;
@@ -114,8 +128,8 @@ const locationColor = computed(() => {
 const locationTooltip = computed(() => {
     if (props.mode === 'SetLocation') return 'Click on map to set location';
     if (mapStore.location === LocationState.Preset) return 'Manual Location - Click to adjust or switch to GPS';
+    if (acquiring.value) return 'Acquiring GPS';
     if (mapStore.location === LocationState.Live) return 'Live Location - Click to set manually';
-    if (mapStore.location === LocationState.Loading) return 'Acquiring GPS';
     return 'Set Your Location - Click to enable GPS or set manually';
 });
 
@@ -133,7 +147,7 @@ const altitudeText = computed(() => {
 const accuracyText = computed(() => {
     if (props.mode === 'SetLocation') return 'Click map';
     if (mapStore.location === LocationState.Preset) return 'Manual';
-    if (mapStore.location === LocationState.Loading) return 'Acquiring';
+    if (acquiring.value) return 'Acquiring';
     if (!locationAccuracy.value) return isLive.value ? 'GPS' : 'No Fix';
     return `+/- ${formatLength(locationAccuracy.value, mapStore.distanceUnit)}`;
 });
@@ -175,6 +189,12 @@ const headingText = computed(() => {
     min-width: 0;
     font-size: 0.9rem;
     line-height: 1.2;
+}
+
+.gps-panel-spinner {
+    width: 18px;
+    height: 18px;
+    border-width: 1.5px;
 }
 
 .gps-panel-row {

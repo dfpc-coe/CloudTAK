@@ -10,13 +10,16 @@ const store = reactive({
     location: LocationState.Live,
     locationAccuracy: 3 as number | undefined,
     manualLocationMode: false,
+    locationPending: false,
     distanceUnit: 'mile',
     elevationUnit: 'feet',
     speedUnit: 'mi/h',
     gpsAltitude: 1728 as number | null,
     gpsSpeed: 0 as number | null,
     gpsHeading: 90 as number | null,
-    deviceHeading: 154 as number | null
+    deviceHeading: 154 as number | null,
+    standbyFor: null as string | null,
+    worker: { conn: { claimBroadcast: vi.fn() } }
 });
 
 vi.mock('../../../stores/map.ts', () => ({
@@ -88,6 +91,24 @@ describe('GPSPanel', () => {
         store.location = LocationState.Live;
     });
 
+    it('shows a spinner while a GPS lock is pending', async () => {
+        const wrapper = mountPanel();
+        expect(wrapper.find('[data-test="location-pending"]').exists()).toBe(false);
+
+        store.locationPending = true;
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find('[data-test="location-pending"]').exists()).toBe(true);
+        expect(wrapper.find('[data-test="accuracy"]').text()).toBe('Acquiring');
+
+        store.location = LocationState.Preset;
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('[data-test="location-pending"]').exists()).toBe(false);
+
+        store.location = LocationState.Live;
+        store.locationPending = false;
+    });
+
     it('emits location events', async () => {
         const wrapper = mountPanel();
 
@@ -124,5 +145,31 @@ describe('GPSPanel', () => {
         expect(mountPanel('Default').find('.gps-panel').exists()).toBe(true);
 
         store.draw.mode = DrawToolMode.STATIC;
+    });
+
+    it('offers Take over while another session is the broadcaster', async () => {
+        const wrapper = mountPanel();
+        expect(wrapper.find('[data-test="broadcast-chip"]').exists()).toBe(false);
+
+        store.standbyFor = 'Pixel 8 (app)';
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('[data-test="broadcast-chip-text"]').text()).toBe('Shared from Pixel 8 (app)');
+
+        await wrapper.find('[data-test="broadcast-chip-action"]').trigger('click');
+        expect(store.worker.conn.claimBroadcast).toHaveBeenCalledTimes(1);
+        expect(wrapper.emitted('to-location')).toBeUndefined();
+        expect(wrapper.find('[data-test="broadcast-chip-pending"]').exists()).toBe(true);
+        expect(wrapper.find('[data-test="broadcast-chip-action"]').attributes('disabled')).toBeDefined();
+
+        store.standbyFor = 'Laptop (browser)';
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('[data-test="broadcast-chip-pending"]').exists()).toBe(false);
+
+        store.location = LocationState.Disabled;
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('[data-test="broadcast-chip-action"]').attributes('disabled')).toBeDefined();
+
+        store.location = LocationState.Live;
+        store.standbyFor = null;
     });
 });

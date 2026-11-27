@@ -8,6 +8,7 @@ import { ChatMessageStatus, WebSocket_Event } from '../../common/enums.js';
 import { ProfileConnConfig } from '../../common/connection-config.js';
 import { profileCallsign } from '../../common/control/takserver.js';
 import LegacyChatControl from '../../common/chat/legacy.js';
+import { sourceOf, toSecondary } from './location-arbiter.js';
 import { rawDataToString } from '../../common/stringify.js';
 
 export class ConnectionWebSocket {
@@ -103,12 +104,40 @@ export class ConnectionWebSocket {
                                 }));
                             }
                         }
+                    } else if (msg.type === 'broadcast:claim') {
+                        if (client.config instanceof ProfileConnConfig && this.session) {
+                            client.config.config.locationArbiter.claim(String(client.config.id), this.session);
+                        }
                     } else {
                         const feat = msg.data as Static<typeof Feature.Feature>;
 
                         const cot = await CoTParser.from_geojson(feat);
 
+                        let relay = false;
+                        const loose = feat as { id?: unknown; properties?: { id?: unknown; ce?: unknown }; geometry?: { coordinates?: unknown } };
+                        if (client.config instanceof ProfileConnConfig && (loose.id ?? loose.properties?.id) === client.config.uid()) {
+                            const arbiter = client.config.config.locationArbiter;
+                            const { source, accuracy } = sourceOf(loose.geometry?.coordinates, loose.properties?.ce);
+                            const decision = arbiter.decide(String(client.config.id), {
+                                session: this.session,
+                                source,
+                                accuracy,
+                                channel: 'ws',
+                            });
+                            if (decision.changed) client.config.config.conns.sendStatus(client.config.id);
+                            if (decision.secondary) toSecondary(cot, decision.secondary);
+                            else if (!decision.accept) return;
+                            relay = source !== 'none';
+                        }
+
                         void client.tak.write([cot], { stripFlow: true });
+
+                        if (relay) {
+                            // TAK Server does not echo a CoT to the connection that sent it
+                            client.config.config.conns.cots(client.config, [cot], { excludeSession: this.session }).catch((err) => {
+                                console.error('Error: Failed to relay self location:', err);
+                            });
+                        }
                     }
                 } catch (err) {
                     console.warn('Warning: Validation Error on WebSocket CoT message:', rawDataToString(data), err);

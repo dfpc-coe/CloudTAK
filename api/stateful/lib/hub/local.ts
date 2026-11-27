@@ -7,6 +7,7 @@ import type { InferSelectModel } from 'drizzle-orm';
 import type { GeofenceStatus } from '../connection-geofence.js';
 import type { HubClient, ConnStatus, PoolSummary, PresenceMap, SubmitCotsRequest } from '../../../common/hub/index.js';
 import type ConfigStateful from '../../config.js';
+import { toSecondary } from '../location-arbiter.js';
 
 export default class LocalHub implements HubClient {
     config: ConfigStateful;
@@ -105,6 +106,19 @@ export default class LocalHub implements HubClient {
     }
 
     async submitCots(req: SubmitCotsRequest): Promise<void> {
+        let relay = false;
+        if (req.selfLocation && typeof req.connection === 'string') {
+            const decision = this.config.locationArbiter.decide(req.connection, { ...req.selfLocation, channel: 'post' });
+            if (decision.changed) this.config.conns.sendStatus(req.connection);
+            if (decision.secondary) {
+                for (const cot of req.cots) toSecondary(cot, decision.secondary);
+            } else if (!decision.accept) {
+                // Not an error, the native layer must not retry
+                return;
+            }
+            relay = req.selfLocation.source !== 'none';
+        }
+
         let client = this.config.conns.get(req.connection);
 
         if (req.ensureProfile && typeof req.connection === 'string') {
@@ -140,6 +154,11 @@ export default class LocalHub implements HubClient {
         if (req.broadcast) {
             this.config.conns.cots(client.config, req.cots).catch((err) => {
                 console.error(`Error: Failed to broadcast CoTs for ${req.connection}:`, err);
+            });
+        } else if (relay) {
+            // TAK Server does not echo a CoT to the connection that sent it
+            this.config.conns.cots(client.config, req.cots, { excludeSession: req.selfLocation?.session }).catch((err) => {
+                console.error(`Error: Failed to relay self location for ${req.connection}:`, err);
             });
         }
     }

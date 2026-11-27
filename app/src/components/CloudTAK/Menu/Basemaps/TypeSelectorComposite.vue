@@ -115,7 +115,7 @@
                                     :model-value='Math.round(layer.opacity * 100)'
                                     type='number'
                                     label='Opacity %'
-                                    @update:model-value='layer.opacity = Number($event) / 100'
+                                    @update:model-value='layer.opacity = (Number($event) || 0) / 100'
                                 />
                             </div>
                             <div class='col-5'>

@@ -21,6 +21,11 @@ export default async function router(schema: Schema, config: ConfigStateful) {
             ensureProfile: Type.Optional(Type.Boolean()),
             ifPooled: Type.Optional(Type.Boolean()),
             confirm: Type.Optional(Type.Boolean()),
+            selfLocation: Type.Optional(Type.Object({
+                session: Type.Optional(Type.String()),
+                source: Type.Union([Type.Literal('gps'), Type.Literal('manual'), Type.Literal('none')]),
+                accuracy: Type.Optional(Type.Union([Type.Number(), Type.Null()])),
+            })),
         }),
         // The paused-connection outcome is a first-class response rather than
         // an Err: LocalHub signals it as Err(200) and response validation
@@ -39,6 +44,7 @@ export default async function router(schema: Schema, config: ConfigStateful) {
                 ensureProfile: req.body.ensureProfile,
                 ifPooled: req.body.ifPooled,
                 confirm: req.body.confirm,
+                selfLocation: req.body.selfLocation,
                 cots: req.body.cots.map((c) => {
                     const cot = CoTParser.from_xml(c.xml);
                     if (c.path !== undefined) cot.path = c.path;

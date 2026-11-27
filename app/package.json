@@ -61,7 +61,7 @@
         "@tabler/icons-vue": "^3.0.0",
         "@tak-ps/node-cot": "^14.61.0",
         "@tak-ps/node-p12": "^1.0.3",
-        "@tak-ps/vue-tabler": "^5.13.0",
+        "@tak-ps/vue-tabler": "^6.0.0",
         "@turf/area": "^7.2.0",
         "@turf/bbox": "^7.1.0",
         "@turf/boolean-within": "^7.1.0",

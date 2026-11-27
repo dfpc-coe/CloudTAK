@@ -40,8 +40,9 @@
                         >
                             <div class='d-flex align-items-center'>
                                 <TablerInput
-                                    v-model='sensor.range'
+                                    :model-value='sensor.range'
                                     style='width: 82px'
+                                    @update:model-value='sensor.range = Number($event) || 0'
                                 />
                                 <div class='ms-1'>
                                     m
@@ -58,8 +59,9 @@
                         >
                             <div class='d-flex align-items-center'>
                                 <TablerInput
-                                    v-model='sensor.azimuth'
+                                    :model-value='sensor.azimuth'
                                     style='width: 82px'
+                                    @update:model-value='sensor.azimuth = Number($event) || 0'
                                 />
                                 <div class='ms-1'>
                                     deg
@@ -76,8 +78,9 @@
                         >
                             <div class='d-flex align-items-center'>
                                 <TablerInput
-                                    v-model='sensor.fov'
+                                    :model-value='sensor.fov'
                                     style='width: 82px'
+                                    @update:model-value='sensor.fov = Number($event) || 0'
                                 />
                                 <div class='ms-1'>
                                     deg

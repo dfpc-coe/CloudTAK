@@ -27,6 +27,11 @@ export default async function router(schema: Schema, config: ConfigStateless) {
                 connection: user.email,
                 cots: [cot],
                 ensureProfile: true,
+                selfLocation: {
+                    session: user.session,
+                    source: req.body.longitude === 0 && req.body.latitude === 0 ? 'none' : 'gps',
+                    accuracy: req.body.accuracy,
+                },
             });
 
             res.json({

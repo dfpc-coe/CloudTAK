@@ -148,6 +148,7 @@ export default class AtlasConnection {
         url.searchParams.set('format', 'geojson');
         url.searchParams.set('connection', connection);
         url.searchParams.set('token', this.atlas.token);
+        if (this.atlas.sessionLabel) url.searchParams.set('label', this.atlas.sessionLabel);
 
         if (self.location.protocol === 'http:') {
             url.protocol = 'ws:';
@@ -424,7 +425,15 @@ export default class AtlasConnection {
                         .modify(progress);
                 }
             } else if (body.type === 'status') {
-                const status = body.data as { version: string };
+                const status = body.data as { version: string; broadcast?: { active: boolean; by?: string } };
+
+                if (status.broadcast) {
+                    this.atlas.broadcastStandby = !status.broadcast.active;
+                    this.atlas.postMessage({
+                        type: WorkerMessageType.Broadcast_State,
+                        body: { standbyFor: status.broadcast.active ? null : (status.broadcast.by || 'another device') }
+                    });
+                }
 
                 if (this.version !== status.version) {
                     console.log(`Version change detected: ${this.version} -> ${status.version}`);
@@ -561,6 +570,14 @@ export default class AtlasConnection {
         }
     }
 
+
+    /** Ask to become the location broadcaster of the user */
+    claimBroadcast(): void {
+        if (!this.sendCOT({}, 'broadcast:claim')) return;
+
+        // The claim takes effect on this session's next fix
+        this.atlas.profile.sendStandbyFix();
+    }
 
     /** @returns false if the WebSocket was not open and nothing was sent */
     sendCOT(data: object, type = 'cot'): boolean {
